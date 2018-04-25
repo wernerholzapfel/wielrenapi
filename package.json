@@ -18,9 +18,14 @@
     "@nestjs/core": "^4.5.10",
     "@nestjs/microservices": "^4.5.8",
     "@nestjs/testing": "^4.5.5",
+    "@nestjs/typeorm": "^2.0.0",
     "@nestjs/websockets": "^4.5.8",
+    "dotenv": "^5.0.1",
+    "firebase-admin": "^5.12.0",
+    "pg": "^7.4.1",
     "reflect-metadata": "^0.1.12",
     "rxjs": "^5.5.6",
+    "typeorm": "^0.2.2",
     "typescript": "^2.6.2"
   },
   "devDependencies": {
@@ -38,7 +43,11 @@
     "tslint": "5.3.2"
   },
   "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
     "rootDir": "src",
     "testRegex": ".spec.ts$",
     "transform": {
