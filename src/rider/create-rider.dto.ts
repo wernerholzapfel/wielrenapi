@@ -1,6 +1,6 @@
 import {IsBoolean, IsDefined, IsString, IsDateString, Length} from 'class-validator';
 
-export class CreateCyclistDto {
+export class CreateRiderDto {
     readonly id: string;
 
     @IsDefined() @IsString() readonly firstName: string;

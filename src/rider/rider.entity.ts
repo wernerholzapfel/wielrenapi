@@ -1,14 +1,16 @@
-import {Column, Entity, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Tour} from '../tour/tour.entity';
+import {Tourriders} from '../tourriders/tourriders.entity';
 
 @Entity()
-export class Cyclist {
+export class Rider {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
     @Column('text')
     firstName: string;
 
-    @Column({length: 3})
+    @Column('text')
     firstNameShort: string;
 
     @Column('text')
@@ -20,7 +22,7 @@ export class Cyclist {
     @Column()
     nationality: string;
 
-    @Column({length: 3})
+    @Column('text')
     surNameShort: string;
 
     @Column({type: 'date'})
@@ -28,4 +30,8 @@ export class Cyclist {
 
     @Column({default: true})
     isActive: boolean;
+
+    @OneToMany(type => Tourriders, tourriders => tourriders.rider)
+    tourRiders: Tourriders[];
+
 }

@@ -2,28 +2,24 @@ import {Module} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {Connection} from 'typeorm';
-import {CyclistModule} from './cyclist/cyclist.module';
-import {Cyclist} from './cyclist/cyclist.entity';
 import 'dotenv/config';
 import * as admin from 'firebase-admin';
 import {Logger} from '@nestjs/common';
+import {ormconfig} from './ormconfig';
+import {TeamModule} from './teams/team.module';
+import {RiderModule} from './rider/rider.module';
+import {TourModule} from './tour/tour.module';
+import {TourridersModule} from './tourriders/tourriders.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
-        {
-            type: 'postgres',
-            url: process.env.DATABASE_URL,
-            ssl: process.env.DB_SSL,
-            entities: [Cyclist],
-            logging: false,
-            synchronize: true, // DEV only, do not use on PROD!
-        }),
-        CyclistModule],
+        ormconfig),
+        RiderModule, TeamModule, TourModule, TourridersModule],
     controllers: [AppController],
     components: [],
 })
 export class AppModule {
-    private readonly logger = new Logger('CyclistController', true);
+    private readonly logger = new Logger('App Module', true);
 
     constructor(private readonly connection: Connection) {
 

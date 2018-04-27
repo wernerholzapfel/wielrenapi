@@ -1,22 +1,22 @@
 import {Component, HttpStatus} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {Cyclist} from './cyclist.entity';
+import {Team} from './team.entity';
 import {Repository} from 'typeorm';
 import {HttpException} from '@nestjs/core';
 
 @Component()
-export class CyclistService {
+export class TeamService {
     constructor(
-        @InjectRepository(Cyclist)
-        private readonly cyclistRepository: Repository<Cyclist>,
+        @InjectRepository(Team)
+        private readonly teamRepository: Repository<Team>,
     ) {}
 
-    async findAll(): Promise<Cyclist[]> {
-        return await this.cyclistRepository.find();
+    async findAll(): Promise<Team[]> {
+        return await this.teamRepository.find();
     }
 
-    async create(cyclist: Cyclist): Promise<Cyclist> {
-        return await this.cyclistRepository.save(cyclist)
+    async create(team: Team): Promise<Team> {
+        return await this.teamRepository.save(team)
             .catch((err) => {
                 throw new HttpException({
                     message: err.message,
