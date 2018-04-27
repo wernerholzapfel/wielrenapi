@@ -12,12 +12,12 @@ export class TourController {
     }
 
     @Get()
-    async findAll(): Promise<Tour[]> {
+    async findAll(): Promise<Tour> {
         return this.tourService.findAll();
     }
 
     @Get(':id')
-    async findTour(@Param('id') id): Promise<Tour[]> {
+    async findTour(@Param('id') id): Promise<Tour> {
         return this.tourService.findTour(id);
     }
 

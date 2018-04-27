@@ -11,7 +11,7 @@ export class TourService {
         private readonly tourRepository: Repository<Tour>,
     ) {}
 
-    async findAll(): Promise<Tour[]> {
+    async findAll(): Promise<Tour> {
         return await this.connection
             .getRepository(Tour)
             .createQueryBuilder("tour")
@@ -21,7 +21,7 @@ export class TourService {
             .leftJoinAndSelect("teamriders.rider", "rider")
             .where("tour.isActive")
             .andWhere("teamriderstour.isActive")
-            .getMany();
+            .getOne();
     }
 
     async findTour(id: string): Promise<Tour> {
