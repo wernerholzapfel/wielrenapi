@@ -3,25 +3,27 @@ import {InjectRepository} from '@nestjs/typeorm';
 import {Tourriders} from './tourriders.entity';
 import {Connection, Repository} from 'typeorm';
 import {HttpException} from '@nestjs/core';
+import {Tour} from '../tour/tour.entity';
 
 @Component()
 export class TourridersService {
     constructor(private readonly connection: Connection,
-        @InjectRepository(Tourriders)
-        private readonly tourridersRepository: Repository<Tourriders>,
-    ) {}
+                @InjectRepository(Tourriders)
+                private readonly tourridersRepository: Repository<Tourriders>,) {
+    }
 
-    async findAll(): Promise<Tourriders[]> {
+    async findActive(): Promise<Tour> {
         return await this.connection
-            .getRepository(Tourriders)
-            .createQueryBuilder("tourriders")
-            .leftJoinAndSelect("tourriders.tour", "tour")
-            .leftJoinAndSelect("tourriders.team", "team")
-            .leftJoinAndSelect("team.riders", "rider")
-            .leftJoinAndSelect("rider", "rider")
-            .where("tour.isActive")
+            .getRepository(Tour)
+            .createQueryBuilder('tour')
+            .leftJoinAndSelect('tour.teams', 'team')
+            .leftJoinAndSelect('team.tourRiders', 'teamriders')
+            .leftJoinAndSelect('teamriders.rider', 'rider')
+            .where('tour.isActive')
+            .andWhere('(teamriders.tour.id = tour.id OR teamriders.tour.id IS NULL)')
             .getOne();
     }
+
 
     async create(tourriders: Tourriders): Promise<Tourriders> {
         return await this.tourridersRepository.save(tourriders)

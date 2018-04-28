@@ -9,6 +9,6 @@ export const ormconfig = {
     url: process.env.DATABASE_URL,
     ssl: process.env.DB_SSL,
     entities: [Rider, Team, Tour, Tourriders],
-    logging: false,
+    logging: true,
     synchronize: true, // DEV only, do not use on PROD!
 };

@@ -3,6 +3,8 @@ import {Body, Get, Logger, Post, Req} from '@nestjs/common';
 import {TourridersService} from './tourriders.service';
 import {Tourriders} from './tourriders.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
+import {Tour} from '../tour/tour.entity';
+import {TourService} from '../tour/tour.service';
 
 @Controller('tourriders')
 export class TourridersController {
@@ -12,8 +14,8 @@ export class TourridersController {
     }
 
     @Get()
-    async findAll(): Promise<Tourriders[]> {
-        return this.tourridersService.findAll();
+    async findAll(): Promise<Tour> {
+        return this.tourridersService.findActive();
     }
 
     @Post()

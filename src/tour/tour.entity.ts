@@ -23,7 +23,10 @@ export class Tour {
     @OneToMany(type => Tourriders, tourriders => tourriders.tour)
     tourRiders: Tourriders[];
 
-    @ManyToMany(type => Team)
+    @ManyToMany(type => Team, team => team.tour)
     @JoinTable()
     teams: Team[];
 }
+
+
+
