@@ -31,11 +31,10 @@ export class TourService {
             .getRepository(Tour)
             .createQueryBuilder('tour')
             .leftJoinAndSelect('tour.teams', 'team')
-            .leftJoinAndSelect('team.tourRiders', 'teamriders')
-            .leftJoinAndSelect('teamriders.rider', 'rider')
-            // .leftJoinAndSelect('teamriders.tour', 'tourteamriders')
+            .leftJoinAndSelect('team.tourRiders', 'tourriders')
+            .leftJoinAndSelect('tourriders.rider', 'rider')
             .where('tour.id = :id', {id})
-            .andWhere('(teamriders.tour.id = :id OR teamriders.tour.id IS NULL)', {id})
+            .andWhere('(tourriders.tour.id = :id OR tourriders.tour.id IS NULL)', {id})
             .getOne();
     }
 
@@ -49,22 +48,24 @@ export class TourService {
             });
     }
 
-    async addTeamsToTour(bodyTour: AddTeamsRequest): Promise<any> {
+    async deteleTeamsFromTour(tour: ITour): Promise<any> {
         const storedTour = await getRepository(Tour).createQueryBuilder('tour')
             .leftJoinAndSelect('tour.teams', 'teams')
-            .where('tour.id = :tourId', {tourId: bodyTour.tour.id})
+            .where('tour.id = :tourId', {tourId: tour.id})
             .getOne();
 
-        await storedTour.teams.forEach(async team => {
+        return await storedTour.teams.forEach(async team => {
             this.logger.log('delete: ' + team.teamName);
             await
                 getConnection()
                     .createQueryBuilder()
                     .relation(Tour, 'teams')
-                    .of(bodyTour.tour)
+                    .of(tour)
                     .remove(team);
         });
+    }
 
+    async addTeamsToTour(bodyTour: AddTeamsRequest): Promise<any> {
         return await getConnection()
             .createQueryBuilder()
             .relation(Tour, 'teams')
