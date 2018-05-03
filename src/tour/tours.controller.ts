@@ -23,7 +23,7 @@ export class TourController {
 
     @Post('tours/setteams')
     async addTeams(@Req() req, @Body() body: AddTeamsRequest) {
-        await this.tourService.deteleTeamsFromTour(body.tour);
+        await this.tourService.deleteTeamsFromTour(body.tour);
         await this.tourService.addTeamsToTour(body);
         return await this.tourService.findTour(body.tour.id);
     }

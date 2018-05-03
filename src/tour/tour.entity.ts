@@ -2,6 +2,7 @@ import {Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn
 import {Rider} from '../rider/rider.entity';
 import {Team} from '../teams/team.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
+import {Prediction} from '../prediction/prediction.entity';
 
 @Entity()
 export class Tour {
@@ -23,9 +24,13 @@ export class Tour {
     @OneToMany(type => Tourriders, tourriders => tourriders.tour)
     tourRiders: Tourriders[];
 
+    @OneToMany(type => Prediction, prediction  => prediction.rider)
+    predictions: Prediction[];
+
     @ManyToMany(type => Team, team => team.tour)
     @JoinTable()
     teams: Team[];
+
 }
 
 

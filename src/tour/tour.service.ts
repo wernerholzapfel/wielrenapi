@@ -48,7 +48,7 @@ export class TourService {
             });
     }
 
-    async deteleTeamsFromTour(tour: ITour): Promise<any> {
+    async deleteTeamsFromTour(tour: Tour): Promise<any> {
         const storedTour = await getRepository(Tour).createQueryBuilder('tour')
             .leftJoinAndSelect('tour.teams', 'teams')
             .where('tour.id = :tourId', {tourId: tour.id})

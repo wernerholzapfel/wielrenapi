@@ -1,6 +1,7 @@
 import {Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Tour} from '../tour/tour.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
+import {Prediction} from '../prediction/prediction.entity';
 
 @Entity()
 export class Rider {
@@ -33,5 +34,8 @@ export class Rider {
 
     @OneToMany(type => Tourriders, tourriders => tourriders.rider)
     tourRiders: Tourriders[];
+
+    @OneToMany(type => Prediction, prediction  => prediction.rider)
+    prediction: Prediction[];
 
 }

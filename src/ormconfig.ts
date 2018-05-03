@@ -3,12 +3,14 @@ import {Team} from './teams/team.entity';
 import {Rider} from './rider/rider.entity';
 import {Tour} from './tour/tour.entity';
 import {Tourriders} from './tourriders/tourriders.entity';
+import {Prediction} from './prediction/prediction.entity';
+import {Participant} from './participant/participant.entity';
 
 export const ormconfig = {
     type: 'postgres',
     url: process.env.DATABASE_URL,
     ssl: process.env.DB_SSL,
-    entities: [Rider, Team, Tour, Tourriders],
+    entities: [Rider, Team, Tour, Tourriders, Prediction, Participant],
     logging: false,
     synchronize: true, // DEV only, do not use on PROD!
 };
