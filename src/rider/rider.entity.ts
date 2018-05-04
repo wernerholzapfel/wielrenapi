@@ -35,7 +35,4 @@ export class Rider {
     @OneToMany(type => Tourriders, tourriders => tourriders.rider)
     tourRiders: Tourriders[];
 
-    @OneToMany(type => Prediction, prediction  => prediction.rider)
-    prediction: Prediction[];
-
 }

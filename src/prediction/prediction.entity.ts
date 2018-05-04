@@ -24,8 +24,8 @@ export class Prediction {
     @Column({default : false})
     isBeschermdeRenner: boolean;
 
-    @ManyToOne(type => Rider, rider => rider.predictions)
-    rider: Rider;
+    @ManyToOne(type => Tourriders, rider => rider.predictions)
+    rider: Tourriders;
 
     @ManyToOne(type => Tour, tour => tour.predictions)
     tour: Tour;

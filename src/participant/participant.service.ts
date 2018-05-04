@@ -16,6 +16,11 @@ export class ParticipantService {
         return await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
+            .leftJoinAndSelect('participant.predictions', 'predictions')
+            .leftJoinAndSelect('predictions.rider', 'tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoin('predictions.tour', 'tour')
+            .where("tour.isActive")
             .getMany();
     }
 
