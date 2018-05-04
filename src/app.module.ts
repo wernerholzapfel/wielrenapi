@@ -23,15 +23,16 @@ import {AddFireBaseUserToRequest} from './authentication.middleware';
     components: [],
 })
 export class AppModule implements NestModule {
+    private readonly logger = new Logger('AppModule', true);
+
     configure(consumer: MiddlewaresConsumer): void {
 
         consumer.apply(AddFireBaseUserToRequest).forRoutes(
             {path: '/**', method: RequestMethod.POST});
 
+
+        // admin.auth().setCustomUserClaims(uid, {admin: true}).then(() => {
+        //     this.logger.log('customerset');
+        // });
     }
-
-
-    // admin.auth().setCustomUserClaims(uid, {admin: false}).then(() => {
-    //    this.logger.log('customerset');
-    //     });
 }

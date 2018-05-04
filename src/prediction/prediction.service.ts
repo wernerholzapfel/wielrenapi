@@ -1,7 +1,7 @@
 import {Component, HttpException, HttpStatus, Logger} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Prediction} from './prediction.entity';
-import {Connection, Repository} from 'typeorm';
+import {Connection, getConnection, Repository} from 'typeorm';
 import {CreatePredictionDto} from './create-prediction.dto';
 import {Participant} from '../participant/participant.entity';
 
@@ -25,12 +25,24 @@ export class PredictionService {
         this.logger.log(email);
         const predictions = [...body.riders, body.beschermdeRenner, body.linkebal, body.meesterknecht, body.waterdrager]
 
-        const participant = await this.connection
+        let participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
             .where('participant.email = :email', {email})
             .getOne();
 
+        if (!participant) {
+            participant = await getConnection()
+                .createQueryBuilder()
+                .insert()
+                .into(Participant)
+                .values([
+                    { email: email }
+                ])
+                .execute();
+
+
+        }
         const oldPrediction = await this.connection
             .getRepository(Prediction)
             .createQueryBuilder('prediction')
@@ -56,6 +68,7 @@ export class PredictionService {
                 isWaterdrager: prediction.isWaterdrager,
                 isLinkebal: prediction.isLinkebal,
                 isBeschermdeRenner: prediction.isBeschermdeRenner,
+                isMeesterknecht: prediction.isMeesterknecht,
                 tour: body.tour,
                 participant: participant
             };
