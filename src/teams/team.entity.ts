@@ -17,6 +17,9 @@ export class Team {
     @Column('text')
     country: string;
 
+    @Column('text')
+    teamAbbreviation: string;
+
     @OneToMany(type => Tourriders, tourriders => tourriders.team)
     tourRiders: Tourriders[];
 
