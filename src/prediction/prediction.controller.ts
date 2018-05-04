@@ -19,6 +19,6 @@ export class PredictionController {
     @Post()
     async create(@Req() req, @Body() body,  createPredictionDto: CreatePredictionDto) {
         this.logger.log(body.riders.length);
-        return await this.predictionService.create(body, req.user.email);
+        return await this.predictionService.create(body, req.user.email, req.user.displayName);
     }
 }

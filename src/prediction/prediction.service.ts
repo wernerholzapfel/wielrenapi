@@ -21,7 +21,7 @@ export class PredictionService {
             .getMany();
     }
 
-    async create(body: CreatePredictionDto, email): Promise<Prediction[]> {
+    async create(body: CreatePredictionDto, email: string, displayName: string): Promise<Prediction[]> {
         this.logger.log(email);
         const predictions = [...body.riders, body.beschermdeRenner, body.linkebal, body.meesterknecht, body.waterdrager]
 
@@ -32,17 +32,24 @@ export class PredictionService {
             .getOne();
 
         if (!participant) {
-            participant = await getConnection()
+            await getConnection()
                 .createQueryBuilder()
                 .insert()
                 .into(Participant)
                 .values([
-                    { email: email }
+                    {email: email, displayName: displayName}
                 ])
-                .execute();
-
-
+                .execute().then(async response => {
+                    participant = await this.connection
+                        .getRepository(Participant)
+                        .createQueryBuilder('participant')
+                        .where('participant.email = :email', {email})
+                        .getOne();
+                });
         }
+
+        this.logger.log('hij is opgeslagen:' + participant.email);
+
         const oldPrediction = await this.connection
             .getRepository(Prediction)
             .createQueryBuilder('prediction')
