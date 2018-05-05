@@ -3,6 +3,7 @@ import {Rider} from '../rider/rider.entity';
 import {Team} from '../teams/team.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
 import {Prediction} from '../prediction/prediction.entity';
+import {Etappe} from '../etappe/etappe.entity';
 
 @Entity()
 export class Tour {
@@ -26,6 +27,9 @@ export class Tour {
 
     @OneToMany(type => Prediction, prediction  => prediction.rider)
     predictions: Prediction[];
+
+    @OneToMany(type => Etappe, etappe  => etappe.tour)
+    etappes: Etappe[];
 
     @ManyToMany(type => Team, team => team.tour)
     @JoinTable()

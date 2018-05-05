@@ -14,11 +14,12 @@ import {PredictionModule} from './prediction/prediction.module';
 import {ParticipantModule} from './participant/participant.module';
 import {MiddlewaresConsumer} from '@nestjs/common/interfaces/middlewares';
 import {AddFireBaseUserToRequest} from './authentication.middleware';
+import {EtappeModule} from './etappe/etappe.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
         ormconfig),
-        RiderModule, TeamModule, TourModule, TourridersModule, PredictionModule, ParticipantModule],
+        RiderModule, TeamModule, TourModule, TourridersModule, PredictionModule, ParticipantModule, EtappeModule],
     controllers: [AppController],
     components: [],
 })
@@ -31,7 +32,7 @@ export class AppModule implements NestModule {
             {path: '/**', method: RequestMethod.POST});
 
 
-        // admin.auth().setCustomUserClaims(uid, {admin: true}).then(() => {
+        // admin.auth().setCustomUserClaims('ENPg7LZlewdswg6vqVd65K4QjQy1', {admin: true}).then(() => {
         //     this.logger.log('customerset');
         // });
     }
