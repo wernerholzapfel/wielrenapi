@@ -1,5 +1,5 @@
 import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Post, Req} from '@nestjs/common';
+import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {EtappeService} from './etappe.service';
 import {Etappe} from './etappe.entity';
 import {CreateEtappeDto} from './create-etappe.dto';
@@ -14,6 +14,12 @@ export class EtappeController {
     @Get()
     async findAll(): Promise<Etappe[]> {
         return this.etappeService.findAll();
+    }
+
+
+    @Get(':etappeId')
+    async findByEtappe(@Param('etappeId') etappeId): Promise<Etappe> {
+        return this.etappeService.findByEtappe(etappeId);
     }
 
     @Post()

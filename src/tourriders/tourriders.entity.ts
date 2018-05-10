@@ -6,6 +6,7 @@ import {Rider} from '../rider/rider.entity';
 import {Team} from '../teams/team.entity';
 import {Tour} from '../tour/tour.entity';
 import {Prediction} from '../prediction/prediction.entity';
+import {Stageclassification} from '../stageclassification/stageclassification.entity';
 
 @Entity()
 @Index(['rider', 'tour', 'team' ], {unique: true})
@@ -28,4 +29,7 @@ export class Tourriders {
 
     @OneToMany(type => Prediction, prediction  => prediction.rider)
     predictions: Prediction[];
+
+    @OneToMany(type => Stageclassification, stagecf  => stagecf.tourrider)
+    stageclassifications: Stageclassification[];
 }

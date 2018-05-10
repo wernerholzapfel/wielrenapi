@@ -4,6 +4,7 @@ import {Team} from '../teams/team.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
 import {Prediction} from '../prediction/prediction.entity';
 import {Etappe} from '../etappe/etappe.entity';
+import {Stageclassification} from '../stageclassification/stageclassification.entity';
 
 @Entity()
 export class Tour {
@@ -30,6 +31,9 @@ export class Tour {
 
     @OneToMany(type => Etappe, etappe  => etappe.tour)
     etappes: Etappe[];
+
+    @OneToMany(type => Stageclassification, stagecf  => stagecf.tour)
+    stageclassifications: Stageclassification[];
 
     @ManyToMany(type => Team, team => team.tour)
     @JoinTable()

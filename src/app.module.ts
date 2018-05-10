@@ -15,11 +15,12 @@ import {ParticipantModule} from './participant/participant.module';
 import {MiddlewaresConsumer} from '@nestjs/common/interfaces/middlewares';
 import {AddFireBaseUserToRequest} from './authentication.middleware';
 import {EtappeModule} from './etappe/etappe.module';
+import {StageclassificationModule} from './stageclassification/stageclassification.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
         ormconfig),
-        RiderModule, TeamModule, TourModule, TourridersModule, PredictionModule, ParticipantModule, EtappeModule],
+        RiderModule, TeamModule, TourModule, TourridersModule, PredictionModule, ParticipantModule, EtappeModule, StageclassificationModule],
     controllers: [AppController],
     components: [],
 })

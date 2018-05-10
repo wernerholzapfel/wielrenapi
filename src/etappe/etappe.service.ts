@@ -6,19 +6,29 @@ import {HttpException} from '@nestjs/core';
 
 @Component()
 export class EtappeService {
-    constructor(
-        @InjectRepository(Etappe)
-        private readonly etappeRepository: Repository<Etappe>,
-        private readonly connection: Connection,
-    ) {}
+    constructor(@InjectRepository(Etappe)
+                private readonly etappeRepository: Repository<Etappe>,
+                private readonly connection: Connection,) {
+    }
 
     async findAll(): Promise<Etappe[]> {
         return await this.connection
             .getRepository(Etappe)
             .createQueryBuilder('etappe')
             .leftJoin('etappe.tour', 'tour')
-            .where("tour.isActive")
+            .where('tour.isActive')
             .getMany();
+    }
+
+    async findByEtappe(etappeId: string): Promise<Etappe> {
+        return await this.connection
+            .getRepository(Etappe)
+            .createQueryBuilder('etappe')
+            .leftJoinAndSelect('etappe.stageclassifications', 'stageclassifications')
+            .leftJoinAndSelect('stageclassifications.tourrider', 'tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .where('etappe.id = :id', {id: etappeId})
+            .getOne();
     }
 
     async create(etappe: Etappe): Promise<Etappe> {
