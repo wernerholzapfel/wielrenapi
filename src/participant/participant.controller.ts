@@ -15,6 +15,12 @@ export class ParticipantController {
     async findAll(): Promise<Participant[]> {
         return this.participantService.findAll();
     }
+    @Get('/stand')
+    async stand(): Promise<Participant[]> {
+        return this.participantService.getStand();
+    }
+
+
 
     @Post()
     async create(@Req() req, @Body() createParticipantDto: CreateParticipantDto) {
