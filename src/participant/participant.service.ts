@@ -60,12 +60,14 @@ export class ParticipantService {
         participants.map(participant => {
             [...participant.predictions]
                 .map(prediction => {
-                    return prediction.rider.stageclassifications =
+                    prediction.rider.stageclassifications =
                         [...prediction.rider.stageclassifications]
                             .map(sc =>
                                 Object.assign(sc, {punten: this.determinePunten(sc, prediction, teams)})
                             );
+                    Object.assign(prediction, {punten: this.determineSCTotaalpunten(prediction.rider.stageclassifications)});
                 });
+            Object.assign(participant, {punten: this.determinePredictionsTotalPoints(participant)});
         });
         return participants;
         // return stand;
@@ -81,9 +83,20 @@ export class ParticipantService {
             });
     }
 
+    determinePredictionsTotalPoints(participant: participant) {
+        return participant.predictions.reduce((totalPoints, prediction) => {
+            return totalPoints + prediction.punten;
+        }, 0)
+    }
+
+    determineSCTotaalpunten(sc: Stageclassification[]) {
+        return sc.reduce((totalPoints, sc) => {
+            return totalPoints + sc.punten;
+        }, 0);
+    }
+
     determinePunten(sc: Stageclassification, prediction: Prediction, teams: Team[]) {
 
-        this.logger.log('daar ga ik: ' + sc.position);
         if (prediction.isRider) {
             return this.calculatePoints(sc)
         }
