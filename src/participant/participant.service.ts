@@ -40,7 +40,7 @@ export class ParticipantService {
 
     }
 
-    async getStand(): Promise<Participant[]> {
+    async getTable(): Promise<Participant[]> {
 
         const participants = await this.connection
             .getRepository(Participant)

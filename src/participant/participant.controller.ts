@@ -15,9 +15,9 @@ export class ParticipantController {
     async findAll(): Promise<Participant[]> {
         return this.participantService.findAll();
     }
-    @Get('/stand')
-    async stand(): Promise<Participant[]> {
-        return this.participantService.getStand();
+    @Get('/table')
+    async table(): Promise<Participant[]> {
+        return this.participantService.getTable();
     }
 
 
