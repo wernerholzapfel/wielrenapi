@@ -8,6 +8,9 @@ export class Etappe {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Column({ nullable: true })
+    EtappeNumber: number;
+
     @Column()
     etappeName: string;
 
@@ -16,6 +19,10 @@ export class Etappe {
 
     @Column({ nullable: true })
     type: string;
+
+    @Column({ nullable: true })
+    isDriven: boolean;
+
 
     @ManyToOne(type => Tour, tour => tour.etappes)
     tour: Tour;
