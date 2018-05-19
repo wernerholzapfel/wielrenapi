@@ -1,8 +1,9 @@
 import {Component, HttpStatus} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Stageclassification} from './stageclassification.entity';
-import {Connection, Repository} from 'typeorm';
+import {Connection, getConnection, Repository} from 'typeorm';
 import {HttpException} from '@nestjs/common';
+import {Etappe} from '../etappe/etappe.entity';
 
 @Component()
 export class StageclassificationService {
@@ -50,6 +51,12 @@ export class StageclassificationService {
                     }, HttpStatus.BAD_REQUEST);
                 });
         });
+        await this.connection
+            .createQueryBuilder()
+            .update(Etappe)
+            .set({ isDriven: true })
+            .where("id = :id", { id: stageclassifications[0].etappe.id})
+            .execute();
 
         return await this.connection
             .getRepository(Stageclassification)

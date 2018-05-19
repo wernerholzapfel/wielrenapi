@@ -9,7 +9,7 @@ export class Etappe {
     id: string;
 
     @Column({ nullable: true })
-    EtappeNumber: number;
+    etappeNumber: number;
 
     @Column()
     etappeName: string;

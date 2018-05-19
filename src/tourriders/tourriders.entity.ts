@@ -7,6 +7,9 @@ import {Team} from '../teams/team.entity';
 import {Tour} from '../tour/tour.entity';
 import {Prediction} from '../prediction/prediction.entity';
 import {Stageclassification} from '../stageclassification/stageclassification.entity';
+import {Tourclassification} from '../tourclassification/tourclassification.entity';
+import {Youthclassification} from '../youthclassification/youthclassification.entity';
+import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
 
 @Entity()
 @Index(['rider', 'tour', 'team' ], {unique: true})
@@ -32,4 +35,13 @@ export class Tourriders {
 
     @OneToMany(type => Stageclassification, stagecf  => stagecf.tourrider)
     stageclassifications: Stageclassification[];
+
+    @OneToMany(type => Tourclassification, tourcf  => tourcf.tourrider)
+    tourclassifications: Tourclassification[];
+
+    @OneToMany(type => Youthclassification, youthcf  => youthcf.tourrider)
+    youthclassifications: Youthclassification[];
+
+    @OneToMany(type => Mountainclassification, mountaincf  => mountaincf.tourrider)
+    mountainclassifications: Mountainclassification[];
 }

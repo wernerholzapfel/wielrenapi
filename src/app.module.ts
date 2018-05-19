@@ -1,10 +1,7 @@
-import {Module, NestModule, RequestMethod} from '@nestjs/common';
+import {Logger, Module, NestModule, RequestMethod} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {Connection} from 'typeorm';
 import 'dotenv/config';
-import * as admin from 'firebase-admin';
-import {Logger} from '@nestjs/common';
 import {ormconfig} from './ormconfig';
 import {TeamModule} from './teams/team.module';
 import {RiderModule} from './rider/rider.module';
@@ -16,11 +13,24 @@ import {MiddlewaresConsumer} from '@nestjs/common/interfaces/middlewares';
 import {AddFireBaseUserToRequest} from './authentication.middleware';
 import {EtappeModule} from './etappe/etappe.module';
 import {StageclassificationModule} from './stageclassification/stageclassification.module';
+import {TourclassificationModule} from './tourclassification/tourclassification.module';
+import {YouthclassificationModule} from './youthclassification/youthclassification.module';
+import {MountainclassificationModule} from './mountainclassification/mountainclassification.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
         ormconfig),
-        RiderModule, TeamModule, TourModule, TourridersModule, PredictionModule, ParticipantModule, EtappeModule, StageclassificationModule],
+        RiderModule,
+        TeamModule,
+        TourModule,
+        TourridersModule,
+        PredictionModule,
+        ParticipantModule,
+        EtappeModule,
+        StageclassificationModule,
+        TourclassificationModule,
+        YouthclassificationModule,
+        MountainclassificationModule],
     controllers: [AppController],
     components: [],
 })

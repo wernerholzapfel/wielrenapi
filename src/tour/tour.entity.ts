@@ -1,10 +1,12 @@
 import {Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
-import {Rider} from '../rider/rider.entity';
 import {Team} from '../teams/team.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
 import {Prediction} from '../prediction/prediction.entity';
 import {Etappe} from '../etappe/etappe.entity';
 import {Stageclassification} from '../stageclassification/stageclassification.entity';
+import {Tourclassification} from '../tourclassification/tourclassification.entity';
+import {Youthclassification} from '../youthclassification/youthclassification.entity';
+import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
 
 @Entity()
 export class Tour {
@@ -26,14 +28,23 @@ export class Tour {
     @OneToMany(type => Tourriders, tourriders => tourriders.tour)
     tourRiders: Tourriders[];
 
-    @OneToMany(type => Prediction, prediction  => prediction.rider)
+    @OneToMany(type => Prediction, prediction => prediction.rider)
     predictions: Prediction[];
 
-    @OneToMany(type => Etappe, etappe  => etappe.tour)
+    @OneToMany(type => Etappe, etappe => etappe.tour)
     etappes: Etappe[];
 
-    @OneToMany(type => Stageclassification, stagecf  => stagecf.tour)
+    @OneToMany(type => Stageclassification, stagecf => stagecf.tour)
     stageclassifications: Stageclassification[];
+
+    @OneToMany(type => Tourclassification, tourcf => tourcf.tour)
+    tourclassifications: Tourclassification[];
+
+    @OneToMany(type => Youthclassification, youthcf => youthcf.tour)
+    youthclassification: Youthclassification[];
+
+    @OneToMany(type => Mountainclassification, mountaincf => mountaincf.tour)
+    mountainclassification: Mountainclassification[];
 
     @ManyToMany(type => Team, team => team.tour)
     @JoinTable()
