@@ -10,6 +10,7 @@ import {Stageclassification} from '../stageclassification/stageclassification.en
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
 import {Youthclassification} from '../youthclassification/youthclassification.entity';
 import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
+import {Pointsclassification} from '../pointsclassification/pointsclassification.entity';
 
 @Entity()
 @Index(['rider', 'tour', 'team' ], {unique: true})
@@ -44,4 +45,7 @@ export class Tourriders {
 
     @OneToMany(type => Mountainclassification, mountaincf  => mountaincf.tourrider)
     mountainclassifications: Mountainclassification[];
+
+    @OneToMany(type => Pointsclassification, pointsf  => pointsf.tourrider)
+    pointsclassifications: Pointsclassification[];
 }

@@ -65,6 +65,7 @@ export class ParticipantService {
             .leftJoinAndSelect('tourrider.tourclassifications', 'tourclassifications')
             .leftJoinAndSelect('tourrider.mountainclassifications', 'mountainclassifications')
             .leftJoinAndSelect('tourrider.youthclassifications', 'youthclassifications')
+            .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
             .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
             .leftJoin('predictions.tour', 'tour')
             .where('tour.isActive')
@@ -91,7 +92,11 @@ export class ParticipantService {
                         );
                     [...prediction.rider.mountainclassifications]
                         .map(mc =>
-                            Object.assign(prediction, {mountainPoints: this.determinePunten(mc, prediction, youthFactor)})
+                            Object.assign(prediction, {mountainPoints: this.determinePunten(mc, prediction, mountainFactor)})
+                        );
+                    [...prediction.rider.pointsclassifications]
+                        .map(pc =>
+                            Object.assign(prediction, {pointsPoints: this.determinePunten(pc, prediction, pointsFactor)})
                         );
                     Object.assign(prediction, {totalStagePoints: this.determineSCTotaalpunten(prediction, teams, etappes.length)});
                 });
@@ -118,7 +123,8 @@ export class ParticipantService {
                 this.getZeroValueIfUndefined(prediction.totalStagePoints) +
                 this.getZeroValueIfUndefined(prediction.youthPoints) +
                 this.getZeroValueIfUndefined(prediction.mountainPoints) +
-                this.getZeroValueIfUndefined(prediction.tourPoints);
+                this.getZeroValueIfUndefined(prediction.tourPoints) +
+                this.getZeroValueIfUndefined(prediction.pointsPoints);
         }, 0)
     }
 
@@ -239,6 +245,7 @@ const etappeFactor = 1;
 const tourFactor = 2.5;
 const mountainFactor = 2;
 const youthFactor = 1.5;
+const pointsFactor = 2;
 
 
 // participants.map(participant => {

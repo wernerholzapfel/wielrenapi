@@ -16,6 +16,7 @@ import {StageclassificationModule} from './stageclassification/stageclassificati
 import {TourclassificationModule} from './tourclassification/tourclassification.module';
 import {YouthclassificationModule} from './youthclassification/youthclassification.module';
 import {MountainclassificationModule} from './mountainclassification/mountainclassification.module';
+import {PointsclassificationModule} from './pointsclassification/pointsclassification.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -30,6 +31,7 @@ import {MountainclassificationModule} from './mountainclassification/mountaincla
         StageclassificationModule,
         TourclassificationModule,
         YouthclassificationModule,
+        PointsclassificationModule,
         MountainclassificationModule],
     controllers: [AppController],
     components: [],
