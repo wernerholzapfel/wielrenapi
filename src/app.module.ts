@@ -31,8 +31,8 @@ import {PointsclassificationModule} from './pointsclassification/pointsclassific
         StageclassificationModule,
         TourclassificationModule,
         YouthclassificationModule,
-        PointsclassificationModule,
-        MountainclassificationModule],
+        MountainclassificationModule,
+        PointsclassificationModule],
     controllers: [AppController],
     components: [],
 })

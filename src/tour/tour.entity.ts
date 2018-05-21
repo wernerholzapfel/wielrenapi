@@ -42,13 +42,13 @@ export class Tour {
     tourclassifications: Tourclassification[];
 
     @OneToMany(type => Youthclassification, youthcf => youthcf.tour)
-    youthclassification: Youthclassification[];
+    youthclassifications: Youthclassification[];
 
     @OneToMany(type => Mountainclassification, mountaincf => mountaincf.tour)
-    mountainclassification: Mountainclassification[];
+    mountainclassifications: Mountainclassification[];
 
     @OneToMany(type => Pointsclassification, pointscf => pointscf.tour)
-    pointsclassification: Pointsclassification[];
+    pointsclassifications: Pointsclassification[];
 
     @ManyToMany(type => Team, team => team.tour)
     @JoinTable()

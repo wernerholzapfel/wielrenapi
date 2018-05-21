@@ -46,6 +46,6 @@ export class Tourriders {
     @OneToMany(type => Mountainclassification, mountaincf  => mountaincf.tourrider)
     mountainclassifications: Mountainclassification[];
 
-    @OneToMany(type => Pointsclassification, pointsf  => pointsf.tourrider)
+    @OneToMany(type => Pointsclassification, pointscf  => pointscf.tourrider)
     pointsclassifications: Pointsclassification[];
 }

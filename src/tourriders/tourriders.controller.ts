@@ -14,8 +14,13 @@ export class TourridersController {
     }
 
     @Get()
-    async findAll(): Promise<Tour> {
+    async findActive(): Promise<Tour> {
         return this.tourridersService.findActive();
+    }
+
+    @Get('/details')
+    async getDetails(): Promise<Tour> {
+        return this.tourridersService.getDetails();
     }
 
     @Post()
