@@ -83,7 +83,7 @@ export class ParticipantService {
                             .map(sc =>
                                 Object.assign(sc, {stagePoints: this.determinePunten(sc, prediction, etappeFactor)})
                             );
-                    if (prediction.rider.isOut) {
+                    if (prediction.rider.isOut && !prediction.isWaterdrager) {
                         prediction.rider.stageclassifications.push({
                             stagePoints: prediction.rider.isOut ? didNotFinishPoints : 0,
                             etappe: prediction.rider.latestEtappe,
@@ -146,7 +146,7 @@ export class ParticipantService {
             const totalTeampoints = team.tourRiders
                 .map(rider => rider.stageclassifications
                     .reduce((totalPoints, sc) => {
-                        return totalPoints + this.calculatePoints(sc, etappeFactor);
+                        return totalPoints + ((rider.isOut && rider.latestEtappe && rider.latestEtappe.id > rider.stageclassifications.etappe.id) ? this.calculatePoints(sc, etappeFactor) : 0);
                     }, 0))
                 .reduce((acc, value) => {
                     return acc + value;
@@ -188,7 +188,11 @@ export class ParticipantService {
             return this.calculatePoints(sc, factor)
         }
         if (prediction.isMeesterknecht) {
-            return -1 * this.calculatePoints(sc, factor)
+            if (prediction.rider.isOut && prediction.rider.latestEtappe.id === sc.etappe.id) {
+                return -1 * prediction.rider.waarde;
+            } else {
+                return -1 * this.calculatePoints(sc, factor)
+            }
         }
         if (prediction.isLinkebal) {
             return 2 * this.calculatePoints(sc, factor)
@@ -247,7 +251,7 @@ const etappe17 = 8;
 const etappe18 = 6;
 const etappe19 = 4;
 const etappe20 = 2;
-const didNotFinishPoints = -100;
+const didNotFinishPoints = -10;
 
 const etappeFactor = 1;
 const tourFactor = 2.5;

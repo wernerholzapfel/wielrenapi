@@ -127,7 +127,7 @@ export class TourridersService {
         const totalTeampoints = team.tourRiders
             .map(rider => rider.stageclassifications
                 .reduce((totalPoints, sc) => {
-                    return totalPoints + this.calculatePoints(sc, etappeFactor);
+                    return totalPoints + ((rider.isOut && rider.latestEtappe && rider.latestEtappe.id > rider.stageclassifications.etappe.id) ? this.calculatePoints(sc, etappeFactor) : 0);
                 }, 0))
             .reduce((acc, value) => {
                 return acc + value;
@@ -230,7 +230,7 @@ const etappe17 = 8;
 const etappe18 = 6;
 const etappe19 = 4;
 const etappe20 = 2;
-const didNotFinishPoints = -100;
+const didNotFinishPoints = -10;
 
 const etappeFactor = 1;
 const tourFactor = 2.5;
