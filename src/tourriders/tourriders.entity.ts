@@ -11,6 +11,7 @@ import {Tourclassification} from '../tourclassification/tourclassification.entit
 import {Youthclassification} from '../youthclassification/youthclassification.entity';
 import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
 import {Pointsclassification} from '../pointsclassification/pointsclassification.entity';
+import {Etappe} from '../etappe/etappe.entity';
 
 @Entity()
 @Index(['rider', 'tour', 'team' ], {unique: true})
@@ -21,6 +22,12 @@ export class Tourriders {
 
     @Column()
     waarde: number;
+
+    @Column({default: false})
+    isOut: boolean;
+
+    @ManyToOne(type => Etappe, etappe => etappe.tourRiders)
+    latestEtappe: Etappe;
 
     @ManyToOne(type => Rider, rider => rider.tourRiders)
     rider: Rider;

@@ -52,7 +52,7 @@ export class ParticipantService {
 
     }
 
-    async getTable(): Promise<Participant[]> {
+    async getTable(): Promise<any[]> {
 
         const participants = await this.connection
             .getRepository(Participant)
@@ -61,6 +61,7 @@ export class ParticipantService {
             .leftJoinAndSelect('predictions.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoinAndSelect('tourrider.team', 'team')
+            .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
             .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
             .leftJoinAndSelect('tourrider.tourclassifications', 'tourclassifications')
             .leftJoinAndSelect('tourrider.mountainclassifications', 'mountainclassifications')
@@ -82,6 +83,12 @@ export class ParticipantService {
                             .map(sc =>
                                 Object.assign(sc, {stagePoints: this.determinePunten(sc, prediction, etappeFactor)})
                             );
+                    if (prediction.rider.isOut) {
+                        prediction.rider.stageclassifications.push({
+                            stagePoints: prediction.rider.isOut ? didNotFinishPoints : 0,
+                            etappe: prediction.rider.latestEtappe,
+                        });
+                    }
                     [...prediction.rider.tourclassifications]
                         .map(tc =>
                             Object.assign(prediction, {tourPoints: this.determinePunten(tc, prediction, tourFactor)})
@@ -155,7 +162,7 @@ export class ParticipantService {
             this.logger.log('riderPoints: ' + prediction.rider.rider.surName + ': ' + riderPoints);
 
 
-            const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / team.tourRiders.length ) -
+            const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / team.tourRiders.length) -
                 riderPoints -
                 (3 * prediction.rider.waarde / 29 * NumberOfDrivenEttapes));
 
@@ -240,6 +247,7 @@ const etappe17 = 8;
 const etappe18 = 6;
 const etappe19 = 4;
 const etappe20 = 2;
+const didNotFinishPoints = -100;
 
 const etappeFactor = 1;
 const tourFactor = 2.5;

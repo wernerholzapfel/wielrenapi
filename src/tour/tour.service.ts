@@ -33,6 +33,7 @@ export class TourService {
             .leftJoinAndSelect('tour.teams', 'team')
             .leftJoinAndSelect('team.tourRiders', 'tourriders')
             .leftJoinAndSelect('tourriders.rider', 'rider')
+            .leftJoinAndSelect('tourriders.latestEtappe', 'latestEtappe')
             .where('tour.id = :id', {id})
             .andWhere('(tourriders.tour.id = :id OR tourriders.tour.id IS NULL)', {id})
             .getOne();

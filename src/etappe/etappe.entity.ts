@@ -2,6 +2,7 @@ import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'type
 import {Prediction} from '../prediction/prediction.entity';
 import {Tour} from '../tour/tour.entity';
 import {Stageclassification} from '../stageclassification/stageclassification.entity';
+import {Tourriders} from '../tourriders/tourriders.entity';
 
 @Entity()
 export class Etappe {
@@ -29,4 +30,7 @@ export class Etappe {
 
     @OneToMany(type => Stageclassification, stagecf  => stagecf.etappe)
     stageclassifications: Stageclassification[];
+
+    @OneToMany(type => Tourriders, tourriders => tourriders.rider)
+    tourridersout: Tourriders[];
 }

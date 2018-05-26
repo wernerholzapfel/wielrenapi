@@ -37,6 +37,7 @@ export class TourridersService {
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoin('tourrider.tour', 'tour')
+            .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
             .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
             .leftJoinAndSelect('tourrider.tourclassifications', 'tourclassifications')
             .leftJoinAndSelect('tourrider.mountainclassifications', 'mountainclassifications')
@@ -56,6 +57,12 @@ export class TourridersService {
                     .map(sc =>
                         Object.assign(sc, {stagePoints: this.calculatePoints(sc, etappeFactor)})
                     );
+            if (rider.isOut) {
+                rider.stageclassifications.push({
+                    stagePoints: rider.isOut ? didNotFinishPoints : 0,
+                    etappe: rider.latestEtappe,
+                });
+            }
             [...rider.tourclassifications]
                 .map(tc =>
                     Object.assign(rider, {tourPoints: this.calculatePoints(tc, tourFactor)})
@@ -223,6 +230,7 @@ const etappe17 = 8;
 const etappe18 = 6;
 const etappe19 = 4;
 const etappe20 = 2;
+const didNotFinishPoints = -100;
 
 const etappeFactor = 1;
 const tourFactor = 2.5;
