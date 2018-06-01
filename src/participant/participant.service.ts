@@ -106,6 +106,7 @@ export class ParticipantService {
                             Object.assign(prediction, {pointsPoints: this.determinePunten(pc, prediction, pointsFactor)})
                         );
                     Object.assign(prediction, {totalStagePoints: this.determineSCTotaalpunten(prediction, teams, etappes.length)});
+                    Object.assign(prediction, {deltaStagePoints: this.determineDeltaScTotalpoints(prediction, teams, etappes)});
                 });
             Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
         });
@@ -181,6 +182,57 @@ export class ParticipantService {
             return prediction.rider.stageclassifications.reduce((totalPoints, sc) => {
                 return totalPoints + sc.stagePoints;
             }, 0);
+        }
+    }
+
+
+    determineDeltaScTotalpoints(prediction: Prediction, teams: Team[], stages: Etappe[]) {
+        const lastStageNumber: Number = Math.max(...stages.filter(stage => stage.isDriven)
+            .map(stage => stage.etappeNumber));
+
+        this.logger.log('lastStageNumber: ' + lastStageNumber)
+        if (prediction.isWaterdrager) {
+            // // const team = teams.find(team => team.id === prediction.rider.team.id);
+            // //
+            // // const totalTeampoints = team.tourRiders
+            // //     .map(rider => rider.stageclassifications
+            // //         .reduce((totalPoints, sc) => {
+            // //             if (rider.isOut && rider.latestEtappe && rider.latestEtappe.id <= rider.stageclassifications.etappe.id) {
+            // //                 return totalPoints;
+            // //             } else {
+            // //                 return totalPoints + this.calculatePoints(sc, etappeFactor);
+            // //             }
+            // //         }, 0))
+            // //     .reduce((acc, value) => {
+            // //         return acc + value;
+            // //     });
+            //
+            // this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
+            //
+            // const riderPoints = prediction.rider.stageclassifications
+            //     .reduce((totalPoints, sc) => {
+            //         return totalPoints + this.calculatePoints(sc, etappeFactor);
+            //     }, 0);
+            //
+            // this.logger.log('riderPoints: ' + prediction.rider.rider.surName + ': ' + riderPoints);
+            //
+            //
+            // const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / team.tourRiders.length) -
+            //     riderPoints -
+            //     (3 * prediction.rider.waarde / 29 * NumberOfDrivenEttapes));
+            //
+            // this.logger.log('waterDragerPunten ' +
+            //     prediction.rider.rider.surName + ': ' + waterDragerPunten +
+            //     ' waarde: ' + prediction.rider.waarde +
+            //     ' NumberOfDrivenEttapes: '
+            //     + NumberOfDrivenEttapes);
+            // return waterDragerPunten
+
+            return 0;
+        }
+        else {
+            const lastStage = prediction.rider.stageclassifications.find(sc => sc.etappe.etappeNumber === lastStageNumber);
+            return lastStage ? lastStage.stagePoints : 0;
         }
     }
 
