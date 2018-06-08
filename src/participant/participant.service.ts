@@ -8,8 +8,13 @@ import {Prediction} from '../prediction/prediction.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
 
+// Import Admin SDK
+import * as admin from 'firebase-admin';
+
+// Get a database reference
 @Component()
 export class ParticipantService {
+
     private readonly logger = new Logger('ParticipantService', true);
 
     constructor(@InjectRepository(Participant)
@@ -52,7 +57,7 @@ export class ParticipantService {
 
     }
 
-    async getTable(): Promise<any[]> {
+    async updateTable(): Promise<any[]> {
 
         const participants = await this.connection
             .getRepository(Participant)
@@ -110,6 +115,13 @@ export class ParticipantService {
                 });
             Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
         });
+
+        const db = admin.database();
+        const ref = db.ref("server");
+
+        const standRef = ref.child("stand");
+        standRef.set(participants);
+
         return participants;
         // return stand;
     }

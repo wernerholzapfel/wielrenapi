@@ -15,12 +15,11 @@ export class ParticipantController {
     async findAll(): Promise<Participant[]> {
         return this.participantService.findAll();
     }
+
     @Get('/table')
-    async table(): Promise<Participant[]> {
-        return this.participantService.getTable();
+    async updateTable(): Promise<Participant[]> {
+        return this.participantService.updateTable();
     }
-
-
 
     @Post()
     async create(@Req() req, @Body() createParticipantDto: CreateParticipantDto) {
