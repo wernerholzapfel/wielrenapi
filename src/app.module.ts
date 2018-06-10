@@ -42,7 +42,8 @@ export class AppModule implements NestModule {
     configure(consumer: MiddlewaresConsumer): void {
 
         consumer.apply(AddFireBaseUserToRequest).forRoutes(
-            {path: '/**', method: RequestMethod.POST});
+            {path: '/**', method: RequestMethod.POST},
+            {path: '/predictions/user', method: RequestMethod.GET});
 
 
         // admin.auth().setCustomUserClaims('ENPg7LZlewdswg6vqVd65K4QjQy1', {admin: true}).then(() => {

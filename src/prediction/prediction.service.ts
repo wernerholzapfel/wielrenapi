@@ -21,10 +21,27 @@ export class PredictionService {
             .getMany();
     }
 
-    async create(body: CreatePredictionDto, email: string, displayName: string): Promise<Prediction[]> {
-        this.logger.log(email);
-        const predictions = [...body.riders, body.beschermdeRenner, body.linkebal, body.meesterknecht, body.waterdrager]
+    async findByParticipant(email: string): Promise<Prediction[]> {
+        let participant = await this.connection
+            .getRepository(Participant)
+            .createQueryBuilder('participant')
+            .where('participant.email = :email', {email})
+            .getOne();
 
+        return await this.connection
+            .getRepository(Prediction)
+            .createQueryBuilder('prediction')
+            .leftJoinAndSelect('prediction.rider', 'tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoinAndSelect('tourrider.team', 'team')
+            .where('prediction.participant.id = :participantID', {participantID: participant.id})
+            .getMany();
+    }
+
+    async create(body: any, email: string, displayName: string): Promise<Prediction[]> {
+        this.logger.log(email);
+        const predictions: Prediction[] = [...body.riders, body.beschermdeRenner, body.linkebal, body.meesterknecht, body.waterdrager]
+        this.logger.log('lengte van predictions ' + predictions.length);
         let participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
@@ -48,18 +65,22 @@ export class PredictionService {
                 });
         }
 
-        this.logger.log('hij is opgeslagen:' + participant.email);
+        this.logger.log('hij is opgeslagen:' + participant.id);
 
         const oldPrediction = await this.connection
             .getRepository(Prediction)
             .createQueryBuilder('prediction')
             .leftJoin('prediction.participant', 'participant')
             .leftJoinAndSelect('prediction.rider', 'rider')
-            .where('participant.email = :email', {email})
+            .where('participant.id = :id', {id: participant.id})
             .getMany();
 
+        this.logger.log('oldPrediction length: ' + oldPrediction.length);
         await oldPrediction.forEach(async prediction => {
-            await this.connection
+
+            this.logger.log('oldPrediction delete foreach: ' + prediction.id);
+
+            return await this.connection
                 .getRepository(Prediction)
                 .createQueryBuilder()
                 .delete()
@@ -69,16 +90,16 @@ export class PredictionService {
         });
 
         await predictions.forEach(async prediction => {
-            const value: Prediction = {
-                rider: prediction,
-                isRider: prediction.isRenner,
-                isWaterdrager: prediction.isWaterdrager,
-                isLinkebal: prediction.isLinkebal,
+            const value: Prediction = Object.assign({
+                rider: prediction.rider,
+                isRider: prediction.isRider,
                 isBeschermdeRenner: prediction.isBeschermdeRenner,
+                isLinkebal: prediction.isLinkebal,
                 isMeesterknecht: prediction.isMeesterknecht,
+                isWaterdrager: prediction.isWaterdrager,
                 tour: body.tour,
                 participant: participant
-            };
+            });
             await this.predictionRepository.save(value)
                 .catch((err) => {
                     throw new HttpException({
@@ -93,7 +114,7 @@ export class PredictionService {
             .createQueryBuilder('prediction')
             .leftJoin('prediction.participant', 'participant')
             .leftJoinAndSelect('prediction.rider', 'rider')
-            .where('participant.email = :email', {email})
+            .where('participant.id = :id', {id: participant.id})
             .getMany();
     }
 }

@@ -16,6 +16,11 @@ export class PredictionController {
         return this.predictionService.findAll();
     }
 
+    @Get('user')
+    async findByParticipant(@Req() req): Promise<Prediction[]> {
+        return this.predictionService.findByParticipant(req.user.email);
+    }
+
     @Post()
     async create(@Req() req, @Body() body,  createPredictionDto: CreatePredictionDto) {
         this.logger.log(body.riders.length);
