@@ -20,6 +20,7 @@ export class PointsclassificationService {
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoinAndSelect('pointsclassification.tour', 'tour')
             .where('tour.id = :tourId', {tourId})
+            .orderBy("pointsclassification.position", "ASC")
             .getMany();
     }
 

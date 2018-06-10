@@ -20,6 +20,7 @@ export class StageclassificationService {
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoinAndSelect('stageclassification.etappe', 'etappe')
             .where('etappe.id = :etappeId', {etappeId})
+            .orderBy("stageclassification.position", "ASC")
             .getMany();
     }
 

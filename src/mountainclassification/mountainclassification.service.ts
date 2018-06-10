@@ -20,6 +20,7 @@ export class MountainclassificationService {
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoinAndSelect('mountainclassification.tour', 'tour')
             .where('tour.id = :tourId', {tourId})
+            .orderBy("mountainclassification.position", "ASC")
             .getMany();
     }
 
