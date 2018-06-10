@@ -157,9 +157,9 @@ export class ParticipantService {
             const team = teams.find(team => team.id === prediction.rider.team.id);
 
             const totalTeampoints = team.tourRiders
-                .map(rider => rider.stageclassifications
+                .map(teamRider => teamRider.stageclassifications
                     .reduce((totalPoints, sc) => {
-                        if (rider.isOut && rider.latestEtappe && rider.latestEtappe.id <= rider.stageclassifications.etappe.id) {
+                        if (prediction.rider.isOut && prediction.rider.latestEtappe && prediction.rider.latestEtappe.etappeNumber >= sc.etappe.etappeNumber) {
                             return totalPoints;
                         } else {
                             return totalPoints + this.calculatePoints(sc, etappeFactor);
@@ -179,7 +179,7 @@ export class ParticipantService {
             this.logger.log('riderPoints: ' + prediction.rider.rider.surName + ': ' + riderPoints);
 
 
-            const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / team.tourRiders.length) -
+            const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length -1 )) -
                 riderPoints -
                 (3 * prediction.rider.waarde / 29 * NumberOfDrivenEttapes));
 

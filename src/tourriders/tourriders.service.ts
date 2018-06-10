@@ -104,6 +104,7 @@ export class TourridersService {
             .leftJoinAndSelect('team.tour', 'tour')
             .leftJoinAndSelect('team.tourRiders', 'tourRiders')
             .leftJoinAndSelect('tourRiders.stageclassifications', 'sc')
+            .leftJoinAndSelect('sc.etappe', 'etappe')
             .where('tour.isActive')
             .getMany();
 
@@ -124,10 +125,10 @@ export class TourridersService {
 
         const team = teams.find(team => team.id === rider.team.id);
 
-        const totalTeampoints = team.tourRiders
-            .map(rider => rider.stageclassifications
+        const totalTeamStagePoints = team.tourRiders
+            .map(teamrider => teamrider.stageclassifications
                 .reduce((totalPoints, sc) => {
-                    if (rider.isOut && rider.latestEtappe && rider.latestEtappe.id <= rider.stageclassifications.etappe.id) {
+                    if (rider.isOut && rider.latestEtappe && rider.latestEtappe.etappeNumber >= sc.etappe.etappeNumber) {
                         return totalPoints;
                     } else {
                         return totalPoints + this.calculatePoints(sc, etappeFactor);
@@ -136,6 +137,9 @@ export class TourridersService {
             .reduce((acc, value) => {
                 return acc + value;
             });
+
+        let totalTeampoints: number = totalTeamStagePoints +
+            (team.tourRiders.filter(rider => rider.isOut).length * didNotFinishPoints);
 
         this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
 
@@ -147,9 +151,9 @@ export class TourridersService {
         this.logger.log('riderPoints: ' + rider.rider.surName + ': ' + riderPoints);
 
 
-        const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / team.tourRiders.length) -
+        const waterDragerPunten = Math.round((((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
             riderPoints -
-            (3 * rider.waarde / 29 * NumberOfDrivenEttapes));
+            (3 * rider.waarde / 29 * NumberOfDrivenEttapes)));
 
         this.logger.log('waterDragerPunten ' +
             rider.rider.surName + ': ' + waterDragerPunten +
