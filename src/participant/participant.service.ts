@@ -121,15 +121,19 @@ export class ParticipantService {
 
                 });
             Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
-        });
+        })
 
         const db = admin.database();
         const ref = db.ref('server');
 
         const standRef = ref.child('stand');
-        standRef.set(participants);
+        standRef.set(participants.sort((a, b) => {
+            return b.totalPoints - a.totalPoints
+        }));
 
-        return participants;
+        return participants.sort((a, b) => {
+            return b.totalPoints - a.totalPoints
+        });
         // return stand;
     }
 
