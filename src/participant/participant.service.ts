@@ -7,7 +7,6 @@ import {Stageclassification} from '../stageclassification/stageclassification.en
 import {Prediction} from '../prediction/prediction.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
-
 // Import Admin SDK
 import * as admin from 'firebase-admin';
 
@@ -41,6 +40,7 @@ export class ParticipantService {
             .leftJoinAndSelect('team.tour', 'tour')
             .leftJoinAndSelect('team.tourRiders', 'tourRiders')
             .leftJoinAndSelect('tourRiders.stageclassifications', 'sc')
+            .leftJoinAndSelect('sc.etappe', 'etappe')
             .where('tour.isActive')
             .getMany();
 
@@ -83,43 +83,50 @@ export class ParticipantService {
         participants.map(participant => {
             [...participant.predictions]
                 .map(prediction => {
-                    prediction.rider.stageclassifications =
-                        [...prediction.rider.stageclassifications]
-                            .map(sc =>
-                                Object.assign(sc, {stagePoints: this.determinePunten(sc, prediction, etappeFactor)})
-                            );
-                    if (prediction.rider.isOut && !prediction.isWaterdrager) {
-                        prediction.rider.stageclassifications.push({
-                            stagePoints: prediction.rider.isOut ? didNotFinishPoints : 0,
-                            etappe: prediction.rider.latestEtappe,
-                        });
+                    if (prediction.isWaterdrager) {
+                        const newStageClassifications: Stageclassification[] = this.determineWDPunten(prediction, etappes, teams, etappeFactor);
+                        prediction.rider.stageclassifications = [...newStageClassifications];
                     }
-                    [...prediction.rider.tourclassifications]
-                        .map(tc =>
-                            Object.assign(prediction, {tourPoints: this.determinePunten(tc, prediction, tourFactor)})
-                        );
-                    [...prediction.rider.youthclassifications]
-                        .map(yc =>
-                            Object.assign(prediction, {youthPoints: this.determinePunten(yc, prediction, youthFactor)})
-                        );
-                    [...prediction.rider.mountainclassifications]
-                        .map(mc =>
-                            Object.assign(prediction, {mountainPoints: this.determinePunten(mc, prediction, mountainFactor)})
-                        );
-                    [...prediction.rider.pointsclassifications]
-                        .map(pc =>
-                            Object.assign(prediction, {pointsPoints: this.determinePunten(pc, prediction, pointsFactor)})
-                        );
+                    else {
+                        prediction.rider.stageclassifications =
+                            [...prediction.rider.stageclassifications]
+                                .map(sc =>
+                                    Object.assign(sc, {stagePoints: this.determinePunten(sc, prediction, etappeFactor)})
+                                );
+                        if (prediction.rider.isOut && (!prediction.isWaterdrager || !prediction.isBeschermdeRenner)) {
+                            prediction.rider.stageclassifications.push({
+                                stagePoints: prediction.rider.isOut ? didNotFinishPoints : 0,
+                                etappe: prediction.rider.latestEtappe,
+                            });
+                        }
+                        [...prediction.rider.tourclassifications]
+                            .map(tc =>
+                                Object.assign(prediction, {tourPoints: this.determinePunten(tc, prediction, tourFactor)})
+                            );
+                        [...prediction.rider.youthclassifications]
+                            .map(yc =>
+                                Object.assign(prediction, {youthPoints: this.determinePunten(yc, prediction, youthFactor)})
+                            );
+                        [...prediction.rider.mountainclassifications]
+                            .map(mc =>
+                                Object.assign(prediction, {mountainPoints: this.determinePunten(mc, prediction, mountainFactor)})
+                            );
+                        [...prediction.rider.pointsclassifications]
+                            .map(pc =>
+                                Object.assign(prediction, {pointsPoints: this.determinePunten(pc, prediction, pointsFactor)})
+                            );
+                    }
                     Object.assign(prediction, {totalStagePoints: this.determineSCTotaalpunten(prediction, teams, etappes.length)});
                     Object.assign(prediction, {deltaStagePoints: this.determineDeltaScTotalpoints(prediction, teams, etappes)});
+
                 });
             Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
         });
 
         const db = admin.database();
-        const ref = db.ref("server");
+        const ref = db.ref('server');
 
-        const standRef = ref.child("stand");
+        const standRef = ref.child('stand');
         standRef.set(participants);
 
         return participants;
@@ -152,51 +159,92 @@ export class ParticipantService {
         return points ? points : 0;
     }
 
-    determineSCTotaalpunten(prediction: Prediction, teams: Team[], NumberOfDrivenEttapes: number) {
-        if (prediction.isWaterdrager) {
-            const team = teams.find(team => team.id === prediction.rider.team.id);
+    determineWDPunten(prediction: Prediction, etappes: Etappe[], teams: Team[], etappeFactor: number) {
+        const newStageCF = etappes.map(etappe => {
+            const etappePosition = this.determinePositionInEtappe(etappe, prediction);
+            return {id: null, position: etappePosition, etappe: etappe};
+        });
 
+        const team = teams.find(team => team.id === prediction.rider.team.id);
+
+        newStageCF.forEach(newStage => {
             const totalTeampoints = team.tourRiders
                 .map(teamRider => teamRider.stageclassifications
                     .reduce((totalPoints, sc) => {
-                        if (prediction.rider.isOut && prediction.rider.latestEtappe && prediction.rider.latestEtappe.etappeNumber >= sc.etappe.etappeNumber) {
-                            return totalPoints;
-                        } else {
+                        if (sc.etappe && sc.etappe.id === newStage.etappe.id) {
                             return totalPoints + this.calculatePoints(sc, etappeFactor);
+                        } else {
+                            return totalPoints;
                         }
                     }, 0))
                 .reduce((acc, value) => {
                     return acc + value;
                 });
 
-            this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
+            this.logger.log('totalteampoints wd: ' + prediction.rider.rider.surName + ' ' + totalTeampoints);
+            const riderPoints = newStage.position ? this.calculatePoints(newStage, etappeFactor) : 0
+            this.logger.log('riderPoints wd: ' + prediction.rider.rider.surName + ' ' + riderPoints);
 
-            const riderPoints = prediction.rider.stageclassifications
-                .reduce((totalPoints, sc) => {
-                    return totalPoints + this.calculatePoints(sc, etappeFactor);
-                }, 0);
+            const stagePointsWD = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
+                riderPoints);
 
-            this.logger.log('riderPoints: ' + prediction.rider.rider.surName + ': ' + riderPoints);
+            this.logger.log('stagePointsWd: ' + prediction.rider.rider.surName + ' ' + stagePointsWD);
+            Object.assign(newStage, {stagePoints: stagePointsWD});
+            return newStage;
+        });
 
-
-            const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length -1 )) -
-                riderPoints -
-                (3 * prediction.rider.waarde / 29 * NumberOfDrivenEttapes));
-
-            this.logger.log('waterDragerPunten ' +
-                prediction.rider.rider.surName + ': ' + waterDragerPunten +
-                ' waarde: ' + prediction.rider.waarde +
-                ' NumberOfDrivenEttapes: '
-                + NumberOfDrivenEttapes);
-            return waterDragerPunten
-        }
-        else {
-            return prediction.rider.stageclassifications.reduce((totalPoints, sc) => {
-                return totalPoints + sc.stagePoints;
-            }, 0);
-        }
+        return newStageCF;
     }
 
+    determinePositionInEtappe(etappe: Etappe, prediction: Prediction) {
+        return (prediction.rider.stageclassifications.find(sc => sc.etappe.id === etappe.id)) ?
+            prediction.rider.stageclassifications.find(sc => sc.etappe.id === etappe.id).position : null;
+    }
+
+    determineSCTotaalpunten(prediction: Prediction, teams: Team[], NumberOfDrivenEttapes: number) {
+        // if (prediction.isWaterdrager) {
+        //     const team = teams.find(team => team.id === prediction.rider.team.id);
+        //
+        //     const totalTeampoints = team.tourRiders
+        //         .map(teamRider => teamRider.stageclassifications
+        //             .reduce((totalPoints, sc) => {
+        //                 if (prediction.rider.isOut && prediction.rider.latestEtappe && prediction.rider.latestEtappe.etappeNumber >= sc.etappe.etappeNumber) {
+        //                     return totalPoints;
+        //                 } else {
+        //                     return totalPoints + this.calculatePoints(sc, etappeFactor);
+        //                 }
+        //             }, 0))
+        //         .reduce((acc, value) => {
+        //             return acc + value;
+        //         });
+        //
+        //     this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
+        //
+        //     const riderPoints = prediction.rider.stageclassifications
+        //         .reduce((totalPoints, sc) => {
+        //             return totalPoints + this.calculatePoints(sc, etappeFactor);
+        //         }, 0);
+        //
+        //     this.logger.log('riderPoints: ' + prediction.rider.rider.surName + ': ' + riderPoints);
+        //
+        //
+        //     const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length -1 )) -
+        //         riderPoints -
+        //         (3 * prediction.rider.waarde / 29 * NumberOfDrivenEttapes));
+        //
+        //     this.logger.log('waterDragerPunten ' +
+        //         prediction.rider.rider.surName + ': ' + waterDragerPunten +
+        //         ' waarde: ' + prediction.rider.waarde +
+        //         ' NumberOfDrivenEttapes: '
+        //         + NumberOfDrivenEttapes);
+        //     return waterDragerPunten
+        // }
+        // else {
+        return prediction.rider.stageclassifications.reduce((totalPoints, sc) => {
+            return totalPoints + sc.stagePoints;
+        }, 0);
+        // }
+    }
 
     determineDeltaScTotalpoints(prediction: Prediction, teams: Team[], stages: Etappe[]) {
         const lastStageNumber: Number = Math.max(...stages.filter(stage => stage.isDriven)
@@ -204,42 +252,6 @@ export class ParticipantService {
 
         this.logger.log('lastStageNumber: ' + lastStageNumber)
         if (prediction.isWaterdrager) {
-            // // const team = teams.find(team => team.id === prediction.rider.team.id);
-            // //
-            // // const totalTeampoints = team.tourRiders
-            // //     .map(rider => rider.stageclassifications
-            // //         .reduce((totalPoints, sc) => {
-            // //             if (rider.isOut && rider.latestEtappe && rider.latestEtappe.id <= rider.stageclassifications.etappe.id) {
-            // //                 return totalPoints;
-            // //             } else {
-            // //                 return totalPoints + this.calculatePoints(sc, etappeFactor);
-            // //             }
-            // //         }, 0))
-            // //     .reduce((acc, value) => {
-            // //         return acc + value;
-            // //     });
-            //
-            // this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
-            //
-            // const riderPoints = prediction.rider.stageclassifications
-            //     .reduce((totalPoints, sc) => {
-            //         return totalPoints + this.calculatePoints(sc, etappeFactor);
-            //     }, 0);
-            //
-            // this.logger.log('riderPoints: ' + prediction.rider.rider.surName + ': ' + riderPoints);
-            //
-            //
-            // const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / team.tourRiders.length) -
-            //     riderPoints -
-            //     (3 * prediction.rider.waarde / 29 * NumberOfDrivenEttapes));
-            //
-            // this.logger.log('waterDragerPunten ' +
-            //     prediction.rider.rider.surName + ': ' + waterDragerPunten +
-            //     ' waarde: ' + prediction.rider.waarde +
-            //     ' NumberOfDrivenEttapes: '
-            //     + NumberOfDrivenEttapes);
-            // return waterDragerPunten
-
             return 0;
         }
         else {
@@ -266,29 +278,9 @@ export class ParticipantService {
             return 2 * this.calculatePoints(sc, factor)
         }
         if (prediction.isWaterdrager) {
-            // const team = teams.find(team => team.id === prediction.rider.team.id);
-            //
-            // const totalTeampoints = team.tourRiders
-            //     .map(rider => rider.stageclassifications
-            //         .reduce((totalPoints, sc) => {
-            //             return totalPoints + this.calculatePoints(sc);
-            //         }, 0))
-            //     .reduce((acc, value) => {
-            //         return acc + value;
-            //     });
-            // this.logger.log('totalTeamPoints: ' + team.teamName + ' - ' + totalTeampoints);
-            // const riderPoints = this.calculatePoints(sc);
-            // this.logger.log('riderPoints: ' + prediction.rider.rider.surName + riderPoints);
-            // // todo aantal etappes meegeven ?
-            // // todo opslaan in Firebase??
-            // return Math.round(((totalTeampoints - riderPoints) / team.tourRiders.length ) -
-            //     riderPoints -
-            //     (3 * prediction.rider.waarde / 29 ));
-
             return null;
         }
     }
-
 
     calculatePoints(sc: Stageclassification, factor: number) {
         if (sc.position) {
@@ -326,17 +318,3 @@ const tourFactor = 2.5;
 const mountainFactor = 2;
 const youthFactor = 1.5;
 const pointsFactor = 2;
-
-
-// participants.map(participant => {
-//         [...participant.predictions]
-//             .map(prediction => {
-//                 // const punten = 5;
-//                 return prediction.rider.stageclassifications =
-//                     [...prediction.rider.stageclassifications]
-//                         .map(sc =>
-//                             Object.assign(sc, {punten: this.determinePunten(sc)})
-//                         );
-//             });
-// });
-// return participants;
