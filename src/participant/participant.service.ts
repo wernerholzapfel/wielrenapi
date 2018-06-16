@@ -79,6 +79,7 @@ export class ParticipantService {
 
         const teams: Team[] = await this.getTeamClassifications();
         const etappes: Etappe[] = await this.getDrivenEtappes();
+        let previousPosition = 1;
 
         participants.map(participant => {
             [...participant.predictions]
@@ -120,21 +121,31 @@ export class ParticipantService {
                     Object.assign(prediction, {deltaStagePoints: this.determineDeltaScTotalpoints(prediction, teams, etappes)});
 
                 });
-            Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
-        })
+                Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
+        });
+
+
+        participants.sort((a, b) => {
+            return b.totalPoints - a.totalPoints
+        });
+
+        // assign position
+        participants.map((participant, index) => {
+            if (index > 0 && participant.totalPoints === participants[index - 1].totalPoints) {
+                Object.assign(participant, {position: previousPosition});
+            } else {
+                Object.assign(participant, {position: index + 1});
+                previousPosition = index + 1;
+            }
+        });
 
         const db = admin.database();
         const ref = db.ref('server');
 
         const standRef = ref.child('stand');
-        standRef.set(participants.sort((a, b) => {
-            return b.totalPoints - a.totalPoints
-        }));
+        standRef.set(participants);
 
-        return participants.sort((a, b) => {
-            return b.totalPoints - a.totalPoints
-        });
-        // return stand;
+        return participants
     }
 
     async create(participant: Participant): Promise<Participant> {
