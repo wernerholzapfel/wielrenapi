@@ -23,7 +23,7 @@ export class TourridersService {
             .getRepository(Tour)
             .createQueryBuilder('tour')
             .leftJoinAndSelect('tour.teams', 'team')
-            .leftJoinAndSelect('team.tourRiders', 'teamriders')
+            .leftJoinAndSelect('team.tourRiders', 'teamriders', '(teamriders.tour.id = tour.id OR teamriders.tour.id IS NULL)' )
             .leftJoinAndSelect('teamriders.rider', 'rider')
             .where('tour.isActive')
             .andWhere('(teamriders.tour.id = tour.id OR teamriders.tour.id IS NULL)')
