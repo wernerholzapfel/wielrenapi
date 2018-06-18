@@ -11,9 +11,9 @@ export class EtappeController {
     constructor(private readonly etappeService: EtappeService) {
     }
 
-    @Get()
-    async findAll(): Promise<Etappe[]> {
-        return this.etappeService.findAll();
+    @Get('tour/:tourId')
+    async findAll(@Param('tourId') tourId): Promise<Etappe[]> {
+        return this.etappeService.findAll(tourId);
     }
 
 

@@ -11,12 +11,12 @@ export class EtappeService {
                 private readonly connection: Connection,) {
     }
 
-    async findAll(): Promise<Etappe[]> {
+    async findAll(tourId: string): Promise<Etappe[]> {
         return await this.connection
             .getRepository(Etappe)
             .createQueryBuilder('etappe')
             .leftJoin('etappe.tour', 'tour')
-            .where('tour.isActive')
+            .where('tour.id = :id', {id: tourId})
             .getMany();
     }
 

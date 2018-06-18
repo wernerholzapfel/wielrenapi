@@ -24,7 +24,6 @@ export class Etappe {
     @Column({ nullable: true })
     isDriven: boolean;
 
-
     @ManyToOne(type => Tour, tour => tour.etappes)
     tour: Tour;
 
