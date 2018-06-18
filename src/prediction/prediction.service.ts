@@ -32,9 +32,11 @@ export class PredictionService {
             .getRepository(Prediction)
             .createQueryBuilder('prediction')
             .leftJoinAndSelect('prediction.rider', 'tourrider')
+            .leftJoinAndSelect('prediction.tour', 'tour')
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .where('prediction.participant.id = :participantID', {participantID: participant.id})
+            .andWhere('tour.isActive')
             .getMany();
     }
 
