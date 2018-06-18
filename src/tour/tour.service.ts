@@ -31,7 +31,7 @@ export class TourService {
             .getRepository(Tour)
             .createQueryBuilder('tour')
             .leftJoinAndSelect('tour.teams', 'team')
-            .leftJoinAndSelect('team.tourRiders', 'tourriders')
+            .leftJoinAndSelect('team.tourRiders', 'tourriders', '(tourriders.tour.id = :id OR tourriders.tour.id IS NULL)', {id})
             .leftJoinAndSelect('tourriders.rider', 'rider')
             .leftJoinAndSelect('tourriders.latestEtappe', 'latestEtappe')
             .where('tour.id = :id', {id})
