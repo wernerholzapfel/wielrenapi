@@ -40,6 +40,7 @@ export class ParticipantService {
             .createQueryBuilder('team')
             .leftJoinAndSelect('team.tour', 'tour')
             .leftJoinAndSelect('team.tourRiders', 'tourRiders')
+            .leftJoin('tourRiders.tour', 'tourRidersTour')
             .leftJoinAndSelect('tourRiders.stageclassifications', 'sc')
             .leftJoinAndSelect('tourRiders.tourclassifications', 'tc')
             .leftJoinAndSelect('tourRiders.mountainclassifications', 'mc')
@@ -47,6 +48,7 @@ export class ParticipantService {
             .leftJoinAndSelect('tourRiders.pointsclassifications', 'pc')
             .leftJoinAndSelect('sc.etappe', 'etappe')
             .where('tour.isActive')
+            .andWhere('tourRidersTour.isActive')
             .getMany();
 
     }
@@ -130,7 +132,7 @@ export class ParticipantService {
                     Object.assign(prediction, {deltaStagePoints: this.determineDeltaScTotalpoints(prediction, teams, etappes)});
 
                 });
-                Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
+            Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
         });
 
 
@@ -184,13 +186,16 @@ export class ParticipantService {
     }
 
     determineWDTourPunten(prediction: Prediction, teams: Team[], factor: number) {
+        if (prediction.rider.isOut) {
+            return -1 * prediction.rider.waarde;
+        }
         const team = teams.find(team => team.id === prediction.rider.team.id);
 
         const totalTeampoints = team.tourRiders
             .map(teamRider => teamRider.tourclassifications
                 .reduce((totalPoints, tc) => {
-                      return totalPoints + this.calculatePoints(tc, factor);
-                    }, 0))
+                    return totalPoints + this.calculatePoints(tc, factor);
+                }, 0))
             .reduce((acc, value) => {
                 return acc + value;
             });
@@ -200,19 +205,22 @@ export class ParticipantService {
         const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
 
         const classificationsPoints = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
-            riderPoints);
+            riderPoints - prediction.rider.waarde);
 
         return classificationsPoints;
     }
 
     determineWDMountainPunten(prediction: Prediction, teams: Team[], factor: number) {
+        if (prediction.rider.isOut) {
+            return -1 * prediction.rider.waarde;
+        }
         const team = teams.find(team => team.id === prediction.rider.team.id);
 
         const totalTeampoints = team.tourRiders
             .map(teamRider => teamRider.mountainclassifications
                 .reduce((totalPoints, tc) => {
-                      return totalPoints + this.calculatePoints(tc, factor);
-                    }, 0))
+                    return totalPoints + this.calculatePoints(tc, factor);
+                }, 0))
             .reduce((acc, value) => {
                 return acc + value;
             });
@@ -222,19 +230,22 @@ export class ParticipantService {
         const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
 
         const classificationsPoints = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
-            riderPoints);
+            riderPoints - prediction.rider.waarde);
 
         return classificationsPoints;
     }
 
     determineWDYouthPunten(prediction: Prediction, teams: Team[], factor: number) {
+        if (prediction.rider.isOut) {
+            return -1 * prediction.rider.waarde;
+        }
         const team = teams.find(team => team.id === prediction.rider.team.id);
 
         const totalTeampoints = team.tourRiders
             .map(teamRider => teamRider.youthclassifications
                 .reduce((totalPoints, tc) => {
-                      return totalPoints + this.calculatePoints(tc, factor);
-                    }, 0))
+                    return totalPoints + this.calculatePoints(tc, factor);
+                }, 0))
             .reduce((acc, value) => {
                 return acc + value;
             });
@@ -244,19 +255,22 @@ export class ParticipantService {
         const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
 
         const classificationsPoints = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
-            riderPoints);
+            riderPoints - prediction.rider.waarde);
 
         return classificationsPoints;
     }
 
     determineWDPointsPunten(prediction: Prediction, teams: Team[], factor: number) {
+        if (prediction.rider.isOut) {
+            return -1 * prediction.rider.waarde;
+        }
         const team = teams.find(team => team.id === prediction.rider.team.id);
 
         const totalTeampoints = team.tourRiders
             .map(teamRider => teamRider.pointsclassifications
                 .reduce((totalPoints, tc) => {
-                      return totalPoints + this.calculatePoints(tc, factor);
-                    }, 0))
+                    return totalPoints + this.calculatePoints(tc, factor);
+                }, 0))
             .reduce((acc, value) => {
                 return acc + value;
             });
@@ -266,7 +280,7 @@ export class ParticipantService {
         const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
 
         const classificationsPoints = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
-            riderPoints);
+            riderPoints - prediction.rider.waarde);
 
         return classificationsPoints;
     }
@@ -283,7 +297,8 @@ export class ParticipantService {
             const totalTeampoints = team.tourRiders
                 .map(teamRider => teamRider.stageclassifications
                     .reduce((totalPoints, sc) => {
-                        if (sc.etappe && sc.etappe.id === newStage.etappe.id) {
+                        if (sc.etappe && sc.etappe.id === newStage.etappe.id && (!prediction.rider.latestEtappe ||
+                            (prediction.rider.latestEtappe && sc.etappe.etappeNumber < prediction.rider.latestEtappe.etappeNumber))) {
                             return totalPoints + this.calculatePoints(sc, etappeFactor);
                         } else {
                             return totalPoints;
@@ -297,11 +312,12 @@ export class ParticipantService {
             const riderPoints = newStage.position ? this.calculatePoints(newStage, etappeFactor) : 0;
             this.logger.log('riderPoints wd: ' + prediction.rider.rider.surName + ' ' + riderPoints);
 
+            const calculation = '((' + totalTeampoints + '-' + riderPoints + ') / (' + team.tourRiders.length + '-' + 1 + ')) - ' + riderPoints;
             const stagePointsWD = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
                 riderPoints);
 
             this.logger.log('stagePointsWd: ' + prediction.rider.rider.surName + ' ' + stagePointsWD);
-            Object.assign(newStage, {stagePoints: stagePointsWD});
+            Object.assign(newStage, {stagePoints: stagePointsWD, calculation: calculation});
             return newStage;
         });
 
