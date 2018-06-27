@@ -105,9 +105,9 @@ export class ParticipantService {
                                 .map(sc =>
                                     Object.assign(sc, {stagePoints: this.determinePunten(sc, prediction, etappeFactor)})
                                 );
-                        if (prediction.rider.isOut && (!prediction.isWaterdrager || !prediction.isBeschermdeRenner)) {
+                        if (prediction.rider.isOut && !prediction.isWaterdrager) {
                             prediction.rider.stageclassifications.push({
-                                stagePoints: !prediction.Meesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
+                                stagePoints: prediction.isBeschermdeRenner ? 0 : !prediction.isMeesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
                                 etappe: prediction.rider.latestEtappe,
                             });
                         }
