@@ -107,7 +107,7 @@ export class ParticipantService {
                                 );
                         if (prediction.rider.isOut && (!prediction.isWaterdrager || !prediction.isBeschermdeRenner)) {
                             prediction.rider.stageclassifications.push({
-                                stagePoints: prediction.rider.isOut ? didNotFinishPoints : 0,
+                                stagePoints: !prediction.Meesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
                                 etappe: prediction.rider.latestEtappe,
                             });
                         }
@@ -439,7 +439,7 @@ const etappe17 = 8;
 const etappe18 = 6;
 const etappe19 = 4;
 const etappe20 = 2;
-const didNotFinishPoints = -10;
+const didNotFinishPoints = -20;
 
 const etappeFactor = 1;
 const tourFactor = 2.5;
