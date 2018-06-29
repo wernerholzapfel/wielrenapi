@@ -1,5 +1,5 @@
 import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Post, Req} from '@nestjs/common';
+import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {TourridersService} from './tourriders.service';
 import {Tourriders} from './tourriders.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
@@ -18,9 +18,9 @@ export class TourridersController {
         return this.tourridersService.findActive();
     }
 
-    @Get('/details')
-    async getDetails(): Promise<Tour> {
-        return this.tourridersService.getDetails();
+    @Get('/details/:tourId')
+    async getDetails(@Param('tourId') tourId): Promise<Tour> {
+        return this.tourridersService.getDetails(tourId);
     }
 
     @Post()

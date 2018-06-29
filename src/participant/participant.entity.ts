@@ -12,6 +12,9 @@ export class Participant {
     @Column({ nullable: true })
     displayName: string;
 
+    @Column({ nullable: true })
+    teamName: string;
+
     @OneToMany(type => Prediction, prediction => prediction.participant)
     predictions: Prediction[];
 

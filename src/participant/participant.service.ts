@@ -22,7 +22,7 @@ export class ParticipantService {
                 private readonly connection: Connection,) {
     }
 
-    async findAll(): Promise<Participant[]> {
+    async findAll(tourId): Promise<Participant[]> {
         return await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
@@ -30,11 +30,11 @@ export class ParticipantService {
             .leftJoinAndSelect('predictions.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoin('predictions.tour', 'tour')
-            .where('tour.isActive')
+            .where('tour.id = :id', {id: tourId})
             .getMany();
     }
 
-    async getTeamClassifications(): Promise<Team[]> {
+    async getTeamClassifications(tourId: string): Promise<Team[]> {
         return await this.connection
             .getRepository(Team)
             .createQueryBuilder('team')
@@ -47,24 +47,24 @@ export class ParticipantService {
             .leftJoinAndSelect('tourRiders.youthclassifications', 'yc')
             .leftJoinAndSelect('tourRiders.pointsclassifications', 'pc')
             .leftJoinAndSelect('sc.etappe', 'etappe')
-            .where('tour.isActive')
-            .andWhere('tourRidersTour.isActive')
+            .where('tour.id = :id', {id: tourId})
+            .andWhere('tourRidersTour.id = :id', {id: tourId})
             .getMany();
 
     }
 
-    async getDrivenEtappes(): Promise<Etappe[]> {
+    async getDrivenEtappes(tourId: string): Promise<Etappe[]> {
         return await this.connection
             .getRepository(Etappe)
             .createQueryBuilder('etappe')
             .leftJoinAndSelect('etappe.tour', 'tour')
-            .where('tour.isActive')
+            .where('tour.id = :id', {id: tourId})
             .andWhere('etappe.isDriven')
             .getMany();
 
     }
 
-    async updateTable(): Promise<any[]> {
+    async updateTable(tourId: string): Promise<any[]> {
 
         const participants = await this.connection
             .getRepository(Participant)
@@ -81,11 +81,12 @@ export class ParticipantService {
             .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
             .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
             .leftJoin('predictions.tour', 'tour')
-            .where('tour.isActive')
+            .where('tour.id = :id', {id: tourId})
             .getMany();
 
-        const teams: Team[] = await this.getTeamClassifications();
-        const etappes: Etappe[] = await this.getDrivenEtappes();
+
+        const teams: Team[] = await this.getTeamClassifications(tourId);
+        const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
         let previousPosition = 1;
 
         participants.map(participant => {
@@ -151,7 +152,7 @@ export class ParticipantService {
         });
 
         const db = admin.database();
-        const ref = db.ref('server');
+        const ref = db.ref(tourId);
 
         const standRef = ref.child('stand');
         standRef.set(participants);
@@ -200,7 +201,8 @@ export class ParticipantService {
                 return acc + value;
             });
 
-        const classification: Tourclassification = team.tourRiders.find(tourrider => tourrider.id === prediction.rider.id).tourclassifications[0];
+        const classification: Tourclassification = team.tourRiders
+            .find(tourrider => tourrider.id === prediction.rider.id).tourclassifications[0];
 
         const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
 
@@ -330,48 +332,9 @@ export class ParticipantService {
     }
 
     determineSCTotaalpunten(prediction: Prediction, teams: Team[], NumberOfDrivenEttapes: number) {
-        // if (prediction.isWaterdrager) {
-        //     const team = teams.find(team => team.id === prediction.rider.team.id);
-        //
-        //     const totalTeampoints = team.tourRiders
-        //         .map(teamRider => teamRider.stageclassifications
-        //             .reduce((totalPoints, sc) => {
-        //                 if (prediction.rider.isOut && prediction.rider.latestEtappe && prediction.rider.latestEtappe.etappeNumber >= sc.etappe.etappeNumber) {
-        //                     return totalPoints;
-        //                 } else {
-        //                     return totalPoints + this.calculatePoints(sc, etappeFactor);
-        //                 }
-        //             }, 0))
-        //         .reduce((acc, value) => {
-        //             return acc + value;
-        //         });
-        //
-        //     this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
-        //
-        //     const riderPoints = prediction.rider.stageclassifications
-        //         .reduce((totalPoints, sc) => {
-        //             return totalPoints + this.calculatePoints(sc, etappeFactor);
-        //         }, 0);
-        //
-        //     this.logger.log('riderPoints: ' + prediction.rider.rider.surName + ': ' + riderPoints);
-        //
-        //
-        //     const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length -1 )) -
-        //         riderPoints -
-        //         (3 * prediction.rider.waarde / 29 * NumberOfDrivenEttapes));
-        //
-        //     this.logger.log('waterDragerPunten ' +
-        //         prediction.rider.rider.surName + ': ' + waterDragerPunten +
-        //         ' waarde: ' + prediction.rider.waarde +
-        //         ' NumberOfDrivenEttapes: '
-        //         + NumberOfDrivenEttapes);
-        //     return waterDragerPunten
-        // }
-        // else {
         return prediction.rider.stageclassifications.reduce((totalPoints, sc) => {
             return totalPoints + sc.stagePoints;
         }, 0);
-        // }
     }
 
     determineDeltaScTotalpoints(prediction: Prediction, teams: Team[], stages: Etappe[]) {

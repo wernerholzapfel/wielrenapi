@@ -2,7 +2,6 @@ import {Component, HttpException, HttpStatus, Logger} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Prediction} from './prediction.entity';
 import {Connection, getConnection, Repository} from 'typeorm';
-import {CreatePredictionDto} from './create-prediction.dto';
 import {Participant} from '../participant/participant.entity';
 
 @Component()
@@ -21,23 +20,27 @@ export class PredictionService {
             .getMany();
     }
 
-    async findByParticipant(email: string): Promise<Prediction[]> {
+    async findByParticipant(email: string, tourId: string): Promise<Prediction[]> {
         let participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
             .where('participant.email = :email', {email})
             .getOne();
 
-        return await this.connection
-            .getRepository(Prediction)
-            .createQueryBuilder('prediction')
-            .leftJoinAndSelect('prediction.rider', 'tourrider')
-            .leftJoinAndSelect('prediction.tour', 'tour')
-            .leftJoinAndSelect('tourrider.rider', 'rider')
-            .leftJoinAndSelect('tourrider.team', 'team')
-            .where('prediction.participant.id = :participantID', {participantID: participant.id})
-            .andWhere('tour.isActive')
-            .getMany();
+        if (participant) {
+            return await this.connection
+                .getRepository(Prediction)
+                .createQueryBuilder('prediction')
+                .leftJoinAndSelect('prediction.rider', 'tourrider')
+                .leftJoinAndSelect('prediction.tour', 'tour')
+                .leftJoinAndSelect('tourrider.rider', 'rider')
+                .leftJoinAndSelect('tourrider.team', 'team')
+                .where('prediction.participant.id = :participantID', {participantID: participant.id})
+                .andWhere('tour.id = :id', {id: tourId})
+                .getMany();
+        } else {
+            return [];
+        }
     }
 
     async create(body: any, email: string, displayName: string): Promise<Prediction[]> {

@@ -3,10 +3,10 @@ import {IsBoolean, IsDefined, IsString, IsDateString, Length} from 'class-valida
 export class CreateParticipantDto {
     readonly id: string;
 
-    @IsDefined() @IsString() readonly participantName: string;
+    @IsDefined() @IsString() readonly email: string;
 
-    @IsDefined() @IsString() readonly participantNameShort: string;
+    @IsDefined() @IsString() readonly displayName: string;
 
-    @IsDefined() @IsString() readonly country: string;
+    @IsDefined() @IsString() readonly teamName: string;
 
 }

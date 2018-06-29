@@ -23,14 +23,14 @@ export class TourridersService {
             .getRepository(Tour)
             .createQueryBuilder('tour')
             .leftJoinAndSelect('tour.teams', 'team')
-            .leftJoinAndSelect('team.tourRiders', 'teamriders', '(teamriders.tour.id = tour.id OR teamriders.tour.id IS NULL)' )
+            .leftJoinAndSelect('team.tourRiders', 'teamriders', '(teamriders.tour.id = tour.id OR teamriders.tour.id IS NULL)')
             .leftJoinAndSelect('teamriders.rider', 'rider')
             .where('tour.isActive')
             .andWhere('(teamriders.tour.id = tour.id OR teamriders.tour.id IS NULL)')
             .getOne();
     }
 
-    async getDetails(): Promise<Tour> {
+    async getDetails(tourId: string): Promise<Tour> {
         const tourriders = await this.connection
             .getRepository(Tourriders)
             .createQueryBuilder('tourrider')
@@ -44,11 +44,11 @@ export class TourridersService {
             .leftJoinAndSelect('tourrider.youthclassifications', 'youthclassifications')
             .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
             .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
-            .where('tour.isActive')
+            .where('tour.id = :id', {id: tourId})
             .getMany();
 
-        const teams: Team[] = await this.getTeamClassifications();
-        const etappes: Etappe[] = await this.getDrivenEtappes();
+        const teams: Team[] = await this.getTeamClassifications(tourId);
+        const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
 
 
         tourriders.map(rider => {
@@ -97,7 +97,7 @@ export class TourridersService {
             });
     }
 
-    async getTeamClassifications(): Promise<Team[]> {
+    async getTeamClassifications(id: string): Promise<Team[]> {
         return await this.connection
             .getRepository(Team)
             .createQueryBuilder('team')
@@ -105,62 +105,64 @@ export class TourridersService {
             .leftJoinAndSelect('team.tourRiders', 'tourRiders')
             .leftJoinAndSelect('tourRiders.stageclassifications', 'sc')
             .leftJoinAndSelect('sc.etappe', 'etappe')
-            .where('tour.isActive')
+            .where('tour.id = :id', {id})
             .getMany();
 
     }
 
-    async getDrivenEtappes(): Promise<Etappe[]> {
+    async getDrivenEtappes(id: string): Promise<Etappe[]> {
         return await this.connection
             .getRepository(Etappe)
             .createQueryBuilder('etappe')
             .leftJoinAndSelect('etappe.tour', 'tour')
-            .where('tour.isActive')
+            .where('tour.id = :id', {id})
             .andWhere('etappe.isDriven')
             .getMany();
 
     }
 
     determineWDTotaalpunten(rider: Rider, teams: Team[], NumberOfDrivenEttapes: number) {
+        if (NumberOfDrivenEttapes > 0) {
+            const team = teams.find(team => team.id === rider.team.id);
 
-        const team = teams.find(team => team.id === rider.team.id);
+            const totalTeamStagePoints = team.tourRiders
+                .map(teamrider => teamrider.stageclassifications
+                    .reduce((totalPoints, sc) => {
+                        if (rider.isOut && rider.latestEtappe && rider.latestEtappe.etappeNumber >= sc.etappe.etappeNumber) {
+                            return totalPoints;
+                        } else {
+                            return totalPoints + this.calculatePoints(sc, etappeFactor);
+                        }
+                    }, 0))
+                .reduce((acc, value) => {
+                    return acc + value;
+                });
 
-        const totalTeamStagePoints = team.tourRiders
-            .map(teamrider => teamrider.stageclassifications
+            let totalTeampoints: number = totalTeamStagePoints +
+                (team.tourRiders.filter(rider => rider.isOut).length * didNotFinishPoints);
+
+            this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
+
+            const riderPoints = rider.stageclassifications
                 .reduce((totalPoints, sc) => {
-                    if (rider.isOut && rider.latestEtappe && rider.latestEtappe.etappeNumber >= sc.etappe.etappeNumber) {
-                        return totalPoints;
-                    } else {
-                        return totalPoints + this.calculatePoints(sc, etappeFactor);
-                    }
-                }, 0))
-            .reduce((acc, value) => {
-                return acc + value;
-            });
+                    return totalPoints + this.calculatePoints(sc, etappeFactor);
+                }, 0);
 
-        let totalTeampoints: number = totalTeamStagePoints +
-            (team.tourRiders.filter(rider => rider.isOut).length * didNotFinishPoints);
+            this.logger.log('riderPoints: ' + rider.rider.surName + ': ' + riderPoints);
 
-        this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
+            const waterDragerPunten = Math.round((((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
+                riderPoints - rider.waarde));
 
-        const riderPoints = rider.stageclassifications
-            .reduce((totalPoints, sc) => {
-                return totalPoints + this.calculatePoints(sc, etappeFactor);
-            }, 0);
-
-        this.logger.log('riderPoints: ' + rider.rider.surName + ': ' + riderPoints);
-
-
-        const waterDragerPunten = Math.round((((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
-            riderPoints -
-            (3 * rider.waarde / 29 * NumberOfDrivenEttapes)));
-
-        this.logger.log('waterDragerPunten ' +
-            rider.rider.surName + ': ' + waterDragerPunten +
-            ' waarde: ' + rider.waarde +
-            ' NumberOfDrivenEttapes: '
-            + NumberOfDrivenEttapes);
-        return waterDragerPunten
+            this.logger.log('waterDragerPunten ' +
+                rider.rider.surName + ': ' + waterDragerPunten +
+                ' waarde: ' + rider.waarde +
+                ' NumberOfDrivenEttapes: '
+                + NumberOfDrivenEttapes);
+            return waterDragerPunten
+        }
+        else {
+            return 0;
+        }
     }
 
 

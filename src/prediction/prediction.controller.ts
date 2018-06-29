@@ -1,5 +1,5 @@
 import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Post, Req} from '@nestjs/common';
+import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {PredictionService} from './prediction.service';
 import {Prediction} from './prediction.entity';
 import {CreatePredictionDto} from './create-prediction.dto';
@@ -16,9 +16,9 @@ export class PredictionController {
         return this.predictionService.findAll();
     }
 
-    @Get('user')
-    async findByParticipant(@Req() req): Promise<Prediction[]> {
-        return this.predictionService.findByParticipant(req.user.email);
+    @Get('user/:id')
+    async findByParticipant(@Param('id') id, @Req() req): Promise<Prediction[]> {
+        return this.predictionService.findByParticipant(req.user.email, id);
     }
 
     @Post()

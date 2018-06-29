@@ -1,8 +1,9 @@
 import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Post, Req} from '@nestjs/common';
+import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {ParticipantService} from './participant.service';
 import {Participant} from './participant.entity';
 import {CreateParticipantDto} from './create-participant.dto';
+import {Tour} from '../tour/tour.entity';
 
 @Controller('participants')
 export class ParticipantController {
@@ -11,14 +12,14 @@ export class ParticipantController {
     constructor(private readonly participantService: ParticipantService) {
     }
 
-    @Get()
-    async findAll(): Promise<Participant[]> {
-        return this.participantService.findAll();
+    @Get('/:tourId')
+    async findAll(@Param('tourId') tourId): Promise<Participant[]> {
+        return this.participantService.findAll(tourId);
     }
 
-    @Get('/table')
-    async updateTable(): Promise<Participant[]> {
-        return this.participantService.updateTable();
+    @Get('/table/:id')
+    async updateTable(@Param('id') id): Promise<Participant[]> {
+        return this.participantService.updateTable(id);
     }
 
     @Post()
