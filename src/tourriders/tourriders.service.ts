@@ -103,11 +103,12 @@ export class TourridersService {
             .createQueryBuilder('team')
             .leftJoinAndSelect('team.tour', 'tour')
             .leftJoinAndSelect('team.tourRiders', 'tourRiders')
+            .leftJoin('tourRiders.tour', 'tourRidersTour')
             .leftJoinAndSelect('tourRiders.stageclassifications', 'sc')
             .leftJoinAndSelect('sc.etappe', 'etappe')
             .where('tour.id = :id', {id})
+            .andWhere('tourRidersTour.id = :id', {id})
             .getMany();
-
     }
 
     async getDrivenEtappes(id: string): Promise<Etappe[]> {
@@ -148,7 +149,7 @@ export class TourridersService {
                     return totalPoints + this.calculatePoints(sc, etappeFactor);
                 }, 0);
 
-            this.logger.log('riderPoints: ' + rider.rider.surName + ': ' + riderPoints);
+            this.logger.log('TESTEN!! riderPoints: ' + rider.rider.surName + ': ' + riderPoints);
 
             const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
                 riderPoints);
