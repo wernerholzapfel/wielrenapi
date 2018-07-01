@@ -150,8 +150,8 @@ export class TourridersService {
 
             this.logger.log('riderPoints: ' + rider.rider.surName + ': ' + riderPoints);
 
-            const waterDragerPunten = Math.round((((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
-                riderPoints - rider.waarde));
+            const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
+                riderPoints);
 
             this.logger.log('waterDragerPunten ' +
                 rider.rider.surName + ': ' + waterDragerPunten +
