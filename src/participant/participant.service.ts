@@ -156,6 +156,8 @@ export class ParticipantService {
 
         const standRef = ref.child('stand');
         standRef.set(participants);
+        const lastUpdated = ref.child('lastUpdated');
+        lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
         return participants
     }

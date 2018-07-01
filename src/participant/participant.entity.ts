@@ -6,7 +6,7 @@ export class Participant {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({select: false})
+    @Column({select: false, unique: true})
     email: string;
 
     @Column({ nullable: true })
