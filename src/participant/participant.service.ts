@@ -133,7 +133,7 @@ export class ParticipantService {
                     Object.assign(prediction, {deltaStagePoints: this.determineDeltaScTotalpoints(prediction, teams, etappes)});
 
                 });
-            Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant)});
+            Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant, etappes[0].tour.hasEnded)});
         });
 
 
@@ -172,16 +172,25 @@ export class ParticipantService {
             });
     }
 
-    determinePredictionsTotalPoints(participant: Participant) {
-        return participant.predictions.reduce((totalPoints, prediction) => {
-            this.logger.log('determinePredictionsTotalPoints: ' + totalPoints);
-            return totalPoints +
-                this.getZeroValueIfUndefined(prediction.totalStagePoints) +
-                this.getZeroValueIfUndefined(prediction.youthPoints) +
-                this.getZeroValueIfUndefined(prediction.mountainPoints) +
-                this.getZeroValueIfUndefined(prediction.tourPoints) +
-                this.getZeroValueIfUndefined(prediction.pointsPoints);
-        }, 0)
+    determinePredictionsTotalPoints(participant: Participant, hasEnded: boolean) {
+        if (hasEnded) {
+            return participant.predictions.reduce((totalPoints, prediction) => {
+                this.logger.log('determinePredictionsTotalPoints: ' + totalPoints);
+                return totalPoints +
+                    this.getZeroValueIfUndefined(prediction.totalStagePoints) +
+                    this.getZeroValueIfUndefined(prediction.youthPoints) +
+                    this.getZeroValueIfUndefined(prediction.mountainPoints) +
+                    this.getZeroValueIfUndefined(prediction.tourPoints) +
+                    this.getZeroValueIfUndefined(prediction.pointsPoints);
+            }, 0)
+        } else {
+            return participant.predictions.reduce((totalPoints, prediction) => {
+                this.logger.log('determinePredictionsTotalPoints: ' + totalPoints);
+                return totalPoints +
+                    this.getZeroValueIfUndefined(prediction.totalStagePoints);
+            }, 0)
+        }
+
     }
 
     getZeroValueIfUndefined(points: number) {

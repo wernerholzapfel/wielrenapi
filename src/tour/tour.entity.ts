@@ -23,8 +23,11 @@ export class Tour {
     @Column({type: 'date'})
     endDate: Date;
 
-    @Column({default: true})
+    @Column({default: false})
     isActive: boolean;
+
+    @Column({default: false})
+    hasEnded: boolean;
 
     @OneToMany(type => Tourriders, tourriders => tourriders.tour)
     tourRiders: Tourriders[];
