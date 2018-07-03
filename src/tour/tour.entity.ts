@@ -23,6 +23,9 @@ export class Tour {
     @Column({type: 'date'})
     endDate: Date;
 
+    @Column({type: 'timestamp', nullable: true})
+    deadline: Date;
+
     @Column({default: false})
     isActive: boolean;
 
