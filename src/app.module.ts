@@ -17,6 +17,7 @@ import {TourclassificationModule} from './tourclassification/tourclassification.
 import {YouthclassificationModule} from './youthclassification/youthclassification.module';
 import {MountainclassificationModule} from './mountainclassification/mountainclassification.module';
 import {PointsclassificationModule} from './pointsclassification/pointsclassification.module';
+import {PredictionMiddleware} from './prediction.middleware';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -44,7 +45,9 @@ export class AppModule implements NestModule {
         consumer.apply(AddFireBaseUserToRequest).forRoutes(
             {path: '/**', method: RequestMethod.POST},
             {path: '/predictions/user/**', method: RequestMethod.GET});
-
+        consumer.apply(PredictionMiddleware).forRoutes(
+            {path: '/predictions', method: RequestMethod.POST},
+        );
 
         // admin.auth().setCustomUserClaims('ENPg7LZlewdswg6vqVd65K4QjQy1', {admin: true}).then(() => {
         //     this.logger.log('customerset');

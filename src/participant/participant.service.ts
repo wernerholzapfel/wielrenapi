@@ -163,6 +163,7 @@ export class ParticipantService {
     }
 
     async create(participant: Participant): Promise<Participant> {
+        participant.email = participant.email.toLowerCase();
         return await this.participantRepository.save(participant)
             .catch((err) => {
                 throw new HttpException({

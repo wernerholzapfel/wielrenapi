@@ -24,7 +24,7 @@ export class PredictionService {
         let participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
-            .where('participant.email = :email', {email})
+            .where('participant.email = :email', {email: email.toLowerCase()})
             .getOne();
 
         if (participant) {
@@ -50,7 +50,7 @@ export class PredictionService {
         let participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
-            .where('participant.email = :email', {email})
+            .where('participant.email = :email', {email: email.toLowerCase()})
             .getOne();
 
         if (!participant) {
@@ -59,13 +59,13 @@ export class PredictionService {
                 .insert()
                 .into(Participant)
                 .values([
-                    {email: email, displayName: displayName}
+                    {email: email.toLowerCase(), displayName: displayName}
                 ])
                 .execute().then(async response => {
                     participant = await this.connection
                         .getRepository(Participant)
                         .createQueryBuilder('participant')
-                        .where('participant.email = :email', {email})
+                        .where('participant.email = :email', {email: email.toLowerCase()})
                         .getOne();
                 });
         }
