@@ -4,6 +4,7 @@ import {ParticipantService} from './participant.service';
 import {Participant} from './participant.entity';
 import {CreateParticipantDto} from './create-participant.dto';
 import {Tour} from '../tour/tour.entity';
+import {Prediction} from '../prediction/prediction.entity';
 
 @Controller('participants')
 export class ParticipantController {
@@ -12,6 +13,10 @@ export class ParticipantController {
     constructor(private readonly participantService: ParticipantService) {
     }
 
+    @Get('loggedIn')
+    async findByParticipant(@Req() req): Promise<Participant> {
+        return this.participantService.loggedIn(req.user.email);
+    }
     @Get('/:tourId')
     async findAll(@Param('tourId') tourId): Promise<Participant[]> {
         return this.participantService.findAll(tourId);

@@ -22,6 +22,14 @@ export class ParticipantService {
                 private readonly connection: Connection,) {
     }
 
+    async loggedIn(email: string): Promise<Participant> {
+        return await this.connection
+            .getRepository(Participant)
+            .createQueryBuilder('participant')
+            .where('participant.email = :email', {email: email.toLowerCase()})
+            .getOne();
+    }
+
     async findAll(tourId): Promise<Participant[]> {
         return await this.connection
             .getRepository(Participant)
