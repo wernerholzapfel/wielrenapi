@@ -142,6 +142,11 @@ export class ParticipantService {
 
                 });
             Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant, etappes[0].tour.hasEnded)});
+            Object.assign(participant, {totalStagePoints: this.determinePredictionsTotalPoints(participant, false)});
+            Object.assign(participant, {totalTourPoints: this.determineTotalTourPoints(participant.predictions)});
+            Object.assign(participant, {totalMountainPoints: this.determineTotalMountainPoints(participant.predictions)});
+            Object.assign(participant, {totalYouthPoints: this.determineTotalYouthPoints(participant.predictions)});
+            Object.assign(participant, {totalPointsPoints: this.determineTotalPointsPoints(participant.predictions)});
         });
 
 
@@ -357,11 +362,33 @@ export class ParticipantService {
         }, 0);
     }
 
+    determineTotalTourPoints(predictions: Prediction[]) {
+        return predictions.reduce((totalPoints, prediction) => {
+            return (prediction.tourPoints) ? prediction.tourPoints + totalPoints : totalPoints ;
+        }, 0);
+    }
+
+    determineTotalMountainPoints(predictions: Prediction[]) {
+        return predictions.reduce((totalPoints, prediction) => {
+            return (prediction.mountainPoints) ? prediction.mountainPoints + totalPoints : totalPoints ;
+        }, 0);
+    }
+    determineTotalYouthPoints(predictions: Prediction[]) {
+        return predictions.reduce((totalPoints, prediction) => {
+            return (prediction.youthPoints) ? prediction.youthPoints + totalPoints : totalPoints ;
+        }, 0);
+    }
+    determineTotalPointsPoints(predictions: Prediction[]) {
+        return predictions.reduce((totalPoints, prediction) => {
+            return (prediction.pointsPoints) ? prediction.pointsPoints + totalPoints : totalPoints ;
+        }, 0);
+    }
+
     determineDeltaScTotalpoints(prediction: Prediction, teams: Team[], stages: Etappe[]) {
         const lastStageNumber: Number = Math.max(...stages.filter(stage => stage.isDriven)
             .map(stage => stage.etappeNumber));
 
-        this.logger.log('lastStageNumber: ' + lastStageNumber)
+        this.logger.log('lastStageNumber: ' + lastStageNumber);
         if (prediction.isWaterdrager) {
             return 0;
         }
