@@ -80,6 +80,8 @@ export class ParticipantService {
             .leftJoinAndSelect('participant.predictions', 'predictions')
             .leftJoinAndSelect('predictions.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoinAndSelect('tourrider.predictions', 'tourriderpredicted')
+            .leftJoinAndSelect('tourriderpredicted.participant', 'participanthaspredicted')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
             .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
@@ -169,8 +171,8 @@ export class ParticipantService {
 
         const standRef = ref.child('stand');
         standRef.set(participants);
-        const lastUpdated = ref.child('lastUpdated');
-        lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
+        // const lastUpdated = ref.child('lastUpdated');
+        // lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
         return participants
     }

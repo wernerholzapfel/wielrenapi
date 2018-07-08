@@ -42,6 +42,8 @@ export class TourridersService {
             .leftJoinAndSelect('tourrider.mountainclassifications', 'mountainclassifications')
             .leftJoinAndSelect('tourrider.youthclassifications', 'youthclassifications')
             .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
+            .leftJoinAndSelect('tourrider.predictions', 'tourriderpredictions')
+            .leftJoinAndSelect('tourriderpredictions.participant', 'tourriderpredictionsparticipant')
             .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
             .where('tour.id = :id', {id: tourId})
             .getMany();
