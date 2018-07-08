@@ -76,8 +76,10 @@ export class PredictionService {
             .getRepository(Prediction)
             .createQueryBuilder('prediction')
             .leftJoin('prediction.participant', 'participant')
+            .leftJoin('prediction.tour', 'tour')
             .leftJoinAndSelect('prediction.rider', 'rider')
             .where('participant.id = :id', {id: participant.id})
+            .andWhere('tour.id = :id', {id: body.tour})
             .getMany();
 
         this.logger.log('oldPrediction length: ' + oldPrediction.length);
