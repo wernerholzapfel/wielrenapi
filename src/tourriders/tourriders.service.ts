@@ -6,7 +6,6 @@ import {HttpException} from '@nestjs/core';
 import {Tour} from '../tour/tour.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
-import {Rider} from '../rider/rider.entity';
 import {Stageclassification} from '../stageclassification/stageclassification.entity';
 
 @Component()
@@ -79,7 +78,7 @@ export class TourridersService {
                 .map(pc =>
                     Object.assign(rider, {pointsPoints: this.calculatePoints(pc, pointsFactor)})
                 );
-            Object.assign(rider, {waterdragerPoints: this.determineWDTotaalpunten(rider, teams, etappes.length)});
+            Object.assign(rider, {waterdragerPoints: this.determineWDTotaalpunten(rider, teams, etappes, tourId)});
             Object.assign(rider, {totalStagePoints: this.determineSCTotaalpunten(rider, teams, etappes.length)});
         });
         return tourriders;
@@ -122,52 +121,55 @@ export class TourridersService {
 
     }
 
-    determineWDTotaalpunten(rider: Rider, teams: Team[], NumberOfDrivenEttapes: number) {
-        if (NumberOfDrivenEttapes > 0) {
-            const team = teams.find(team => team.id === rider.team.id);
+    determineWDTotaalpunten(rider: Tourriders, teams: Team[], drivenEttapes: Etappe[], tourId: string): any[] {
+        return drivenEttapes.map(etappe => {
+            return this.determineWDPunten(rider, etappe, teams, etappeFactor);
+        })
+            .reduce((acc, value) => {
+                return acc + value.stagePoints;
+            }, 0)
+    }
 
-            const totalTeamStagePoints = team.tourRiders
-                .map(teamrider => teamrider.stageclassifications
-                    .reduce((totalPoints, sc) => {
-                        if (rider.isOut && rider.latestEtappe && rider.latestEtappe.etappeNumber >= sc.etappe.etappeNumber) {
-                            return totalPoints;
-                        } else {
-                            return totalPoints + this.calculatePoints(sc, etappeFactor);
-                        }
-                    }, 0))
-                .reduce((acc, value) => {
-                    return acc + value;
-                });
+    determinePositionInEtappe(etappe: Etappe, stageclassifications: Stageclassification[]) {
+        return (stageclassifications.find(sc => sc.etappe.id === etappe.id)) ?
+            stageclassifications.find(sc => sc.etappe.id === etappe.id).position : null;
+    }
 
-            let totalTeampoints: number = totalTeamStagePoints +
-                (team.tourRiders.filter(rider => rider.isOut).length * didNotFinishPoints);
+    determineWDPunten(rider: Tourriders, etappe: Etappe, teams: Team[], etappeFactor: number) {
+        const etappePosition = this.determinePositionInEtappe(etappe, rider.stageclassifications);
+        const newStage = {id: null, position: etappePosition, etappe: etappe};
 
-            this.logger.log('totalTeampoints: ' + team.teamName + ': ' + totalTeampoints);
+        const team = teams.find(team => team.id === rider.team.id);
 
-            const riderPoints = rider.stageclassifications
+        const totalTeampoints = team.tourRiders
+            .map(teamRider => teamRider.stageclassifications
                 .reduce((totalPoints, sc) => {
-                    return totalPoints + this.calculatePoints(sc, etappeFactor);
-                }, 0);
+                    if (sc.etappe && sc.etappe.id === newStage.etappe.id && (!rider.latestEtappe ||
+                        (rider.latestEtappe && sc.etappe.etappeNumber < rider.latestEtappe.etappeNumber))) {
+                        return totalPoints + this.calculatePoints(sc, etappeFactor);
+                    } else {
+                        return totalPoints;
+                    }
+                }, 0))
+            .reduce((acc, value) => {
+                return acc + value;
+            });
 
-            this.logger.log('TESTEN!! riderPoints: ' + rider.rider.surName + ': ' + riderPoints);
+        this.logger.log('totalteampoints wd: ' + rider.rider.surName + ' ' + totalTeampoints);
+        const riderPoints = newStage.position ? this.calculatePoints(newStage, etappeFactor) : 0;
+        this.logger.log('riderPoints wd: ' + rider.rider.surName + ' ' + riderPoints);
 
-            const waterDragerPunten = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
-                riderPoints);
+        const calculation = '((' + totalTeampoints + '-' + riderPoints + ') / (' + team.tourRiders.length + '-' + 1 + ')) - ' + riderPoints;
+        const stagePointsWD = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
+            riderPoints);
 
-            this.logger.log('waterDragerPunten ' +
-                rider.rider.surName + ': ' + waterDragerPunten +
-                ' waarde: ' + rider.waarde +
-                ' NumberOfDrivenEttapes: '
-                + NumberOfDrivenEttapes);
-            return waterDragerPunten
-        }
-        else {
-            return 0;
-        }
+        this.logger.log('stagePointsWd: ' + newStage.etappe.etappeNumber + ' - ' + rider.rider.surName + ' ' + stagePointsWD);
+        Object.assign(newStage, {stagePoints: stagePointsWD, calculation: calculation});
+        return newStage;
     }
 
 
-    determineSCTotaalpunten(rider: Rider, teams: Team[], NumberOfDrivenEttapes: number) {
+    determineSCTotaalpunten(rider: Tourriders, teams: Team[], NumberOfDrivenEttapes: number) {
         return rider.stageclassifications.reduce((totalPoints, sc) => {
             return totalPoints + sc.stagePoints;
         }, 0);
@@ -212,7 +214,7 @@ export class TourridersService {
     // }
 
 
-    calculatePoints(sc: Stageclassification, factor: number) {
+    calculatePoints(sc: any, factor: number) {
         if (sc.position) {
             return eval('etappe' + sc.position) * factor;
         }
@@ -241,7 +243,7 @@ const etappe17 = 8;
 const etappe18 = 6;
 const etappe19 = 4;
 const etappe20 = 2;
-const didNotFinishPoints = -10;
+const didNotFinishPoints = -20;
 
 const etappeFactor = 1;
 const tourFactor = 2.5;
