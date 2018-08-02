@@ -7,6 +7,8 @@ import {Tour} from '../tour/tour.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
 import {Stageclassification} from '../stageclassification/stageclassification.entity';
+import {Prediction} from '../prediction/prediction.entity';
+import {Tourclassification} from '../tourclassification/tourclassification.entity';
 
 @Component()
 export class TourridersService {
@@ -80,7 +82,8 @@ export class TourridersService {
                 .map(pc =>
                     Object.assign(rider, {pointsPoints: this.calculatePoints(pc, pointsFactor)})
                 );
-            Object.assign(rider, {waterdragerPoints: this.determineWDTotaalpunten(rider, teams, etappes, tourId)});
+            Object.assign(rider, {waterdragerTruienPoints: this.determineWDTruienPunten(rider, teams)});
+            Object.assign(rider, {waterdragerEtappePoints: this.determineWDEtappepunten(rider, teams, etappes)});
             Object.assign(rider, {totalStagePoints: this.determineSCTotaalpunten(rider, teams, etappes.length)});
         });
         return tourriders;
@@ -106,6 +109,10 @@ export class TourridersService {
             .leftJoinAndSelect('team.tourRiders', 'tourRiders')
             .leftJoin('tourRiders.tour', 'tourRidersTour')
             .leftJoinAndSelect('tourRiders.stageclassifications', 'sc')
+            .leftJoinAndSelect('tourRiders.tourclassifications', 'tc')
+            .leftJoinAndSelect('tourRiders.mountainclassifications', 'mc')
+            .leftJoinAndSelect('tourRiders.youthclassifications', 'yc')
+            .leftJoinAndSelect('tourRiders.pointsclassifications', 'pc')
             .leftJoinAndSelect('sc.etappe', 'etappe')
             .where('tour.id = :id', {id})
             .andWhere('tourRidersTour.id = :id', {id})
@@ -123,7 +130,116 @@ export class TourridersService {
 
     }
 
-    determineWDTotaalpunten(rider: Tourriders, teams: Team[], drivenEttapes: Etappe[], tourId: string): any[] {
+    determineWDTruienPunten(rider: Tourriders, teams: Team[]) {
+        return this.determineWDTourPunten(rider, teams, tourFactor) +
+            this.determineWDMountainPunten(rider, teams, mountainFactor) +
+            this.determineWDYouthPunten(rider, teams, youthFactor) +
+            this.determineWDPointsPunten(rider, teams, pointsFactor);
+
+    }
+
+    determineWDTourPunten(rider: Tourriders, teams: Team[], factor: number) {
+        if (rider.isOut) {
+            return -1 * rider.waarde;
+        }
+        const team = teams.find(team => team.id === rider.team.id);
+
+        const totalTeampoints = team.tourRiders
+            .map(teamRider => teamRider.tourclassifications
+                .reduce((totalPoints, tc) => {
+                    return totalPoints + this.calculatePoints(tc, factor);
+                }, 0))
+            .reduce((acc, value) => {
+                return acc + value;
+            });
+
+        const classification: Tourclassification = team.tourRiders
+            .find(tourrider => tourrider.id === rider.id).tourclassifications[0];
+
+        const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
+
+        const classificationsPoints = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
+            riderPoints - rider.waarde);
+
+        return classificationsPoints;
+    }
+
+    determineWDMountainPunten(rider: Tourriders, teams: Team[], factor: number) {
+        if (rider.isOut) {
+            return -1 * rider.waarde;
+        }
+        const team = teams.find(team => team.id === rider.team.id);
+
+        const totalTeampoints = team.tourRiders
+            .map(teamRider => teamRider.mountainclassifications
+                .reduce((totalPoints, tc) => {
+                    return totalPoints + this.calculatePoints(tc, factor);
+                }, 0))
+            .reduce((acc, value) => {
+                return acc + value;
+            });
+
+        const classification: any = team.tourRiders.find(tourrider => tourrider.id === rider.id).mountainclassifications[0];
+
+        const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
+
+        const classificationsPoints = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
+            riderPoints - rider.waarde);
+
+        return classificationsPoints;
+    }
+
+    determineWDYouthPunten(rider: Tourriders, teams: Team[], factor: number) {
+        if (rider.isOut) {
+            return -1 * rider.waarde;
+        }
+        const team = teams.find(team => team.id === rider.team.id);
+
+        const totalTeampoints = team.tourRiders
+            .map(teamRider => teamRider.youthclassifications
+                .reduce((totalPoints, tc) => {
+                    return totalPoints + this.calculatePoints(tc, factor);
+                }, 0))
+            .reduce((acc, value) => {
+                return acc + value;
+            });
+
+        const classification: any = team.tourRiders.find(tourrider => tourrider.id === rider.id).youthclassifications[0];
+
+        const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
+
+        const classificationsPoints = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
+            riderPoints - rider.waarde);
+
+        return classificationsPoints;
+    }
+
+    determineWDPointsPunten(rider: Tourriders, teams: Team[], factor: number) {
+        if (rider.isOut) {
+            return -1 * rider.waarde;
+        }
+        const team = teams.find(team => team.id === rider.team.id);
+
+        const totalTeampoints = team.tourRiders
+            .map(teamRider => teamRider.pointsclassifications
+                .reduce((totalPoints, tc) => {
+                    return totalPoints + this.calculatePoints(tc, factor);
+                }, 0))
+            .reduce((acc, value) => {
+                return acc + value;
+            });
+
+        const classification: any = team.tourRiders.find(tourrider => tourrider.id === rider.id).pointsclassifications[0];
+
+        const riderPoints = classification ? this.calculatePoints(classification, factor) : 0;
+
+        const classificationsPoints = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
+            riderPoints - rider.waarde);
+
+        return classificationsPoints;
+    }
+
+    determineWDEtappepunten(rider: Tourriders, teams: Team[], drivenEttapes: Etappe[]): any[] {
         return drivenEttapes.map(etappe => {
             return this.determineWDPunten(rider, etappe, teams, etappeFactor);
         })
@@ -176,45 +292,6 @@ export class TourridersService {
             return totalPoints + sc.stagePoints;
         }, 0);
     }
-
-
-    // determinePunten(sc: Stageclassification, factor: number) {
-    //     if (prediction.isRider) {
-    //         return this.calculatePoints(sc, factor)
-    //     }
-    //     if (prediction.isBeschermdeRenner) {
-    //         return this.calculatePoints(sc, factor)
-    //     }
-    //     if (prediction.isMeesterknecht) {
-    //         return -1 * this.calculatePoints(sc, factor)
-    //     }
-    //     if (prediction.isLinkebal) {
-    //         return 2 * this.calculatePoints(sc, factor)
-    //     }
-    //     if (prediction.isWaterdrager) {
-    //         // const team = teams.find(team => team.id === prediction.rider.team.id);
-    //         //
-    //         // const totalTeampoints = team.tourRiders
-    //         //     .map(rider => rider.stageclassifications
-    //         //         .reduce((totalPoints, sc) => {
-    //         //             return totalPoints + this.calculatePoints(sc);
-    //         //         }, 0))
-    //         //     .reduce((acc, value) => {
-    //         //         return acc + value;
-    //         //     });
-    //         // this.logger.log('totalTeamPoints: ' + team.teamName + ' - ' + totalTeampoints);
-    //         // const riderPoints = this.calculatePoints(sc);
-    //         // this.logger.log('riderPoints: ' + prediction.rider.rider.surName + riderPoints);
-    //         // // todo aantal etappes meegeven ?
-    //         // // todo opslaan in Firebase??
-    //         // return Math.round(((totalTeampoints - riderPoints) / team.tourRiders.length ) -
-    //         //     riderPoints -
-    //         //     (3 * prediction.rider.waarde / 29 ));
-    //
-    //         return null;
-    //     }
-    // }
-
 
     calculatePoints(sc: any, factor: number) {
         if (sc.position) {
