@@ -24,6 +24,9 @@ export class Prediction {
     @Column({default : false})
     isBeschermdeRenner: boolean;
 
+    @Column({default : false})
+    isComplete: boolean;
+
     @ManyToOne(type => Tourriders, rider => rider.predictions)
     rider: Tourriders;
 

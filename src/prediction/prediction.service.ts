@@ -104,6 +104,7 @@ export class PredictionService {
                 isLinkebal: prediction.isLinkebal,
                 isMeesterknecht: prediction.isMeesterknecht,
                 isWaterdrager: prediction.isWaterdrager,
+                isComplete: prediction.isComplete,
                 tour: body.tour,
                 participant: participant
             });
