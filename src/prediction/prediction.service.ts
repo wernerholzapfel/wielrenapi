@@ -78,8 +78,8 @@ export class PredictionService {
             .leftJoin('prediction.participant', 'participant')
             .leftJoin('prediction.tour', 'tour')
             .leftJoinAndSelect('prediction.rider', 'rider')
-            .where('participant.id = :id', {id: participant.id})
-            .andWhere('tour.id = :id', {id: body.tour.id})
+            .where('participant.id = :participantId', {participantId: participant.id})
+            .andWhere('tour.id = :tourId', {tourId: body.tour.id})
             .getMany();
 
         this.logger.log('oldPrediction length: ' + oldPrediction.length);
