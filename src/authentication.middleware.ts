@@ -25,7 +25,9 @@ export class AddFireBaseUserToRequest implements NestMiddleware {
                             .catch(error => {
                                 console.log("Error fetching user data:", error);
                             });
-                    })
+                    }).catch(error => {
+                    console.log("Error verify token:", error);
+                });
             }
         };
     }

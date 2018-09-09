@@ -72,7 +72,80 @@ export class ParticipantService {
 
     }
 
+    async getEtappe(tourId: string, etappeId): Promise<any[]> {
+
+        this.logger.log('tourId:' + tourId + 'etappeId: ' + etappeId);
+        const participants = await this.connection
+            .getRepository(Participant)
+            .createQueryBuilder('participant')
+            .leftJoinAndSelect('participant.predictions', 'predictions')
+            .leftJoinAndSelect('predictions.rider', 'tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoinAndSelect('tourrider.team', 'team')
+            .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
+            .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
+            .leftJoinAndSelect('stageclassifications.etappe', 'scetappe', 'scetappe.id = :scEtappeId', {scEtappeId: etappeId})
+            .leftJoin('predictions.tour', 'tour')
+            .where('tour.id = :id', {id: tourId})
+            .getMany();
+
+
+        const teams: Team[] = await this.getTeamClassifications(tourId);
+        const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
+        let previousPosition = 1;
+
+        participants.map(participant => {
+            this.logger.log('aantal predictions voor: ' + participant.displayName + ' is ' + participant.predictions.length);
+            [...participant.predictions]
+                .map(prediction => {
+                    if (prediction.isWaterdrager) {
+                        const newStageClassifications: Stageclassification[] = this.determineWDPunten(prediction, etappes, teams, etappeFactor);
+                        prediction.rider.stageclassifications = [...newStageClassifications.filter(sc => sc.etappe.id === etappeId)];
+                    }
+                    else {
+                        prediction.rider.stageclassifications =
+                            [...prediction.rider.stageclassifications.filter(sc => sc.etappe && sc.etappe.id === etappeId)]
+                                .map(sc =>
+                                    Object.assign(sc, {stagePoints: this.determinePunten(sc, prediction, etappeFactor)})
+                                );
+                        if (prediction.rider.isOut && prediction.rider.latestEtappe.id === etappeId && !prediction.isWaterdrager) {
+                            prediction.rider.stageclassifications.push({
+                                stagePoints: prediction.isBeschermdeRenner ? 0 : !prediction.isMeesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
+                                etappe: prediction.rider.latestEtappe,
+                            });
+                        }
+                    }
+                    Object.assign(prediction, {totalStagePoints: this.determineSCTotaalpunten(prediction, teams, etappes.length)});
+
+                });
+            Object.assign(participant, {totalStagePoints: this.determinePredictionsTotalPoints(participant, false)});
+        });
+
+        participants.sort((a, b) => {
+            return b.totalStagePoints - a.totalStagePoints
+        });
+
+        // assign position
+        participants.map((participant, index) => {
+            if (index > 0 && participant.totalStagePoints === participants[index - 1].totalStagePoints) {
+                Object.assign(participant, {position: previousPosition});
+            } else {
+                Object.assign(participant, {position: index + 1});
+                previousPosition = index + 1;
+            }
+        });
+
+        return participants
+    }
+
     async updateTable(tourId: string): Promise<any[]> {
+
+        // todo get latestEtappe.
+
+        // todo get previousstand from firebase.
+        // if previousstand then find users position.
+        // store actual stand
+        // store etappe stand
 
         const participants = await this.connection
             .getRepository(Participant)
@@ -149,6 +222,7 @@ export class ParticipantService {
             Object.assign(participant, {totalMountainPoints: this.determineTotalMountainPoints(participant.predictions)});
             Object.assign(participant, {totalYouthPoints: this.determineTotalYouthPoints(participant.predictions)});
             Object.assign(participant, {totalPointsPoints: this.determineTotalPointsPoints(participant.predictions)});
+            Object.assign(participant, {deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant.predictions, etappes[0].tour.hasEnded)});
         });
 
 
@@ -354,8 +428,8 @@ export class ParticipantService {
     }
 
     determinePositionInEtappe(etappe: Etappe, prediction: Prediction) {
-        return (prediction.rider.stageclassifications.find(sc => sc.etappe.id === etappe.id)) ?
-            prediction.rider.stageclassifications.find(sc => sc.etappe.id === etappe.id).position : null;
+        return (prediction.rider.stageclassifications.find(sc => sc.etappe && sc.etappe.id === etappe.id)) ?
+            prediction.rider.stageclassifications.find(sc => sc.etappe && sc.etappe.id === etappe.id).position : null;
     }
 
     determineSCTotaalpunten(prediction: Prediction, teams: Team[], NumberOfDrivenEttapes: number) {
@@ -366,38 +440,50 @@ export class ParticipantService {
 
     determineTotalTourPoints(predictions: Prediction[]) {
         return predictions.reduce((totalPoints, prediction) => {
-            return (prediction.tourPoints) ? prediction.tourPoints + totalPoints : totalPoints ;
+            return (prediction.tourPoints) ? prediction.tourPoints + totalPoints : totalPoints;
         }, 0);
     }
 
     determineTotalMountainPoints(predictions: Prediction[]) {
         return predictions.reduce((totalPoints, prediction) => {
-            return (prediction.mountainPoints) ? prediction.mountainPoints + totalPoints : totalPoints ;
+            return (prediction.mountainPoints) ? prediction.mountainPoints + totalPoints : totalPoints;
         }, 0);
     }
+
     determineTotalYouthPoints(predictions: Prediction[]) {
         return predictions.reduce((totalPoints, prediction) => {
-            return (prediction.youthPoints) ? prediction.youthPoints + totalPoints : totalPoints ;
+            return (prediction.youthPoints) ? prediction.youthPoints + totalPoints : totalPoints;
         }, 0);
     }
+
     determineTotalPointsPoints(predictions: Prediction[]) {
         return predictions.reduce((totalPoints, prediction) => {
-            return (prediction.pointsPoints) ? prediction.pointsPoints + totalPoints : totalPoints ;
+            return (prediction.pointsPoints) ? prediction.pointsPoints + totalPoints : totalPoints;
         }, 0);
+    }
+
+    determineDeltaTotalstagePoints(predictions: Prediction[], hasEnded: boolean) {
+        const deltaStagePoints = predictions.reduce((deltaStagePoints, prediction) => {
+            return (prediction.deltaStagePoints) ? prediction.deltaStagePoints + deltaStagePoints : deltaStagePoints;
+        }, 0);
+
+        if (hasEnded) {
+            return deltaStagePoints +
+                this.getZeroValueIfUndefined(prediction.youthPoints) +
+                this.getZeroValueIfUndefined(prediction.mountainPoints) +
+                this.getZeroValueIfUndefined(prediction.tourPoints) +
+                this.getZeroValueIfUndefined(prediction.pointsPoints);
+        } else {
+            return deltaStagePoints
+        }
+
     }
 
     determineDeltaScTotalpoints(prediction: Prediction, teams: Team[], stages: Etappe[]) {
         const lastStageNumber: Number = Math.max(...stages.filter(stage => stage.isDriven)
             .map(stage => stage.etappeNumber));
-
-        this.logger.log('lastStageNumber: ' + lastStageNumber);
-        if (prediction.isWaterdrager) {
-            return 0;
-        }
-        else {
-            const lastStage = prediction.rider.stageclassifications.find(sc => sc.etappe.etappeNumber === lastStageNumber);
-            return lastStage ? lastStage.stagePoints : 0;
-        }
+        const lastStage = prediction.rider.stageclassifications.find(sc => sc.etappe.etappeNumber === lastStageNumber);
+        return lastStage ? lastStage.stagePoints : 0;
     }
 
     determinePunten(sc: Stageclassification, prediction: Prediction, factor: number) {
@@ -408,7 +494,7 @@ export class ParticipantService {
             return this.calculatePoints(sc, factor)
         }
         if (prediction.isMeesterknecht) {
-            if (prediction.rider.isOut && prediction.rider.latestEtappe.id === sc.etappe.id) {
+            if (prediction.rider.isOut && prediction.rider.latestEtappe && sc.etappe && prediction.rider.latestEtappe.id === sc.etappe.id) {
                 return -1 * prediction.rider.waarde;
             } else {
                 return -1 * this.calculatePoints(sc, factor)

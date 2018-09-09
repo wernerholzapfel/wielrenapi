@@ -27,6 +27,11 @@ export class ParticipantController {
         return this.participantService.updateTable(id);
     }
 
+    @Get('/table/:tourId/etappe/:etappeId')
+    async getEtappe(@Param('tourId') tourId, @Param('etappeId') etappeId): Promise<Participant[]> {
+        return this.participantService.getEtappe(tourId, etappeId);
+    }
+
     @Post()
     async create(@Req() req, @Body() createParticipantDto: CreateParticipantDto) {
         this.logger.log('post participant');
