@@ -223,15 +223,24 @@ export class ParticipantService {
             Object.assign(participant, {totalYouthPoints: this.determineTotalYouthPoints(participant.predictions)});
             Object.assign(participant, {totalPointsPoints: this.determineTotalPointsPoints(participant.predictions)});
             Object.assign(participant, {deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant.predictions, etappes[0].tour.hasEnded)});
+            Object.assign(participant, {previousTotalPoints: (participant.totalPoints - participant.deltaTotalStagePoints)})
         });
 
 
         participants.sort((a, b) => {
-            return b.totalPoints - a.totalPoints
+            return b.previousTotalPoints - a.previousTotalPoints
+        }).map((participant, index) => {
+            if (index > 0 && participant.previousTotalPoints === participants[index - 1].previousTotalPoints) {
+                Object.assign(participant, {previousPosition: previousPosition});
+            } else {
+                Object.assign(participant, {previousPosition: index + 1});
+                previousPosition = index + 1;
+            }
         });
 
-        // assign position
-        participants.map((participant, index) => {
+        participants.sort((a, b) => {
+            return b.totalPoints - a.totalPoints
+        }).map((participant, index) => {
             if (index > 0 && participant.totalPoints === participants[index - 1].totalPoints) {
                 Object.assign(participant, {position: previousPosition});
             } else {
