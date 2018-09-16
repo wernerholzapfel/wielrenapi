@@ -478,10 +478,10 @@ export class ParticipantService {
 
         if (hasEnded) {
             return deltaStagePoints +
-                this.getZeroValueIfUndefined(prediction.youthPoints) +
-                this.getZeroValueIfUndefined(prediction.mountainPoints) +
-                this.getZeroValueIfUndefined(prediction.tourPoints) +
-                this.getZeroValueIfUndefined(prediction.pointsPoints);
+                this.getZeroValueIfUndefined(predictions.youthPoints) +
+                this.getZeroValueIfUndefined(predictions.mountainPoints) +
+                this.getZeroValueIfUndefined(predictions.tourPoints) +
+                this.getZeroValueIfUndefined(predictions.pointsPoints);
         } else {
             return deltaStagePoints
         }
