@@ -1,5 +1,5 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
+
+import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {YouthclassificationService} from './youthclassification.service';
 import {Youthclassification} from './youthclassification.entity';
 import {CreateYouthclassificationDto} from './create-youthclassification.dto';

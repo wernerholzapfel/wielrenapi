@@ -3,7 +3,7 @@ import {Team} from '../teams/team.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
 import {Prediction} from '../prediction/prediction.entity';
 import {Etappe} from '../etappe/etappe.entity';
-import {Stageclassification} from '../stageclassification/stageclassification.entity';
+import {Stageclassification, StageClassificationRead} from '../stageclassification/stageclassification.entity';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
 import {Youthclassification} from '../youthclassification/youthclassification.entity';
 import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
@@ -62,5 +62,8 @@ export class Tour {
 
 }
 
+export class TourRead extends Tour {
+    stageclassifications: StageClassificationRead[]
+}
 
 

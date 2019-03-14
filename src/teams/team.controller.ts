@@ -1,5 +1,4 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Post, Req} from '@nestjs/common';
+import {Body, Controller, Get, Logger, Post, Req} from '@nestjs/common';
 import {TeamService} from './team.service';
 import {Team} from './team.entity';
 import {CreateTeamDto} from './create-team.dto';

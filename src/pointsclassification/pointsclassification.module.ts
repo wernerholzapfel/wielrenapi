@@ -6,7 +6,7 @@ import {PointsclassificationController} from './pointsclassification.controller'
 
 @Module({
     imports: [TypeOrmModule.forFeature([Pointsclassification])],
-    components: [PointsclassificationService],
+    providers: [PointsclassificationService],
     controllers: [PointsclassificationController],
 })
 export class PointsclassificationModule {}

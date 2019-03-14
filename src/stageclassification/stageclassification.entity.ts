@@ -7,17 +7,23 @@ import {Etappe} from '../etappe/etappe.entity';
 @Entity()
 export class Stageclassification {
     @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id?: string;
 
     @Column()
-    position: number;
+    position?: number;
 
     @ManyToOne(type => Tour, tour => tour.stageclassifications)
-    tour: Tour;
+    tour?: Tour;
 
     @ManyToOne(type => Tourriders, tourriders => tourriders.stageclassifications)
-    tourrider   : Tourriders;
+    tourrider?   : Tourriders;
 
     @ManyToOne(type => Etappe, etappe => etappe.stageclassifications)
-    etappe: Etappe;
+    etappe?: Etappe;
+
+}
+
+
+export class StageClassificationRead extends Stageclassification {
+    stagePoints?: number;
 }

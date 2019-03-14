@@ -6,7 +6,7 @@ import {ParticipantController} from './participant.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Participant])],
-    components: [ParticipantService],
+    providers: [ParticipantService],
     controllers: [ParticipantController],
 })
 export class ParticipantModule {}

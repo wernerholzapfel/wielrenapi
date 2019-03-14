@@ -6,7 +6,7 @@ import {TeamController} from './team.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Team])],
-    components: [TeamService],
+    providers: [TeamService],
     controllers: [TeamController],
 })
 export class TeamModule {}

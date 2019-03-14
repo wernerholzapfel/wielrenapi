@@ -6,7 +6,7 @@ import {YouthclassificationController} from './youthclassification.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Youthclassification])],
-    components: [YouthclassificationService],
+    providers: [YouthclassificationService],
     controllers: [YouthclassificationController],
 })
 export class YouthclassificationModule {}

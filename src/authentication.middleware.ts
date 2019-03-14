@@ -1,12 +1,12 @@
-import {ExpressMiddleware, Logger, Middleware, NestMiddleware} from '@nestjs/common';
+import {Injectable, Logger, MiddlewareFunction, NestMiddleware} from '@nestjs/common';
 import 'dotenv/config';
 import * as admin from 'firebase-admin';
 
-@Middleware()
+@Injectable()
 export class AddFireBaseUserToRequest implements NestMiddleware {
     private readonly logger = new Logger('AddFireBaseUserToRequest', true);
 
-    resolve(): ExpressMiddleware {
+    resolve(): MiddlewareFunction {
         return (req, res, next) => {
             this.logger.log('werner1');
             const extractedToken = getToken(req.headers);

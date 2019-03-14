@@ -6,7 +6,7 @@ import {PredictionController} from './prediction.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Prediction])],
-    components: [PredictionService],
+    providers: [PredictionService],
     controllers: [PredictionController],
 })
 export class PredictionModule {}

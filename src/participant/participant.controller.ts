@@ -1,5 +1,5 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
+
+import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {ParticipantService} from './participant.service';
 import {Participant} from './participant.entity';
 import {CreateParticipantDto} from './create-participant.dto';

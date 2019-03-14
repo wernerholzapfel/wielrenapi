@@ -1,14 +1,12 @@
-import {HttpStatus, Logger, Middleware} from '@nestjs/common';
-import {ExpressMiddleware, NestMiddleware} from '@nestjs/common/interfaces/middlewares';
-import {HttpException} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable, Logger, MiddlewareFunction, NestMiddleware} from '@nestjs/common';
 import {getRepository} from 'typeorm';
 import {Tour} from './tour/tour.entity';
 
-@Middleware()
+@Injectable()
 export class PredictionMiddleware implements NestMiddleware {
     private readonly logger = new Logger('PredictionMiddleware', true);
 
-    resolve(): ExpressMiddleware {
+    resolve(): MiddlewareFunction {
         return (req, res, next) => {
             this.logger.log(req.body.tour.id);
 

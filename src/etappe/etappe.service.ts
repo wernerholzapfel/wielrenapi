@@ -1,10 +1,10 @@
-import {Component, HttpStatus} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Etappe} from './etappe.entity';
 import {Connection, Repository} from 'typeorm';
-import {HttpException} from '@nestjs/core';
+import {CreateEtappeDto} from './create-etappe.dto';
 
-@Component()
+@Injectable()
 export class EtappeService {
     constructor(@InjectRepository(Etappe)
                 private readonly etappeRepository: Repository<Etappe>,
@@ -31,7 +31,7 @@ export class EtappeService {
             .getOne();
     }
 
-    async create(etappe: Etappe): Promise<Etappe> {
+    async create(etappe: CreateEtappeDto): Promise<Etappe> {
         return await this.etappeRepository.save(etappe)
             .catch((err) => {
                 throw new HttpException({

@@ -1,11 +1,10 @@
-import {Component, HttpStatus} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Pointsclassification} from './pointsclassification.entity';
 import {Connection, getConnection, Repository} from 'typeorm';
-import {HttpException} from '@nestjs/common';
 import {Etappe} from '../etappe/etappe.entity';
 
-@Component()
+@Injectable()
 export class PointsclassificationService {
     constructor(@InjectRepository(Pointsclassification)
                 private readonly pointsclassificationRepository: Repository<Pointsclassification>,

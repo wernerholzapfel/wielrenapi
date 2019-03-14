@@ -1,16 +1,16 @@
-import {Component, HttpStatus, Logger} from '@nestjs/common';
+import {HttpStatus, Injectable, Logger, HttpException} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {Tourriders} from './tourriders.entity';
+import {Tourriders, TourridersRead} from './tourriders.entity';
 import {Connection, Repository} from 'typeorm';
-import {HttpException} from '@nestjs/core';
-import {Tour} from '../tour/tour.entity';
+import {Tour, TourRead} from '../tour/tour.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
 import {Stageclassification} from '../stageclassification/stageclassification.entity';
 import {Prediction} from '../prediction/prediction.entity';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
+import {CreateTourridersDto} from './create-tourriders.dto';
 
-@Component()
+@Injectable()
 export class TourridersService {
     private readonly logger = new Logger('TourridersService', true);
 
@@ -31,8 +31,8 @@ export class TourridersService {
             .getOne();
     }
 
-    async getDetails(tourId: string): Promise<Tour> {
-        const tourriders = await this.connection
+    async getDetails(tourId: string): Promise<Tourriders[]> {
+        const tourriders: TourridersRead[] = await this.connection
             .getRepository(Tourriders)
             .createQueryBuilder('tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
@@ -91,7 +91,7 @@ export class TourridersService {
     }
 
 
-    async create(tourriders: Tourriders): Promise<Tourriders> {
+    async create(tourriders: CreateTourridersDto): Promise<Tourriders> {
         return await this.tourridersRepository.save(tourriders)
             .catch((err) => {
                 throw new HttpException({
@@ -255,7 +255,7 @@ export class TourridersService {
 
     determineWDPunten(rider: Tourriders, etappe: Etappe, teams: Team[], etappeFactor: number) {
         const etappePosition = this.determinePositionInEtappe(etappe, rider.stageclassifications);
-        const newStage = {id: null, position: etappePosition, etappe: etappe};
+        const newStage = {id: null, position: etappePosition, etappe: etappe, stagePoints: null};
 
         const team = teams.find(team => team.id === rider.team.id);
 
@@ -287,7 +287,7 @@ export class TourridersService {
     }
 
 
-    determineSCTotaalpunten(rider: Tourriders, teams: Team[], NumberOfDrivenEttapes: number) {
+    determineSCTotaalpunten(rider: TourridersRead, teams: Team[], NumberOfDrivenEttapes: number) {
         return rider.stageclassifications.reduce((totalPoints, sc) => {
             return totalPoints + sc.stagePoints;
         }, 0);

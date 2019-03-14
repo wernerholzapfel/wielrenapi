@@ -1,5 +1,5 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Post, Req} from '@nestjs/common';
+
+import {Body, Controller, Get, Logger, Post, Req} from '@nestjs/common';
 import {RiderService} from './rider.service';
 import {Rider} from './rider.entity';
 import {CreateRiderDto} from './create-rider.dto';

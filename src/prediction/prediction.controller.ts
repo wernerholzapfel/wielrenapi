@@ -1,5 +1,4 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
+import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {PredictionService} from './prediction.service';
 import {Prediction} from './prediction.entity';
 import {CreatePredictionDto} from './create-prediction.dto';

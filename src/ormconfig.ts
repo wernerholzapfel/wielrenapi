@@ -11,8 +11,10 @@ import {Tourclassification} from './tourclassification/tourclassification.entity
 import {Youthclassification} from './youthclassification/youthclassification.entity';
 import {Mountainclassification} from './mountainclassification/mountainclassification.entity';
 import {Pointsclassification} from './pointsclassification/pointsclassification.entity';
+import {TypeOrmModuleOptions} from '@nestjs/typeorm';
 
-export const ormconfig = {
+// @ts-ignore
+export const ormconfig: TypeOrmModuleOptions = {
     type: 'postgres',
     url: process.env.DATABASE_URL,
     ssl: process.env.DB_SSL,

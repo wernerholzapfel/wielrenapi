@@ -6,7 +6,7 @@ import {RiderController} from './riders.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Rider])],
-    components: [RiderService],
+    providers: [RiderService],
     controllers: [RiderController],
 })
 export class RiderModule {}

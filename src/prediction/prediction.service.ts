@@ -1,10 +1,10 @@
-import {Component, HttpException, HttpStatus, Logger} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Prediction} from './prediction.entity';
 import {Connection, getConnection, Repository} from 'typeorm';
 import {Participant} from '../participant/participant.entity';
 
-@Component()
+@Injectable()
 export class PredictionService {
     private readonly logger = new Logger('PredictionService', true);
 

@@ -6,7 +6,7 @@ import {StageclassificationController} from './stageclassification.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Stageclassification])],
-    components: [StageclassificationService],
+    providers: [StageclassificationService],
     controllers: [StageclassificationController],
 })
 export class StageclassificationModule {}
