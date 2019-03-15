@@ -3,20 +3,21 @@ import {AppController} from './app.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import 'dotenv/config';
 import {ormconfig} from './ormconfig';
-import {TeamModule} from './teams/team.module';
-import {RiderModule} from './rider/rider.module';
-import {TourModule} from './tour/tour.module';
-import {TourridersModule} from './tourriders/tourriders.module';
-import {PredictionModule} from './prediction/prediction.module';
-import {ParticipantModule} from './participant/participant.module';
+import {TeamModule} from './app/teams/team.module';
+import {RiderModule} from './app/rider/rider.module';
+import {TourModule} from './app/tour/tour.module';
+import {TourridersModule} from './app/tourriders/tourriders.module';
+import {PredictionModule} from './app/prediction/prediction.module';
+import {ParticipantModule} from './app/participant/participant.module';
 import {AddFireBaseUserToRequest} from './authentication.middleware';
-import {EtappeModule} from './etappe/etappe.module';
-import {StageclassificationModule} from './stageclassification/stageclassification.module';
-import {TourclassificationModule} from './tourclassification/tourclassification.module';
-import {YouthclassificationModule} from './youthclassification/youthclassification.module';
-import {MountainclassificationModule} from './mountainclassification/mountainclassification.module';
-import {PointsclassificationModule} from './pointsclassification/pointsclassification.module';
+import {EtappeModule} from './app/etappe/etappe.module';
+import {StageclassificationModule} from './app/stageclassification/stageclassification.module';
+import {TourclassificationModule} from './app/tourclassification/tourclassification.module';
+import {YouthclassificationModule} from './app/youthclassification/youthclassification.module';
+import {MountainclassificationModule} from './app/mountainclassification/mountainclassification.module';
+import {PointsclassificationModule} from './app/pointsclassification/pointsclassification.module';
 import {PredictionMiddleware} from './prediction.middleware';
+import {HeadlineModule} from './app/headlines/headline.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -32,7 +33,8 @@ import {PredictionMiddleware} from './prediction.middleware';
         TourclassificationModule,
         YouthclassificationModule,
         MountainclassificationModule,
-        PointsclassificationModule],
+        PointsclassificationModule,
+        HeadlineModule],
     controllers: [AppController],
     providers: [],
 })

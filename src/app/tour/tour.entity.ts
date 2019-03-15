@@ -8,6 +8,7 @@ import {Tourclassification} from '../tourclassification/tourclassification.entit
 import {Youthclassification} from '../youthclassification/youthclassification.entity';
 import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
 import {Pointsclassification} from '../pointsclassification/pointsclassification.entity';
+import {Headline} from '../headlines/headline.entity';
 
 @Entity()
 export class Tour {
@@ -55,6 +56,9 @@ export class Tour {
 
     @OneToMany(type => Pointsclassification, pointscf => pointscf.tour)
     pointsclassifications: Pointsclassification[];
+
+    @OneToMany(type => Headline, headline => headline.tour)
+    headlines: Headline[];
 
     @ManyToMany(type => Team, team => team.tour)
     @JoinTable()

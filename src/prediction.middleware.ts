@@ -1,6 +1,6 @@
 import {HttpException, HttpStatus, Injectable, Logger, MiddlewareFunction, NestMiddleware} from '@nestjs/common';
 import {getRepository} from 'typeorm';
-import {Tour} from './tour/tour.entity';
+import {Tour} from './app/tour/tour.entity';
 
 @Injectable()
 export class PredictionMiddleware implements NestMiddleware {
