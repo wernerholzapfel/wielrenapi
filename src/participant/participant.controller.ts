@@ -32,6 +32,13 @@ export class ParticipantController {
         return this.participantService.getEtappe(tourId, etappeId);
     }
 
+    @Get('/rider/:tourriderId')
+    async getTourRider(@Param('tourriderId') tourriderId): Promise<any> {
+        return this.participantService.getTourRider(tourriderId);
+    }
+
+
+
     @Post()
     async create(@Req() req, @Body() createParticipantDto: CreateParticipantDto) {
         this.logger.log('post participant');

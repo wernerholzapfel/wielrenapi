@@ -10,6 +10,7 @@ import {Etappe} from '../etappe/etappe.entity';
 import * as admin from 'firebase-admin';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
 import {CreateParticipantDto} from './create-participant.dto';
+import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
 
 // Get a database reference
 @Injectable()
@@ -137,6 +138,34 @@ export class ParticipantService {
 
         return participants
     }
+
+    async getTourRider(tourriderId: string): Promise<any> {
+        // todo ook ander punten toevoegen?
+        const tourrider: TourridersRead = await this.connection
+            .getRepository(Tourriders)
+            .createQueryBuilder('tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoinAndSelect('tourrider.predictions', 'tourriderpredicted')
+            .leftJoinAndSelect('tourriderpredicted.participant', 'participanthaspredicted')
+            // .leftJoinAndSelect('tourrider.team', 'team')
+            .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
+            .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
+            // .leftJoinAndSelect('tourrider.tourclassifications', 'tourclassifications')
+            // .leftJoinAndSelect('tourrider.mountainclassifications', 'mountainclassifications')
+            // .leftJoinAndSelect('tourrider.youthclassifications', 'youthclassifications')
+            // .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
+            .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
+            .where('tourrider.id = :id', {id: tourriderId})
+            .getOne();
+
+
+        tourrider.stageclassifications.map(sc => {
+            sc.stagePoints = this.calculatePoints(sc, 1);
+        });
+
+        return tourrider;
+    }
+
 
     async updateTable(tourId: string): Promise<any[]> {
 
