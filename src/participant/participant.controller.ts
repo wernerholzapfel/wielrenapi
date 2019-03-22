@@ -37,12 +37,10 @@ export class ParticipantController {
         return this.participantService.getTourRider(tourriderId);
     }
 
-
-
     @Post()
     async create(@Req() req, @Body() createParticipantDto: CreateParticipantDto) {
         this.logger.log('post participant');
         const newParticipant = Object.assign({}, createParticipantDto);
-        return await this.participantService.create(newParticipant);
+        return await this.participantService.create(newParticipant, req.user.email);
     }
 }

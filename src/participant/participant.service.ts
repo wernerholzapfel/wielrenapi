@@ -281,9 +281,9 @@ export class ParticipantService {
         return participants
     }
 
-    async create(participant: CreateParticipantDto): Promise<Participant> {
+    async create(participant: CreateParticipantDto, email: string): Promise<Participant> {
         const newParticipant: Participant = Object.assign(participant);
-        newParticipant.email = newParticipant.email.toLowerCase();
+        newParticipant.email = email.toLowerCase();
         return await this.participantRepository.save(newParticipant)
             .catch((err) => {
                 throw new HttpException({
