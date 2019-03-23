@@ -31,7 +31,7 @@ export class TourridersService {
             .getOne();
     }
 
-    async getDetails(tourId: string): Promise<Tourriders[]> {
+    async getDetails(tourId: string): Promise<TourridersRead[]> {
         const tourriders: TourridersRead[] = await this.connection
             .getRepository(Tourriders)
             .createQueryBuilder('tourrider')
@@ -84,6 +84,7 @@ export class TourridersService {
                 );
             Object.assign(rider, {waterdragerTruienPoints: this.determineWDTruienPunten(rider, teams)});
             Object.assign(rider, {waterdragerEtappePoints: this.determineWDEtappepunten(rider, teams, etappes)});
+            Object.assign(rider, {waterdragerTotalPoints: rider.waterdragerTruienPoints + rider.waterdragerEtappePoints});
             Object.assign(rider, {totalStagePoints: this.determineSCTotaalpunten(rider, teams, etappes.length)});
         });
         return tourriders;

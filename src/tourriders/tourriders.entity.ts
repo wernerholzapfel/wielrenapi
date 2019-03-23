@@ -59,4 +59,8 @@ export class Tourriders {
 
 export class TourridersRead extends Tourriders {
     stageclassifications: StageClassificationRead[];
+    waterdragerEtappePoints?: number;
+    waterdragerTruienPoints?: number;
+    waterdragerTotalPoints?: number;
+
 }
