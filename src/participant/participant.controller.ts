@@ -32,6 +32,11 @@ export class ParticipantController {
         return this.participantService.getEtappe(tourId, etappeId);
     }
 
+    @Get('/table/:tourId/latestetappe')
+    async getLastEtappe(@Param('tourId') tourId): Promise<Participant[]> {
+        return this.participantService.getLatestEtappe(tourId);
+    }
+
     @Get('/rider/:tourriderId')
     async getTourRider(@Param('tourriderId') tourriderId): Promise<any> {
         return this.participantService.getTourRider(tourriderId);

@@ -72,6 +72,21 @@ export class ParticipantService {
             .getMany();
 
     }
+    async getLatestEtappe(tourId: string): Promise<any[]> {
+        const etappe = await this.connection
+            .getRepository(Etappe)
+            .createQueryBuilder('etappe')
+            .leftJoin('etappe.tour', 'tour')
+            .leftJoinAndSelect('etappe.stageclassifications', 'stageclassifications')
+            .leftJoinAndSelect('stageclassifications.tourrider', 'tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .where('tour.id = :id', {id: tourId})
+            .andWhere('etappe.isDriven')
+            .orderBy('etappe.etappeNumber', 'DESC')
+            .getOne();
+
+        return await this.getEtappe(tourId, etappe.id);
+    }
 
     async getEtappe(tourId: string, etappeId): Promise<any[]> {
 
