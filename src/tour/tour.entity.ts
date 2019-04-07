@@ -33,6 +33,9 @@ export class Tour {
     @Column({default: false})
     hasEnded: boolean;
 
+    @Column({default: 1})
+    scoreTable: number;
+
     @OneToMany(type => Tourriders, tourriders => tourriders.tour)
     tourRiders: Tourriders[];
 

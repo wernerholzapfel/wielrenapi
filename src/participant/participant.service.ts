@@ -11,6 +11,7 @@ import * as admin from 'firebase-admin';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
 import {CreateParticipantDto} from './create-participant.dto';
 import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
+import {Tour} from '../tour/tour.entity';
 
 // Get a database reference
 @Injectable()
@@ -72,6 +73,7 @@ export class ParticipantService {
             .getMany();
 
     }
+
     async getLatestEtappe(tourId: string): Promise<any[]> {
         const etappe = await this.connection
             .getRepository(Etappe)
@@ -108,10 +110,11 @@ export class ParticipantService {
 
         const teams: Team[] = await this.getTeamClassifications(tourId);
         const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
+        const tour: Tour =  etappes[0].tour;
         let previousPosition = 1;
 
         participants.map(participant => {
-            this.logger.log('aantal predictions voor: ' + participant.displayName + ' is ' + participant.predictions.length);
+            // this.logger.log('aantal predictions voor: ' + participant.displayName + ' is ' + participant.predictions.length);
             [...participant.predictions]
                 .map(prediction => {
                     if (prediction.isWaterdrager) {
@@ -126,7 +129,7 @@ export class ParticipantService {
                                 );
                         if (prediction.rider.isOut && prediction.rider.latestEtappe.id === etappeId && !prediction.isWaterdrager) {
                             prediction.rider.stageclassifications.push({
-                                stagePoints: prediction.isBeschermdeRenner ? 0 : !prediction.isMeesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
+                                stagePoints: prediction.isBeschermdeRenner ? this.determineBeschermdeRennerIsOutPunten(tour.scoreTable) : !prediction.isMeesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
                                 etappe: prediction.rider.latestEtappe,
                             });
                         }
@@ -207,6 +210,7 @@ export class ParticipantService {
 
         const teams: Team[] = await this.getTeamClassifications(tourId);
         const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
+        const tour: Tour = etappes[0].tour;
         let previousPosition = 1;
 
         participants.map(participant => {
@@ -228,7 +232,7 @@ export class ParticipantService {
                                 );
                         if (prediction.rider.isOut && !prediction.isWaterdrager) {
                             prediction.rider.stageclassifications.push({
-                                stagePoints: prediction.isBeschermdeRenner ? 0 : !prediction.isMeesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
+                                stagePoints: prediction.isBeschermdeRenner ? this.determineBeschermdeRennerIsOutPunten(tour.scoreTable) : !prediction.isMeesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
                                 etappe: prediction.rider.latestEtappe,
                             });
                         }
@@ -311,7 +315,7 @@ export class ParticipantService {
     determinePredictionsTotalPoints(participant: ParticipantRead, hasEnded: boolean) {
         if (hasEnded) {
             return participant.predictions.reduce((totalPoints, prediction) => {
-                this.logger.log('determinePredictionsTotalPoints: ' + totalPoints);
+                // this.logger.log('determinePredictionsTotalPoints: ' + totalPoints);
                 return totalPoints +
                     this.getZeroValueIfUndefined(prediction.totalStagePoints) +
                     this.getZeroValueIfUndefined(prediction.youthPoints) +
@@ -321,7 +325,7 @@ export class ParticipantService {
             }, 0)
         } else {
             return participant.predictions.reduce((totalPoints, prediction) => {
-                this.logger.log('determinePredictionsTotalPoints: ' + totalPoints);
+                // this.logger.log('determinePredictionsTotalPoints: ' + totalPoints);
                 return totalPoints +
                     this.getZeroValueIfUndefined(prediction.totalStagePoints);
             }, 0)
@@ -457,15 +461,15 @@ export class ParticipantService {
                     return acc + value;
                 });
 
-            this.logger.log('totalteampoints wd: ' + prediction.rider.rider.surName + ' ' + totalTeampoints);
+            // this.logger.log('totalteampoints wd: ' + prediction.rider.rider.surName + ' ' + totalTeampoints);
             const riderPoints = newStage.position ? this.calculatePoints(newStage, etappeFactor) : 0;
-            this.logger.log('riderPoints wd: ' + prediction.rider.rider.surName + ' ' + riderPoints);
+            // this.logger.log('riderPoints wd: ' + prediction.rider.rider.surName + ' ' + riderPoints);
 
             const calculation = '((' + totalTeampoints + '-' + riderPoints + ') / (' + team.tourRiders.length + '-' + 1 + ')) - ' + riderPoints;
             const stagePointsWD = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
                 riderPoints);
 
-            this.logger.log('stagePointsWd: ' + prediction.rider.rider.surName + ' ' + stagePointsWD);
+            // this.logger.log('stagePointsWd: ' + prediction.rider.rider.surName + ' ' + stagePointsWD);
             Object.assign(newStage, {stagePoints: stagePointsWD, calculation: calculation});
             return newStage;
         });
@@ -560,6 +564,17 @@ export class ParticipantService {
             return eval('etappe' + sc.position) * factor;
         }
         return 0;
+    }
+
+    determineBeschermdeRennerIsOutPunten(scoreTable: number) {
+        switch (scoreTable) {
+            case 1:
+                return 0;
+            case 2:
+                return -40;
+            default:
+                return 0;
+        }
     }
 }
 
