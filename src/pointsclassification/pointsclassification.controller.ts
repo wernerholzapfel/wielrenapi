@@ -1,5 +1,5 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
+
+import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {PointsclassificationService} from './pointsclassification.service';
 import {Pointsclassification} from './pointsclassification.entity';
 import {CreatePointsclassificationDto} from './create-pointsclassification.dto';

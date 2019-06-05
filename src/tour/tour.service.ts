@@ -1,16 +1,16 @@
-import {Component, HttpStatus, Logger} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Tour} from './tour.entity';
 import {Connection, getConnection, getRepository, Repository} from 'typeorm';
-import {HttpException} from '@nestjs/core';
 import {Team} from '../teams/team.entity';
+import {CreateTourDto} from './create-tour.dto';
 
 export interface AddTeamsRequest {
     tour: Tour;
     teams: Team[];
 }
 
-@Component()
+@Injectable()
 export class TourService {
     private readonly logger = new Logger('TourService', true);
 
@@ -39,7 +39,7 @@ export class TourService {
             .getOne();
     }
 
-    async create(tour: Tour): Promise<Tour> {
+    async create(tour: CreateTourDto): Promise<Tour> {
         return await this.tourRepository.save(tour)
             .catch((err) => {
                 throw new HttpException({

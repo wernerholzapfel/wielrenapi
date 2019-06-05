@@ -3,11 +3,12 @@ import {Team} from '../teams/team.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
 import {Prediction} from '../prediction/prediction.entity';
 import {Etappe} from '../etappe/etappe.entity';
-import {Stageclassification} from '../stageclassification/stageclassification.entity';
+import {Stageclassification, StageClassificationRead} from '../stageclassification/stageclassification.entity';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
 import {Youthclassification} from '../youthclassification/youthclassification.entity';
 import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
 import {Pointsclassification} from '../pointsclassification/pointsclassification.entity';
+import {Headline} from '../headlines/headline.entity';
 
 @Entity()
 export class Tour {
@@ -31,6 +32,9 @@ export class Tour {
 
     @Column({default: false})
     hasEnded: boolean;
+
+    @Column({default: 1})
+    scoreTable: number;
 
     @OneToMany(type => Tourriders, tourriders => tourriders.tour)
     tourRiders: Tourriders[];
@@ -56,11 +60,17 @@ export class Tour {
     @OneToMany(type => Pointsclassification, pointscf => pointscf.tour)
     pointsclassifications: Pointsclassification[];
 
+    @OneToMany(type => Headline, headline => headline.tour)
+    headlines: Headline[];
+
     @ManyToMany(type => Team, team => team.tour)
     @JoinTable()
     teams: Team[];
 
 }
 
+export class TourRead extends Tour {
+    stageclassifications: StageClassificationRead[]
+}
 
 

@@ -1,5 +1,5 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
+
+import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {EtappeService} from './etappe.service';
 import {Etappe} from './etappe.entity';
 import {CreateEtappeDto} from './create-etappe.dto';

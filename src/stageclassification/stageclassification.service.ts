@@ -1,11 +1,10 @@
-import {Component, HttpStatus} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Stageclassification} from './stageclassification.entity';
-import {Connection, getConnection, Repository} from 'typeorm';
-import {HttpException} from '@nestjs/common';
+import {Connection, Repository} from 'typeorm';
 import {Etappe} from '../etappe/etappe.entity';
 
-@Component()
+@Injectable()
 export class StageclassificationService {
     constructor(@InjectRepository(Stageclassification)
                 private readonly stageclassificationRepository: Repository<Stageclassification>,
@@ -20,7 +19,7 @@ export class StageclassificationService {
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoinAndSelect('stageclassification.etappe', 'etappe')
             .where('etappe.id = :etappeId', {etappeId})
-            .orderBy("stageclassification.position", "ASC")
+            .orderBy('stageclassification.position', 'ASC')
             .getMany();
     }
 
@@ -55,8 +54,8 @@ export class StageclassificationService {
         await this.connection
             .createQueryBuilder()
             .update(Etappe)
-            .set({ isDriven: true })
-            .where("id = :id", { id: stageclassifications[0].etappe.id})
+            .set({isDriven: true})
+            .where('id = :id', {id: stageclassifications[0].etappe.id})
             .execute();
 
         return await this.connection

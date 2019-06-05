@@ -1,5 +1,5 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
+
+import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {MountainclassificationService} from './mountainclassification.service';
 import {Mountainclassification} from './mountainclassification.entity';
 import {CreateMountainclassificationDto} from './create-mountainclassification.dto';

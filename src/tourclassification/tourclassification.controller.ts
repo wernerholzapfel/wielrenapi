@@ -1,5 +1,5 @@
-import {Controller} from '@nestjs/common/utils/decorators/controller.decorator';
-import {Body, Get, Logger, Param, Post, Req} from '@nestjs/common';
+
+import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {TourclassificationService} from './tourclassification.service';
 import {Tourclassification} from './tourclassification.entity';
 import {CreateTourclassificationDto} from './create-tourclassification.dto';

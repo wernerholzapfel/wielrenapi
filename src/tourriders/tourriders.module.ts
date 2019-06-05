@@ -6,7 +6,7 @@ import {TourridersController} from './tourriders.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Tourriders])],
-    components: [TourridersService],
+    providers: [TourridersService],
     controllers: [TourridersController],
 })
 export class TourridersModule {}

@@ -6,7 +6,7 @@ import {Rider} from '../rider/rider.entity';
 import {Team} from '../teams/team.entity';
 import {Tour} from '../tour/tour.entity';
 import {Prediction} from '../prediction/prediction.entity';
-import {Stageclassification} from '../stageclassification/stageclassification.entity';
+import {Stageclassification, StageClassificationRead} from '../stageclassification/stageclassification.entity';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
 import {Youthclassification} from '../youthclassification/youthclassification.entity';
 import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
@@ -26,7 +26,7 @@ export class Tourriders {
     @Column({default: false})
     isOut: boolean;
 
-    @ManyToOne(type => Etappe, etappe => etappe.tourRiders)
+    @ManyToOne(type => Etappe, etappe => etappe.id)
     latestEtappe: Etappe;
 
     @ManyToOne(type => Rider, rider => rider.tourRiders)
@@ -55,4 +55,12 @@ export class Tourriders {
 
     @OneToMany(type => Pointsclassification, pointscf  => pointscf.tourrider)
     pointsclassifications: Pointsclassification[];
+}
+
+export class TourridersRead extends Tourriders {
+    stageclassifications: StageClassificationRead[];
+    waterdragerEtappePoints?: number;
+    waterdragerTruienPoints?: number;
+    waterdragerTotalPoints?: number;
+
 }

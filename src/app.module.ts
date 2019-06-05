@@ -1,4 +1,4 @@
-import {Logger, Module, NestModule, RequestMethod} from '@nestjs/common';
+import {Logger, MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import 'dotenv/config';
@@ -9,7 +9,6 @@ import {TourModule} from './tour/tour.module';
 import {TourridersModule} from './tourriders/tourriders.module';
 import {PredictionModule} from './prediction/prediction.module';
 import {ParticipantModule} from './participant/participant.module';
-import {MiddlewaresConsumer} from '@nestjs/common/interfaces/middlewares';
 import {AddFireBaseUserToRequest} from './authentication.middleware';
 import {EtappeModule} from './etappe/etappe.module';
 import {StageclassificationModule} from './stageclassification/stageclassification.module';
@@ -18,6 +17,7 @@ import {YouthclassificationModule} from './youthclassification/youthclassificati
 import {MountainclassificationModule} from './mountainclassification/mountainclassification.module';
 import {PointsclassificationModule} from './pointsclassification/pointsclassification.module';
 import {PredictionMiddleware} from './prediction.middleware';
+import {HeadlineModule} from './headlines/headline.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -33,14 +33,15 @@ import {PredictionMiddleware} from './prediction.middleware';
         TourclassificationModule,
         YouthclassificationModule,
         MountainclassificationModule,
-        PointsclassificationModule],
+        PointsclassificationModule,
+        HeadlineModule],
     controllers: [AppController],
-    components: [],
+    providers: [],
 })
 export class AppModule implements NestModule {
     private readonly logger = new Logger('AppModule', true);
 
-    configure(consumer: MiddlewaresConsumer): void {
+    configure(consumer: MiddlewareConsumer): void {
 
         consumer.apply(AddFireBaseUserToRequest).forRoutes(
             {path: '/**', method: RequestMethod.POST},

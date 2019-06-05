@@ -1,21 +1,22 @@
-import {Component, HttpStatus} from '@nestjs/common';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Rider} from './rider.entity';
 import {Repository} from 'typeorm';
-import {HttpException} from '@nestjs/core';
+import {CreateRiderDto} from './create-rider.dto';
 
-@Component()
+@Injectable()
 export class RiderService {
     constructor(
         @InjectRepository(Rider)
         private readonly riderRepository: Repository<Rider>,
-    ) {}
+    ) {
+    }
 
     async findAll(): Promise<Rider[]> {
         return await this.riderRepository.find();
     }
 
-    async create(rider: Rider): Promise<Rider> {
+    async create(rider: CreateRiderDto): Promise<Rider> {
         return await this.riderRepository.save(rider)
             .catch((err) => {
                 throw new HttpException({

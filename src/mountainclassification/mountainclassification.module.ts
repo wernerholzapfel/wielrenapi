@@ -6,7 +6,7 @@ import {MountainclassificationController} from './mountainclassification.control
 
 @Module({
     imports: [TypeOrmModule.forFeature([Mountainclassification])],
-    components: [MountainclassificationService],
+    providers: [MountainclassificationService],
     controllers: [MountainclassificationController],
 })
 export class MountainclassificationModule {}

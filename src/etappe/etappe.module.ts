@@ -6,7 +6,7 @@ import {EtappeController} from './etappe.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Etappe])],
-    components: [EtappeService],
+    providers: [EtappeService],
     controllers: [EtappeController],
 })
 export class EtappeModule {}
