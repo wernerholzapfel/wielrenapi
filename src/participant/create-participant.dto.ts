@@ -1,4 +1,4 @@
-import {IsBoolean, IsDefined, IsString, IsDateString, Length} from 'class-validator';
+import {IsDefined, IsString} from 'class-validator';
 
 export class CreateParticipantDto {
     readonly id: string;
