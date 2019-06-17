@@ -1,7 +1,7 @@
 import {HttpStatus, Injectable, Logger, HttpException} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Tourriders, TourridersRead} from './tourriders.entity';
-import {Connection, Repository} from 'typeorm';
+import {Connection, DeleteResult, Repository} from 'typeorm';
 import {Tour, TourRead} from '../tour/tour.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
@@ -100,6 +100,15 @@ export class TourridersService {
                     statusCode: HttpStatus.BAD_REQUEST,
                 }, HttpStatus.BAD_REQUEST);
             });
+    }
+
+    async delete(tourriderId): Promise<DeleteResult> {
+        return await this.connection
+            .getRepository(Tourriders)
+            .createQueryBuilder()
+            .delete()
+            .where("id = :id", { id: tourriderId })
+            .execute();
     }
 
     async getTeamClassifications(id: string): Promise<Team[]> {

@@ -1,5 +1,5 @@
 
-import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {TourridersService} from './tourriders.service';
 import {Tourriders} from './tourriders.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
@@ -28,5 +28,10 @@ export class TourridersController {
         this.logger.log('post tourriders');
         const newTourriders = Object.assign({}, createTourridersDto);
         return await this.tourridersService.create(newTourriders);
+    }
+
+    @Delete(':tourridersId')
+    async delete(@Param('tourridersId') tourridersId) {
+        return await this.tourridersService.delete(tourridersId);
     }
 }

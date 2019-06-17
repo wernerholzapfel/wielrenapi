@@ -9,7 +9,7 @@ import {TourModule} from './tour/tour.module';
 import {TourridersModule} from './tourriders/tourriders.module';
 import {PredictionModule} from './prediction/prediction.module';
 import {ParticipantModule} from './participant/participant.module';
-import {AddFireBaseUserToRequest} from './authentication.middleware';
+import {AddFireBaseUserToRequest, AdminMiddleware} from './authentication.middleware';
 import {EtappeModule} from './etappe/etappe.module';
 import {StageclassificationModule} from './stageclassification/stageclassification.module';
 import {TourclassificationModule} from './tourclassification/tourclassification.module';
@@ -50,8 +50,14 @@ export class AppModule implements NestModule {
         consumer.apply(PredictionMiddleware).forRoutes(
             {path: '/predictions', method: RequestMethod.POST},
         );
+        consumer.apply(AdminMiddleware).forRoutes(
+            {path: '/**', method: RequestMethod.DELETE},
+        )
 
         // admin.auth().setCustomUserClaims('ENPg7LZlewdswg6vqVd65K4QjQy1', {admin: true}).then(() => {
+        //     this.logger.log('customerset');
+        // });
+        // admin.auth().updateUser('ENPg7LZlewdswg6vqVd65K4QjQy1', {displayName: 'Tom Dijkerman'}).then(() => {
         //     this.logger.log('customerset');
         // });
     }
