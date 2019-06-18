@@ -26,7 +26,7 @@ export class Prediction {
     @Column({default: false})
     isComplete: boolean;
 
-    @ManyToOne(type => Tourriders, rider => rider.predictions)
+    @ManyToOne(type => Tourriders, rider => rider.predictions, { onDelete: 'CASCADE' })
     rider: Tourriders;
 
     @ManyToOne(type => Tour, tour => tour.predictions)

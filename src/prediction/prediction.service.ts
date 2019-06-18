@@ -97,24 +97,26 @@ export class PredictionService {
         });
 
         await predictions.forEach(async prediction => {
-            const value: Prediction = Object.assign({
-                rider: prediction.rider,
-                isRider: prediction.isRider,
-                isBeschermdeRenner: prediction.isBeschermdeRenner,
-                isLinkebal: prediction.isLinkebal,
-                isMeesterknecht: prediction.isMeesterknecht,
-                isWaterdrager: prediction.isWaterdrager,
-                isComplete: prediction.isComplete,
-                tour: body.tour,
-                participant: participant
-            });
-            await this.predictionRepository.save(value)
-                .catch((err) => {
-                    throw new HttpException({
-                        message: err.message,
-                        statusCode: HttpStatus.BAD_REQUEST,
-                    }, HttpStatus.BAD_REQUEST);
+            if (prediction) {
+                const value: Prediction = Object.assign({
+                    rider: prediction.rider,
+                    isRider: prediction.isRider,
+                    isBeschermdeRenner: prediction.isBeschermdeRenner,
+                    isLinkebal: prediction.isLinkebal,
+                    isMeesterknecht: prediction.isMeesterknecht,
+                    isWaterdrager: prediction.isWaterdrager,
+                    isComplete: prediction.isComplete,
+                    tour: body.tour,
+                    participant: participant
                 });
+                await this.predictionRepository.save(value)
+                    .catch((err) => {
+                        throw new HttpException({
+                            message: err.message,
+                            statusCode: HttpStatus.BAD_REQUEST,
+                        }, HttpStatus.BAD_REQUEST);
+                    });
+            }
         });
 
         return await this.connection
