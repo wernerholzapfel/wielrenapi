@@ -1,5 +1,5 @@
 
-import {Body, Controller, Delete, Get, Logger, Param, Post, Req} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Logger, Param, Post, Put, Req} from '@nestjs/common';
 import {TourridersService} from './tourriders.service';
 import {Tourriders} from './tourriders.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
@@ -21,6 +21,11 @@ export class TourridersController {
     @Get('/details/:tourId')
     async getDetails(@Param('tourId') tourId): Promise<any[]> {
         return this.tourridersService.getDetails(tourId);
+    }
+
+    @Put('/details/:tourId')
+    async updateTourridersFirebase(@Param('tourId') tourId): Promise<any[]> {
+        return this.tourridersService.updateTourridersFirebase(tourId);
     }
 
     @Post()

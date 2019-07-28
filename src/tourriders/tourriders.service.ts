@@ -9,6 +9,7 @@ import {Stageclassification} from '../stageclassification/stageclassification.en
 import {Prediction} from '../prediction/prediction.entity';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class TourridersService {
@@ -91,6 +92,16 @@ export class TourridersService {
 
     }
 
+
+    async updateTourridersFirebase(tourId: string) {
+        const tourriders = await this.getDetails(tourId);
+        const db = admin.database();
+        const ref = db.ref(tourId);
+
+        const rennersRef = ref.child('renners');
+        rennersRef.set(tourriders);
+        return tourriders;
+    }
 
     async create(tourriders: CreateTourridersDto): Promise<Tourriders> {
         return await this.tourridersRepository.save(tourriders)

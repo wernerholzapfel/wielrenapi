@@ -184,7 +184,6 @@ export class ParticipantService {
         return tourrider;
     }
 
-
     async updateTable(tourId: string): Promise<any[]> {
 
         const participants: ParticipantRead[] = await this.connection
