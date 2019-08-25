@@ -87,7 +87,7 @@ export class ParticipantService {
             .orderBy('etappe.etappeNumber', 'DESC')
             .getOne();
 
-        return await this.getEtappe(tourId, etappe.id);
+        return await this.getEtappe(tourId, etappe.id ? etappe.id : null);
     }
 
     async getEtappe(tourId: string, etappeId): Promise<any[]> {
@@ -209,7 +209,7 @@ export class ParticipantService {
 
         const teams: Team[] = await this.getTeamClassifications(tourId);
         const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
-        const tour: Tour = etappes[0].tour;
+        const tour: any = etappes.length > 0 ?  etappes[0].tour : {id: tourId, hasEnded: false};
         let previousPosition = 1;
 
         participants.map(participant => {
@@ -256,13 +256,13 @@ export class ParticipantService {
                     Object.assign(prediction, {deltaStagePoints: this.determineDeltaScTotalpoints(prediction, teams, etappes)});
 
                 });
-            Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant, etappes[0].tour.hasEnded)});
+            Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant, tour.hasEnded)});
             Object.assign(participant, {totalStagePoints: this.determinePredictionsTotalPoints(participant, false)});
             Object.assign(participant, {totalTourPoints: this.determineTotalTourPoints(participant.predictions)});
             Object.assign(participant, {totalMountainPoints: this.determineTotalMountainPoints(participant.predictions)});
             Object.assign(participant, {totalYouthPoints: this.determineTotalYouthPoints(participant.predictions)});
             Object.assign(participant, {totalPointsPoints: this.determineTotalPointsPoints(participant.predictions)});
-            Object.assign(participant, {deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant.predictions, etappes[0].tour.hasEnded)});
+            Object.assign(participant, {deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant.predictions, tour.hasEnded)});
             Object.assign(participant, {previousTotalPoints: (participant.totalPoints - participant.deltaTotalStagePoints)})
         });
 

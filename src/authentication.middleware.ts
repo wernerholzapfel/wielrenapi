@@ -7,7 +7,6 @@ export class AddFireBaseUserToRequest implements NestMiddleware {
     private readonly logger = new Logger('AddFireBaseUserToRequest', true);
 
     use(req, res, next) {
-        this.logger.log('werner1');
         const extractedToken = getToken(req.headers);
         if (extractedToken) {
             admin.auth().verifyIdToken(extractedToken)
@@ -17,7 +16,6 @@ export class AddFireBaseUserToRequest implements NestMiddleware {
                     admin.auth().getUser(uid)
                         .then(userRecord => {
                             // See the UserRecord reference doc for the contents of userRecord.
-                            console.log('Successfully fetched user data:', userRecord.toJSON());
                             req.user = userRecord;
                             next()
                         })
