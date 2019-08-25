@@ -87,7 +87,7 @@ export class ParticipantService {
             .orderBy('etappe.etappeNumber', 'DESC')
             .getOne();
 
-        return await this.getEtappe(tourId, etappe.id ? etappe.id : null);
+        return await this.getEtappe(tourId, etappe && etappe.id ? etappe.id : null);
     }
 
     async getEtappe(tourId: string, etappeId): Promise<any[]> {
@@ -110,7 +110,7 @@ export class ParticipantService {
 
         const teams: Team[] = await this.getTeamClassifications(tourId);
         const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
-        const tour: Tour =  etappes[0].tour;
+        const tour: any = {id: tourId};
         let previousPosition = 1;
 
         participants.map(participant => {
