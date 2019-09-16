@@ -26,4 +26,8 @@ export class ParticipantRead extends Participant {
     previousTotalPoints?: number;
     totalPoints?: number;
     deltaTotalStagePoints?: number;
+    totalYouthPoints?: number;
+    totalMountainPoints?: number;
+    totalTourPoints?: number;
+    totalPointsPoints?: number;
 }

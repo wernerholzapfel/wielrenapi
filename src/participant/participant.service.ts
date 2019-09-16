@@ -92,7 +92,7 @@ export class ParticipantService {
 
     async getEtappe(tourId: string, etappeId): Promise<any[]> {
 
-        this.logger.log('tourId:' + tourId + 'etappeId: ' + etappeId);
+        // this.logger.log('tourId:' + tourId + 'etappeId: ' + etappeId);
         const participants: any = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
@@ -262,7 +262,7 @@ export class ParticipantService {
             Object.assign(participant, {totalMountainPoints: this.determineTotalMountainPoints(participant.predictions)});
             Object.assign(participant, {totalYouthPoints: this.determineTotalYouthPoints(participant.predictions)});
             Object.assign(participant, {totalPointsPoints: this.determineTotalPointsPoints(participant.predictions)});
-            Object.assign(participant, {deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant.predictions, tour.hasEnded)});
+            Object.assign(participant, {deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant, tour.hasEnded)});
             Object.assign(participant, {previousTotalPoints: (participant.totalPoints - participant.deltaTotalStagePoints)})
         });
 
@@ -293,8 +293,8 @@ export class ParticipantService {
 
         const standRef = ref.child('stand');
         standRef.set(participants);
-        const lastUpdated = ref.child('lastUpdated');
-        lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
+        // const lastUpdated = ref.child('lastUpdated');
+        // lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
         return participants
     }
@@ -511,18 +511,18 @@ export class ParticipantService {
         }, 0);
     }
 
-    determineDeltaTotalstagePoints(predictions: PredictionRead[], hasEnded: boolean) {
-        const deltaStagePoints = predictions.reduce((deltaStagePoints, prediction) => {
+    determineDeltaTotalstagePoints(participant: ParticipantRead, hasEnded: boolean) {
+        const deltaStagePoints = participant.predictions.reduce((deltaStagePoints, prediction) => {
             return (prediction.deltaStagePoints) ? prediction.deltaStagePoints + deltaStagePoints : deltaStagePoints;
         }, 0);
 
         if (hasEnded) {
             // todo heeft nooit kunnen werken?
             return deltaStagePoints +
-                this.getZeroValueIfUndefined(predictions[0].youthPoints) +
-                this.getZeroValueIfUndefined(predictions[0].mountainPoints) +
-                this.getZeroValueIfUndefined(predictions[0].tourPoints) +
-                this.getZeroValueIfUndefined(predictions[0].pointsPoints);
+                this.getZeroValueIfUndefined(participant.totalYouthPoints) +
+                this.getZeroValueIfUndefined(participant.totalMountainPoints) +
+                this.getZeroValueIfUndefined(participant.totalTourPoints) +
+                this.getZeroValueIfUndefined(participant.totalPointsPoints);
         } else {
             return deltaStagePoints
         }
