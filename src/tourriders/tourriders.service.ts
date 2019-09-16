@@ -294,15 +294,15 @@ export class TourridersService {
                 return acc + value;
             });
 
-        this.logger.log('totalteampoints wd: ' + rider.rider.surName + ' ' + totalTeampoints);
+        // this.logger.log('totalteampoints wd: ' + rider.rider.surName + ' ' + totalTeampoints);
         const riderPoints = newStage.position ? this.calculatePoints(newStage, etappeFactor) : 0;
-        this.logger.log('riderPoints wd: ' + rider.rider.surName + ' ' + riderPoints);
+        // this.logger.log('riderPoints wd: ' + rider.rider.surName + ' ' + riderPoints);
 
         const calculation = '((' + totalTeampoints + '-' + riderPoints + ') / (' + team.tourRiders.length + '-' + 1 + ')) - ' + riderPoints;
         const stagePointsWD = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
             riderPoints);
 
-        this.logger.log('stagePointsWd: ' + newStage.etappe.etappeNumber + ' - ' + rider.rider.surName + ' ' + stagePointsWD);
+        // this.logger.log('stagePointsWd: ' + newStage.etappe.etappeNumber + ' - ' + rider.rider.surName + ' ' + stagePointsWD);
         Object.assign(newStage, {stagePoints: stagePointsWD, calculation: calculation});
         return newStage;
     }
