@@ -107,7 +107,6 @@ export class ParticipantService {
             .where('tour.id = :id', {id: tourId})
             .getMany();
 
-
         const teams: Team[] = await this.getTeamClassifications(tourId);
         const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
         const tour: any = {id: tourId};
@@ -120,8 +119,7 @@ export class ParticipantService {
                     if (prediction.isWaterdrager) {
                         const newStageClassifications: Stageclassification[] = this.determineWDPunten(prediction, etappes, teams, etappeFactor);
                         prediction.rider.stageclassifications = [...newStageClassifications.filter(sc => sc.etappe.id === etappeId)];
-                    }
-                    else {
+                    } else {
                         prediction.rider.stageclassifications =
                             [...prediction.rider.stageclassifications.filter(sc => sc.etappe && sc.etappe.id === etappeId)]
                                 .map(sc =>
@@ -141,7 +139,7 @@ export class ParticipantService {
         });
 
         participants.sort((a, b) => {
-            return b.totalStagePoints - a.totalStagePoints
+            return b.totalStagePoints - a.totalStagePoints;
         });
 
         // assign position
@@ -154,7 +152,7 @@ export class ParticipantService {
             }
         });
 
-        return participants
+        return participants;
     }
 
     async getTourRider(tourriderId: string): Promise<any> {
@@ -175,7 +173,6 @@ export class ParticipantService {
             .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
             .where('tourrider.id = :id', {id: tourriderId})
             .getOne();
-
 
         tourrider.stageclassifications.map(sc => {
             sc.stagePoints = this.calculatePoints(sc, 1);
@@ -206,10 +203,9 @@ export class ParticipantService {
             .where('tour.id = :id', {id: tourId})
             .getMany();
 
-
         const teams: Team[] = await this.getTeamClassifications(tourId);
         const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
-        const tour: any = etappes.length > 0 ?  etappes[0].tour : {id: tourId, hasEnded: false};
+        const tour: any = etappes.length > 0 ? etappes[0].tour : {id: tourId, hasEnded: false};
         let previousPosition = 1;
 
         participants.map(participant => {
@@ -222,8 +218,7 @@ export class ParticipantService {
                         Object.assign(prediction, {mountainPoints: this.determineWDMountainPunten(prediction, teams, mountainFactor)});
                         Object.assign(prediction, {youthPoints: this.determineWDYouthPunten(prediction, teams, youthFactor)});
                         Object.assign(prediction, {pointsPoints: this.determineWDPointsPunten(prediction, teams, pointsFactor)});
-                    }
-                    else {
+                    } else {
                         prediction.rider.stageclassifications =
                             [...prediction.rider.stageclassifications]
                                 .map(sc =>
@@ -263,11 +258,11 @@ export class ParticipantService {
             Object.assign(participant, {totalYouthPoints: this.determineTotalYouthPoints(participant.predictions)});
             Object.assign(participant, {totalPointsPoints: this.determineTotalPointsPoints(participant.predictions)});
             Object.assign(participant, {deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant, tour.hasEnded)});
-            Object.assign(participant, {previousTotalPoints: (participant.totalPoints - participant.deltaTotalStagePoints)})
+            Object.assign(participant, {previousTotalPoints: (participant.totalPoints - participant.deltaTotalStagePoints)});
         });
 
         participants.sort((a, b) => {
-            return b.previousTotalPoints - a.previousTotalPoints
+            return b.previousTotalPoints - a.previousTotalPoints;
         }).map((participant, index) => {
             if (index > 0 && participant.previousTotalPoints === participants[index - 1].previousTotalPoints) {
                 Object.assign(participant, {previousPosition: previousPosition});
@@ -278,7 +273,7 @@ export class ParticipantService {
         });
 
         participants.sort((a, b) => {
-            return b.totalPoints - a.totalPoints
+            return b.totalPoints - a.totalPoints;
         }).map((participant, index) => {
             if (index > 0 && participant.totalPoints === participants[index - 1].totalPoints) {
                 Object.assign(participant, {position: previousPosition});
@@ -296,7 +291,20 @@ export class ParticipantService {
         const lastUpdated = ref.child('lastUpdated');
         lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
-        return participants
+        admin.messaging().sendToDevice(
+            'emwL9z2ezkaCtJJJ8Q7zba:APA91bEusyrxdBokagifRMLHDyornA0cvUDA9dhtJI0Soa8laZNXqCanoKMVizqOe4T5HbRMJtZ_nOxm51Vu_VNc8iTqACqsSzEujJPsYQomH7mTp_ot1nyHB3hvkxT_0FfMmUBprHfl',
+            {
+                notification: {
+                    title: 'Het Wielerspel',
+                    body: 'De stand is geupdate'
+                }
+            }).then(response => {
+            this.logger.log(response);
+        }).catch(err => {
+            this.logger.log(err);
+        });
+
+        return participants;
     }
 
     async create(participant: CreateParticipantDto, email: string): Promise<Participant> {
@@ -321,13 +329,13 @@ export class ParticipantService {
                     this.getZeroValueIfUndefined(prediction.mountainPoints) +
                     this.getZeroValueIfUndefined(prediction.tourPoints) +
                     this.getZeroValueIfUndefined(prediction.pointsPoints);
-            }, 0)
+            }, 0);
         } else {
             return participant.predictions.reduce((totalPoints, prediction) => {
                 // this.logger.log('determinePredictionsTotalPoints: ' + totalPoints);
                 return totalPoints +
                     this.getZeroValueIfUndefined(prediction.totalStagePoints);
-            }, 0)
+            }, 0);
         }
 
     }
@@ -524,7 +532,7 @@ export class ParticipantService {
                 this.getZeroValueIfUndefined(participant.totalTourPoints) +
                 this.getZeroValueIfUndefined(participant.totalPointsPoints);
         } else {
-            return deltaStagePoints
+            return deltaStagePoints;
         }
 
     }
@@ -538,20 +546,20 @@ export class ParticipantService {
 
     determinePunten(sc: StageClassificationRead, prediction: Prediction, factor: number) {
         if (prediction.isRider) {
-            return this.calculatePoints(sc, factor)
+            return this.calculatePoints(sc, factor);
         }
         if (prediction.isBeschermdeRenner) {
-            return this.calculatePoints(sc, factor)
+            return this.calculatePoints(sc, factor);
         }
         if (prediction.isMeesterknecht) {
             if (prediction.rider.isOut && prediction.rider.latestEtappe && sc.etappe && prediction.rider.latestEtappe.id === sc.etappe.id) {
                 return -1 * prediction.rider.waarde;
             } else {
-                return -1 * this.calculatePoints(sc, factor)
+                return -1 * this.calculatePoints(sc, factor);
             }
         }
         if (prediction.isLinkebal) {
-            return 2 * this.calculatePoints(sc, factor)
+            return 2 * this.calculatePoints(sc, factor);
         }
         if (prediction.isWaterdrager) {
             return null;
@@ -576,7 +584,6 @@ export class ParticipantService {
         }
     }
 }
-
 
 const etappe1 = 60;
 const etappe2 = 52;
