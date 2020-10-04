@@ -109,7 +109,11 @@ export class ParticipantService {
 
         const teams: Team[] = await this.getTeamClassifications(tourId);
         const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
-        const tour: any = {id: tourId};
+        const tour: Tour = await this.connection
+                .getRepository(Tour)
+                .createQueryBuilder('tour')
+                .where('tour.id = :id', {id: tourId})
+                .getOne();
         let previousPosition = 1;
 
         participants.map(participant => {
