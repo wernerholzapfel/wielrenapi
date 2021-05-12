@@ -17,7 +17,7 @@ import {Headline} from './headlines/headline.entity';
 // @ts-ignore
 export const ormconfig: TypeOrmModuleOptions = {
     type: 'postgres',
-    url: process.env.DATABASE_URL,
+    url: process.env.DATABASE_URL_ELEPHANT,
     // @ts-ignore
     ssl:  {rejectUnauthorized: false},
     entities: [
@@ -35,5 +35,5 @@ export const ormconfig: TypeOrmModuleOptions = {
         Pointsclassification,
         Headline],
     logging: false,
-    synchronize: false, // DEV only, do not use on PROD!
+    synchronize: true, // DEV only, do not use on PROD!
 };
