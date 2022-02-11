@@ -45,14 +45,15 @@ export class AppModule implements NestModule {
 
         consumer.apply(AddFireBaseUserToRequest).forRoutes(
             {path: '/**', method: RequestMethod.POST},
-            {path: '/predictions/user/**', method: RequestMethod.GET},
-            {path: '/participants/loggedIn', method: RequestMethod.GET});
-        consumer.apply(PredictionMiddleware).forRoutes(
-            {path: '/predictions', method: RequestMethod.POST},
-        );
-        consumer.apply(AdminMiddleware).forRoutes(
             {path: '/**', method: RequestMethod.DELETE},
-        )
+            {path: '/predictions/user/**', method: RequestMethod.GET},
+            {path: '/participants/loggedIn', method: RequestMethod.GET},
+        );
+        consumer.apply(PredictionMiddleware).forRoutes(
+            {path: '/predictions', method: RequestMethod.POST},);
+        consumer.apply(AdminMiddleware).forRoutes(
+            {path: '/tourriders/**', method: RequestMethod.DELETE},
+        );
 
         // admin.auth().setCustomUserClaims('ENPg7LZlewdswg6vqVd65K4QjQy1', {admin: true}).then(() => {
         //     this.logger.log('customerset');
