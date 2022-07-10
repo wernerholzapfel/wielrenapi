@@ -5,14 +5,14 @@
     "noImplicitAny": false,
     "removeComments": true,
     "noLib": false,
-    "lib": ["es6", "dom"],
+//    "lib": ["es6", "dom"],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "es6",
     "sourceMap": true,
     "allowJs": true,
     "outDir": "./dist",
-    "baseUrl": "./src"
+//    "baseUrl": "./src"
   },
   "include": [
     "src/**/*"
