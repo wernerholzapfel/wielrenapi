@@ -1,4 +1,4 @@
-import {CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable, Logger} from '@nestjs/common';
+import {CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable} from '@nestjs/common';
 import {Participant, ParticipantRead} from './participant.entity';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Connection, Repository} from 'typeorm';
@@ -12,7 +12,7 @@ import {Tourclassification} from '../tourclassification/tourclassification.entit
 import {CreateParticipantDto} from './create-participant.dto';
 import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
 import {Tour} from '../tour/tour.entity';
-import {Cache} from 'Cache-Manager';
+import {Cache} from 'cache-manager';
 
 // Get a database reference
 @Injectable()
