@@ -189,7 +189,7 @@ export class ParticipantService {
         return tourrider;
     }
 
-    async invalidateCacheAndSetLastUpdated(tourId): Promise<Participant[]> {
+    async invalidateCacheAndSetLastUpdated(tourId): Promise<void> {
 
         await this.cacheManager.reset()
         const db = admin.database();
@@ -198,9 +198,8 @@ export class ParticipantService {
         // const standRef = ref.child('stand');
         // standRef.set(participants);
         const lastUpdated = ref.child('lastUpdated');
-        lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
+        return lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
-        return this.getTable(tourId)
         // admin.messaging().sendToDevice(
         //     'emwL9z2ezkaCtJJJ8Q7zba:APA91bEusyrxdBokagifRMLHDyornA0cvUDA9dhtJI0Soa8laZNXqCanoKMVizqOe4T5HbRMJtZ_nOxm51Vu_VNc8iTqACqsSzEujJPsYQomH7mTp_ot1nyHB3hvkxT_0FfMmUBprHfl',
         //     {

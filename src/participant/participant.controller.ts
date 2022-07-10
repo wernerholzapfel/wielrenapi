@@ -27,7 +27,7 @@ export class ParticipantController {
     }
 
     @Get('/updateTable/:id')
-    async updateTable(@Param('id') id): Promise<Participant[]> {
+    async updateTable(@Param('id') id): Promise<void> {
         return this.participantService.invalidateCacheAndSetLastUpdated(id);
     }
 
