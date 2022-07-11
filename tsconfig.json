@@ -12,7 +12,10 @@
     "sourceMap": true,
     "allowJs": true,
     "outDir": "./dist",
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "src/**/*"
