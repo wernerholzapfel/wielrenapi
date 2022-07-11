@@ -17,7 +17,7 @@ export class AddFireBaseUserToRequest implements NestMiddleware {
                         .then(userRecord => {
                             // See the UserRecord reference doc for the contents of userRecord.
                             req.user = userRecord;
-                            next()
+                            next();
                         })
                         .catch(error => {
                             console.log('Error fetching user data:', error);
