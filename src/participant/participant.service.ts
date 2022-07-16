@@ -1,4 +1,4 @@
-import {CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable} from '@nestjs/common';
+import {CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable, Logger} from '@nestjs/common';
 import {Participant, ParticipantRead} from './participant.entity';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Connection, Repository} from 'typeorm';
@@ -17,6 +17,7 @@ import {Cache} from 'cache-manager';
 // Get a database reference
 @Injectable()
 export class ParticipantService {
+    private readonly logger = new Logger('ParticipantService', true);
 
     constructor(
         @InjectRepository(Participant)
@@ -194,25 +195,23 @@ export class ParticipantService {
         await this.cacheManager.reset()
         const db = admin.database();
         const ref = db.ref(tourId);
-        //
-        // const standRef = ref.child('stand');
-        // standRef.set(participants);
+
         const lastUpdated = ref.child('lastUpdated');
-        return lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
+        lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
-        // admin.messaging().sendToDevice(
-        //     'emwL9z2ezkaCtJJJ8Q7zba:APA91bEusyrxdBokagifRMLHDyornA0cvUDA9dhtJI0Soa8laZNXqCanoKMVizqOe4T5HbRMJtZ_nOxm51Vu_VNc8iTqACqsSzEujJPsYQomH7mTp_ot1nyHB3hvkxT_0FfMmUBprHfl',
-        //     {
-        //         notification: {
-        //             title: 'Het Wielerspel',
-        //             body: 'De stand is geupdate'
-        //         }
-        //     }).then(response => {
-        //     this.logger.log(response);
-        // }).catch(err => {
-        //     this.logger.log(err);
-        // });
-
+        admin.messaging().sendToDevice(
+            'cTBoX8_6BEqBnGTMPSqNwf:APA91bFZtbbfIElGBikmrJ2lh5h2yjhoy9gSK9wsheqsYnsCNH2R6-37vEVuKXZnXmswRK79HvSd75babtTEx4ySGSPOqOVPRDnM3jrZGOvLfHqq5GJjDLQ5Hs6TlFuZjyXYaJSX1T-2',
+            {
+                notification: {
+                    title: 'Het Wielerspel',
+                    body: 'De stand is geupdate'
+                }
+            }).then(response => {
+            this.logger.log(response);
+        }).catch(err => {
+            this.logger.log(err);
+        });
+        return;
     }
 
     async getTable(tourId: string): Promise<any[]> {
