@@ -13,6 +13,7 @@ import {Mountainclassification} from './mountainclassification/mountainclassific
 import {Pointsclassification} from './pointsclassification/pointsclassification.entity';
 import {TypeOrmModuleOptions} from '@nestjs/typeorm';
 import {Headline} from './headlines/headline.entity';
+import {PredictionScore} from './prediction-score/prediction-score.entity';
 
 // @ts-ignore
 export const ormconfig: TypeOrmModuleOptions = {
@@ -33,7 +34,8 @@ export const ormconfig: TypeOrmModuleOptions = {
         Youthclassification,
         Mountainclassification,
         Pointsclassification,
+        PredictionScore,
         Headline],
-    logging: false,
+    logging: true,
     synchronize: true, // DEV only, do not use on PROD!
 };

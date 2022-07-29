@@ -18,6 +18,7 @@ import {MountainclassificationModule} from './mountainclassification/mountaincla
 import {PointsclassificationModule} from './pointsclassification/pointsclassification.module';
 import {PredictionMiddleware} from './prediction.middleware';
 import {HeadlineModule} from './headlines/headline.module';
+import { PredictionScoreModule } from './prediction-score/prediction-score.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -38,7 +39,8 @@ import {HeadlineModule} from './headlines/headline.module';
         YouthclassificationModule,
         MountainclassificationModule,
         PointsclassificationModule,
-        HeadlineModule],
+        HeadlineModule,
+        PredictionScoreModule],
     controllers: [AppController],
     providers: [],
 })

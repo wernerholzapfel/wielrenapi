@@ -3,6 +3,7 @@ import {Prediction} from '../prediction/prediction.entity';
 import {Tour} from '../tour/tour.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
 import {Etappe} from '../etappe/etappe.entity';
+import {PredictionScore} from '../prediction-score/prediction-score.entity';
 
 @Entity()
 export class Stageclassification {
@@ -20,6 +21,9 @@ export class Stageclassification {
 
     @ManyToOne(type => Etappe, etappe => etappe.stageclassifications)
     etappe?: Etappe;
+
+    @OneToMany(type => PredictionScore, predictionScore  => predictionScore.stageClassification)
+    predictionScore?: PredictionScore[];
 
 }
 
