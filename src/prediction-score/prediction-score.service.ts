@@ -50,16 +50,15 @@ export class PredictionScoreService {
         let previousPosition = 1;
         let previousPositionVorigeStand = 1;
         const vorigeStand = [...stand].sort((a, b) => {
-            return (parseInt(b[valueToSortOn], 10) - parseInt(b.deltapunten,10 ))
+            return (parseInt(b[valueToSortOn], 10) - parseInt(b.deltapunten, 10))
                 - (parseInt(a[valueToSortOn], 10) - parseInt(a.deltapunten, 10));
         });
 
         const standMetvorigePositie = vorigeStand.map((item, index) => {
             if (index > 0 &&
                 item &&
-                (parseInt(item[valueToSortOn], 10)  - parseInt(item.deltapunten,10 )) ===
-                    (parseInt(vorigeStand[index - 1][valueToSortOn], 10)  - parseInt(vorigeStand[index - 1].deltapunten,10)))
-             {
+                (parseInt(item[valueToSortOn], 10) - parseInt(item.deltapunten, 10)) ===
+                (parseInt(vorigeStand[index - 1][valueToSortOn], 10) - parseInt(vorigeStand[index - 1].deltapunten, 10))) {
                 return {
                     ...item,
                     etappepunten: parseInt(item.etappepunten, 10),
@@ -108,6 +107,24 @@ export class PredictionScoreService {
         });
     }
 
+    private sorteerPrediction(prediction: any, valueToSortOn: string) {
+        const mappedPrediction = prediction.map((item, index) => {
+            return {
+                ...item,
+                etappepunten: item.etappepunten ? parseInt(item.etappepunten, 10) : 0,
+                algemeenpunten: item.algemeenpunten ? parseInt(item.algemeenpunten, 10) : 0,
+                bergpunten: item.bergpunten ? parseInt(item.bergpunten, 10) : 0,
+                puntenpunten: item.puntenpunten ? parseInt(item.puntenpunten, 10) : 0,
+                jongerenpunten: item.jongerenpunten ? parseInt(item.jongerenpunten, 10) : 0,
+                totaalpunten: item.totaalpunten ? parseInt(item.totaalpunten, 10) : 0,
+            };
+        });
+
+        return [...mappedPrediction].sort((a, b) => {
+            return b[valueToSortOn] - a[valueToSortOn];
+        });
+    }
+
     async updateAlleEtappes(): Promise<any> {
         const etappes = await this.connection
             .getRepository(Etappe)
@@ -125,11 +142,12 @@ export class PredictionScoreService {
     }
 
     async getTotaalStand(tourId): Promise<any[]> {
-        const tourhasEnded = true;
         const tour = await this.connection.getRepository(Tour)
             .createQueryBuilder('tour')
             .where('tour.id= :tourId', {tourId})
             .getOne();
+
+        const latestEtappe = await this.getLatestEtappe(tourId);
 
         const stand = await this.connection
             .getRepository(PredictionScore)
@@ -166,7 +184,7 @@ export class PredictionScoreService {
             .addSelect((subQuery) => {
                 return subQuery.select('SUM("punten")', 'deltapunten')
                     .from(PredictionScore, 'pssub')
-                    .where('"etappeId" = :etappeId', {etappeId: '27be0d3b-bb9f-405c-8e7c-62f96e6b3b4a'})
+                    .where('"etappeId" = :etappeId', {etappeId: latestEtappe.id})
                     .andWhere('pssub."participantId" = "participant".id')
                     .groupBy('"participantId"');
             }, 'deltapunten')
@@ -180,15 +198,99 @@ export class PredictionScoreService {
         return this.sorteerStand(stand, valueToSortOn);
     }
 
-    async getLatestEtappe(tourId): Promise<any[]> {
-        const latestEtappe = await this.connection
+    async getTotaalStandForParticipant(tourId, participantId): Promise<any> {
+      const stand = await this.getTotaalStand(tourId)
+
+        return stand.find(line => line.id === participantId);
+    }
+
+    async getTeamForParticipant(tourId, participantId): Promise<any> {
+        const tourhasEnded = true;
+        const tour = await this.connection.getRepository(Tour)
+            .createQueryBuilder('tour')
+            .where('tour.id= :tourId', {tourId})
+            .getOne();
+
+        const latestEtappe = await this.getLatestEtappe(tourId);
+
+        const team = await this.connection
+            .getRepository(Prediction)
+            .createQueryBuilder('prediction')
+            .select('prediction', 'prediction')
+            .addSelect('participant.id', 'id')
+            .addSelect('participant.displayName', 'displayName')
+            .addSelect('participant.teamName', 'teamName')
+            .addSelect('latestEtappe.etappeNumber', 'tourrider_latestEtappeNumber')
+            .addSelect((subQuery) => {
+                return subQuery.select('SUM("punten")', 'totaal')
+                    .from(PredictionScore, 'pssub')
+                    .where('pssub."predictionId" = prediction.id')
+                    .groupBy('"predictionId"');
+            }, 'totaalpunten')
+            .addSelect((subQuery) => {
+                return subQuery.select('SUM("punten")', 'algemeen')
+                    .from(PredictionScore, 'pssub')
+                    .where('pssub."predictionId" = prediction.id')
+                    .andWhere('pssub.predictionType = :predictionTypeAlgemeen', {predictionTypeAlgemeen: PredictionEnum.ALGEMEEN})
+                    .groupBy('"predictionId"');
+            }, 'algemeenpunten')
+            .addSelect((subQuery) => {
+                return subQuery.select('SUM("punten")', 'etappe')
+                    .from(PredictionScore, 'pssub')
+                    .where('pssub."predictionId" = prediction.id')
+                    .andWhere('pssub.predictionType = :predictionTypeEtappe', {predictionTypeEtappe: PredictionEnum.ETAPPE})
+                    .groupBy('"predictionId"');
+            }, 'etappepunten')
+            .addSelect((subQuery) => {
+                return subQuery.select('SUM("punten")', 'punten')
+                    .from(PredictionScore, 'pssub')
+                    .where('pssub."predictionId" = prediction.id')
+                    .andWhere('pssub.predictionType = :predictionTypePunten', {predictionTypePunten: PredictionEnum.PUNTEN})
+                    .groupBy('"predictionId"');
+            }, 'puntenpunten')
+
+            .addSelect((subQuery) => {
+                return subQuery.select('SUM("punten")', 'berg')
+                    .from(PredictionScore, 'pssub')
+                    .where('pssub."predictionId" = prediction.id')
+                    .andWhere('pssub.predictionType = :predictionTypeBerg', {predictionTypeBerg: PredictionEnum.BERG})
+                    .groupBy('"predictionId"');
+            }, 'bergpunten')
+            .addSelect((subQuery) => {
+                return subQuery.select('SUM("punten")', 'jongeren')
+                    .from(PredictionScore, 'pssub')
+                    .where('pssub."predictionId" = prediction.id')
+                    .andWhere('pssub.predictionType = :predictionTypeJongeren', {predictionTypeJongeren: PredictionEnum.JONGEREN})
+                    .groupBy('"predictionId"');
+            }, 'jongerenpunten')
+            .leftJoin('prediction.predictionScore', 'predictionscore')
+            .leftJoin('predictionscore.participant', 'participant')
+            .leftJoinAndSelect('prediction.rider', 'tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoin('tourrider.latestEtappe', 'latestEtappe')
+            .where('prediction."tourId" = :tourId', {tourId})
+            .andWhere('prediction."participantId" = :participantId', {participantId})
+            .groupBy('participant.id, prediction.id, tourrider.id, rider.id, latestEtappe.etappeNumber')
+            .orderBy('totaalpunten', 'DESC')
+            .getRawMany();
+
+        this.logger.log(team.length);
+        // const valueToSortOn = tour.hasEnded ? 'totaalpunten' : 'etappepunten';
+        return this.sorteerPrediction(team, 'tourrider_waarde');
+    }
+
+    async getLatestEtappe(tourId): Promise<Etappe> {
+        return await this.connection
             .getRepository(Etappe).createQueryBuilder('etappe')
             .where('tour.id= :tourId', {tourId})
             .andWhere('etappe.isDriven')
             .leftJoin('etappe.tour', 'tour')
             .orderBy('etappe.etappeNumber', 'DESC')
             .getOne();
+    }
 
+    async getLatestEtappeStand(tourId): Promise<any[]> {
+        const latestEtappe = await this.getLatestEtappe(tourId);
         return this.getEtappeStand(latestEtappe.id);
 
     }

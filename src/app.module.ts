@@ -18,7 +18,9 @@ import {MountainclassificationModule} from './mountainclassification/mountaincla
 import {PointsclassificationModule} from './pointsclassification/pointsclassification.module';
 import {PredictionMiddleware} from './prediction.middleware';
 import {HeadlineModule} from './headlines/headline.module';
-import { PredictionScoreModule } from './prediction-score/prediction-score.module';
+import {PredictionScoreModule} from './prediction-score/prediction-score.module';
+import {RawBodyMiddleware} from './raw-body-middleware.middleware';
+import {JsonBodyMiddleware} from './json-body-middleware.middleware';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -47,7 +49,12 @@ import { PredictionScoreModule } from './prediction-score/prediction-score.modul
 export class AppModule implements NestModule {
 
     configure(consumer: MiddlewareConsumer): void {
-
+        consumer
+            // .apply(RawBodyMiddleware)
+            // .forRoutes({path: '/prediction-score/**', method: RequestMethod.GET})
+            // .apply(JsonBodyMiddleware)
+            // .exclude({path: '/prediction-score/**', method: RequestMethod.GET})
+            // .forRoutes('*');
         consumer.apply(AddFireBaseUserToRequest).forRoutes(
             {path: '/**', method: RequestMethod.POST},
             {path: '/**', method: RequestMethod.DELETE},

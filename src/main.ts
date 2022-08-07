@@ -36,7 +36,7 @@ let allowCrossDomain = function (req, res, next) {
 };
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule,  { bodyParser: false });
     app.use(allowCrossDomain);
 
     await app.listen(process.env.PORT || 3000)

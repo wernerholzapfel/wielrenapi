@@ -14,7 +14,7 @@ export class PredictionScoreController {
     }
     @Get('latestetappe/:tourId')
     async getLatestEtappeStand(@Param('tourId') tourId): Promise<Stageclassification[]> {
-        return this.predictionsScoreService.getLatestEtappe(tourId);
+        return this.predictionsScoreService.getLatestEtappeStand(tourId);
     }
     @Get('etappetotaal/:tourId/participant/:participantId/')
     async getTotalEtappePointsForParticipant(@Param('participantId') participantId, @Param('tourId') tourId): Promise<Stageclassification[]> {
@@ -24,6 +24,16 @@ export class PredictionScoreController {
     async getTotaalStand(@Param('tourId') tourId): Promise<Stageclassification[]> {
         return this.predictionsScoreService.getTotaalStand(tourId);
     }
+    @Get('totaal/:tourId/participant/:participantId')
+    async getTotaalStandForParticipant(@Param('tourId') tourId, @Param('participantId') participantId): Promise<Stageclassification[]> {
+        return this.predictionsScoreService.getTotaalStandForParticipant(tourId, participantId);
+    }
+
+    @Get(':tourId/participant/:participantId')
+    async getTeamForParticipant(@Param('tourId') tourId, @Param('participantId') participantId): Promise<any[]> {
+        return this.predictionsScoreService.getTeamForParticipant(tourId, participantId);
+    }
+
     @Get('algemeen/:tourId')
     async getAlgemeenStand(@Param('tourId') tourId): Promise<Stageclassification[]> {
         return this.predictionsScoreService.getAlgemeenStand(tourId);
