@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "typeRoots": [ "../node_modules/@types" ],
     "module": "commonjs",
     "declaration": false,
     "noImplicitAny": false,
@@ -12,7 +13,10 @@
     "sourceMap": true,
     "allowJs": true,
     "outDir": "./dist",
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "src/**/*"
