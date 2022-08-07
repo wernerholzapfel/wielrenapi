@@ -23,8 +23,12 @@ export class ParticipantController {
     }
 
     @Get('/table/:id')
-    async updateTable(@Param('id') id): Promise<Participant[]> {
-        return this.participantService.updateTable(id);
+    async updateTable(@Param('id') id): Promise<any[]> {
+        if (id === 'ad756953-cb34-48bb-bbea-4dd52b993598') {
+            return [];
+        } else {
+            return this.participantService.updateTable(id);
+        }
     }
 
     @Get('/table/:tourId/etappe/:etappeId')
