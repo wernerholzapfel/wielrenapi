@@ -1,5 +1,5 @@
 
-import {Body, Controller, Delete, Get, Logger, Param, Post, Put, Req} from '@nestjs/common';
+import {Body, CacheInterceptor, Controller, Delete, Get, Logger, Param, Post, Put, Req, UseInterceptors} from '@nestjs/common';
 import {TourridersService} from './tourriders.service';
 import {Tourriders} from './tourriders.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
@@ -18,6 +18,7 @@ export class TourridersController {
         return this.tourridersService.findActive();
     }
 
+    @UseInterceptors(CacheInterceptor)
     @Get('/details/:tourId')
     async getDetails(@Param('tourId') tourId): Promise<any[]> {
         return this.tourridersService.getDetails(tourId);

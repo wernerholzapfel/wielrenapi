@@ -1,5 +1,5 @@
 
-import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
+import {Body, CacheInterceptor, Controller, Get, Logger, Param, Post, Req, UseInterceptors} from '@nestjs/common';
 import {ParticipantService} from './participant.service';
 import {Participant} from './participant.entity';
 import {CreateParticipantDto} from './create-participant.dto';
@@ -22,8 +22,9 @@ export class ParticipantController {
         return this.participantService.findAll(tourId);
     }
 
+    @UseInterceptors(CacheInterceptor)
     @Get('/table/:id')
-    async updateTable(@Param('id') id): Promise<any[]> {
+    async getTable(@Param('id') id): Promise<any[]> {
         if (id === 'ad756953-cb34-48bb-bbea-4dd52b993598') {
             return [];
         } else {
@@ -32,19 +33,18 @@ export class ParticipantController {
     }
 
     @Get('/updateTable/:id')
-    async setLastUpdateDate(@Param('id') id): Promise<any[]> {
-        if (id === 'ad756953-cb34-48bb-bbea-4dd52b993598') {
-            return [];
-        } else {
-            return this.participantService.setLastUpdateDate(id);
-        }
+    async setLastUpdateDate(@Param('id') id): Promise<void> {
+        return this.participantService.invalidateCacheAndSetLastUpdated(id);
+
     }
 
+    @UseInterceptors(CacheInterceptor)
     @Get('/table/:tourId/etappe/:etappeId')
     async getEtappe(@Param('tourId') tourId, @Param('etappeId') etappeId): Promise<Participant[]> {
         return this.participantService.getEtappe(tourId, etappeId);
     }
 
+    @UseInterceptors(CacheInterceptor)
     @Get('/table/:tourId/latestetappe')
     async getLastEtappe(@Param('tourId') tourId): Promise<Participant[]> {
         return this.participantService.getLatestEtappe(tourId);

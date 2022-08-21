@@ -1,4 +1,4 @@
-import {Logger, MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
+import {CacheModule, Logger, MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import 'dotenv/config';
@@ -22,6 +22,10 @@ import {HeadlineModule} from './headlines/headline.module';
 @Module({
     imports: [TypeOrmModule.forRoot(
         ormconfig),
+        CacheModule.register({
+            isGlobal: true,
+            ttl: 0,
+        }),
         RiderModule,
         TeamModule,
         TourModule,

@@ -1,4 +1,4 @@
-import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
+import {CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable, Logger} from '@nestjs/common';
 import {Participant, ParticipantRead} from './participant.entity';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Connection, Repository} from 'typeorm';
@@ -6,6 +6,8 @@ import {Stageclassification, StageClassificationRead} from '../stageclassificati
 import {Prediction, PredictionRead} from '../prediction/prediction.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
+import {Cache} from 'Cache-Manager';
+
 // Import Admin SDK
 import * as admin from 'firebase-admin';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
@@ -21,7 +23,8 @@ export class ParticipantService {
 
     constructor(@InjectRepository(Participant)
                 private readonly participantRepository: Repository<Participant>,
-                private readonly connection: Connection,) {
+                private readonly connection: Connection,
+                @Inject(CACHE_MANAGER) private cacheManager: Cache) {
     }
 
     async loggedIn(email: string): Promise<Participant> {
@@ -311,13 +314,13 @@ export class ParticipantService {
         return participants;
     }
 
-    async setLastUpdateDate(tourId: string): Promise<any[]> {
-        const table = this.updateTable(tourId)
+    async invalidateCacheAndSetLastUpdated(tourId: string): Promise<void> {
+        await this.cacheManager.reset()
+
         const db = admin.database();
         const ref = db.ref(tourId);
 
         const lastUpdated = ref.child('lastUpdated');
-        lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
         admin.messaging().sendToDevice(
             'emwL9z2ezkaCtJJJ8Q7zba:APA91bEusyrxdBokagifRMLHDyornA0cvUDA9dhtJI0Soa8laZNXqCanoKMVizqOe4T5HbRMJtZ_nOxm51Vu_VNc8iTqACqsSzEujJPsYQomH7mTp_ot1nyHB3hvkxT_0FfMmUBprHfl',
@@ -331,7 +334,8 @@ export class ParticipantService {
         }).catch(err => {
             this.logger.log(err);
         });
-        return table;
+        return lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
+
     }
 
     async create(participant: CreateParticipantDto, email: string): Promise<Participant> {
