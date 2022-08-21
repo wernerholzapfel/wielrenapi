@@ -31,6 +31,15 @@ export class ParticipantController {
         }
     }
 
+    @Get('/table/update/:id')
+    async setLastUpdateDate(@Param('id') id): Promise<any[]> {
+        if (id === 'ad756953-cb34-48bb-bbea-4dd52b993598') {
+            return [];
+        } else {
+            return this.participantService.setLastUpdateDate(id);
+        }
+    }
+
     @Get('/table/:tourId/etappe/:etappeId')
     async getEtappe(@Param('tourId') tourId, @Param('etappeId') etappeId): Promise<Participant[]> {
         return this.participantService.getEtappe(tourId, etappeId);

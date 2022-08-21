@@ -287,11 +287,35 @@ export class ParticipantService {
             }
         });
 
+        // const db = admin.database();
+        // const ref = db.ref(tourId);
+
+        // const standRef = ref.child('stand');
+        // standRef.set(participants);
+        // const lastUpdated = ref.child('lastUpdated');
+        // lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
+
+        // admin.messaging().sendToDevice(
+        //     'emwL9z2ezkaCtJJJ8Q7zba:APA91bEusyrxdBokagifRMLHDyornA0cvUDA9dhtJI0Soa8laZNXqCanoKMVizqOe4T5HbRMJtZ_nOxm51Vu_VNc8iTqACqsSzEujJPsYQomH7mTp_ot1nyHB3hvkxT_0FfMmUBprHfl',
+        //     {
+        //         notification: {
+        //             title: 'Het Wielerspel',
+        //             body: 'De stand is geupdate'
+        //         }
+        //     }).then(response => {
+        //     this.logger.log(response);
+        // }).catch(err => {
+        //     this.logger.log(err);
+        // });
+
+        return participants;
+    }
+
+    async setLastUpdateDate(tourId: string): Promise<any[]> {
+        const table = this.updateTable(tourId)
         const db = admin.database();
         const ref = db.ref(tourId);
 
-        const standRef = ref.child('stand');
-        standRef.set(participants);
         const lastUpdated = ref.child('lastUpdated');
         lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
@@ -307,8 +331,7 @@ export class ParticipantService {
         }).catch(err => {
             this.logger.log(err);
         });
-
-        return participants;
+        return table;
     }
 
     async create(participant: CreateParticipantDto, email: string): Promise<Participant> {
