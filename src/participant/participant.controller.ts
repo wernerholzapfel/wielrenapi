@@ -31,7 +31,7 @@ export class ParticipantController {
         }
     }
 
-    @Get('/table/update/:id')
+    @Get('/updateTable/:id')
     async setLastUpdateDate(@Param('id') id): Promise<any[]> {
         if (id === 'ad756953-cb34-48bb-bbea-4dd52b993598') {
             return [];
