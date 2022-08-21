@@ -6,8 +6,7 @@ import {Stageclassification, StageClassificationRead} from '../stageclassificati
 import {Prediction, PredictionRead} from '../prediction/prediction.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
-import {Cache} from 'Cache-Manager';
-
+import {Cache} from 'cache-manager'
 // Import Admin SDK
 import * as admin from 'firebase-admin';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
