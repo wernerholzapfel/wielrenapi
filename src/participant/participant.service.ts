@@ -195,8 +195,6 @@ export class ParticipantService {
             .leftJoinAndSelect('participant.predictions', 'predictions')
             .leftJoinAndSelect('predictions.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.rider', 'rider')
-            .leftJoinAndSelect('tourrider.predictions', 'tourriderpredicted')
-            .leftJoinAndSelect('tourriderpredicted.participant', 'participanthaspredicted')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
             .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
