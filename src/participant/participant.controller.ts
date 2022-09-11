@@ -22,7 +22,6 @@ export class ParticipantController {
         return this.participantService.findAll(tourId);
     }
 
-    @UseInterceptors(CacheInterceptor)
     @Get('/table/:id')
     async getTable(@Param('id') id): Promise<any[]> {
         if (id === 'ad756953-cb34-48bb-bbea-4dd52b993598') {
