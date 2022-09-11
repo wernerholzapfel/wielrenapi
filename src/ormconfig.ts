@@ -18,7 +18,7 @@ import {PredictionScore} from './prediction-score/prediction-score.entity';
 // @ts-ignore
 export const ormconfig: TypeOrmModuleOptions = {
     type: 'postgres',
-    url: process.env.DATABASE_URL_ELEPHANT,
+    url: process.env.DATABASE_URL,
     // @ts-ignore
     ssl:  {rejectUnauthorized: false},
     entities: [
