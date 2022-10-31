@@ -1,7 +1,9 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
 import {Tour} from '../tour/tour.entity';
 import {Participant} from '../participant/participant.entity';
+import {Stageclassification} from '../stageclassification/stageclassification.entity';
+import {PredictionScore} from '../prediction-score/prediction-score.entity';
 
 @Entity()
 export class Prediction {
@@ -26,7 +28,7 @@ export class Prediction {
     @Column({default: false})
     isComplete: boolean;
 
-    @ManyToOne(type => Tourriders, rider => rider.predictions)
+    @ManyToOne(type => Tourriders, rider => rider.predictions, { onDelete: 'CASCADE' })
     rider: Tourriders;
 
     @ManyToOne(type => Tour, tour => tour.predictions)
@@ -34,6 +36,10 @@ export class Prediction {
 
     @ManyToOne(type => Participant, participant => participant.predictions)
     participant: Participant;
+
+    @OneToMany(type => PredictionScore, predictionScore  => predictionScore.prediction)
+    predictionScore: PredictionScore[];
+
 }
 
 export class PredictionRead extends Prediction {

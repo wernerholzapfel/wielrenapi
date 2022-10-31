@@ -1,4 +1,4 @@
-import {Injectable, Logger, NestMiddleware} from '@nestjs/common';
+import {ForbiddenException, Injectable, Logger, NestMiddleware, UnauthorizedException} from '@nestjs/common';
 import 'dotenv/config';
 import * as admin from 'firebase-admin';
 
@@ -7,7 +7,6 @@ export class AddFireBaseUserToRequest implements NestMiddleware {
     private readonly logger = new Logger('AddFireBaseUserToRequest', true);
 
     use(req, res, next) {
-        this.logger.log('werner1');
         const extractedToken = getToken(req.headers);
         if (extractedToken) {
             admin.auth().verifyIdToken(extractedToken)
@@ -17,9 +16,8 @@ export class AddFireBaseUserToRequest implements NestMiddleware {
                     admin.auth().getUser(uid)
                         .then(userRecord => {
                             // See the UserRecord reference doc for the contents of userRecord.
-                            console.log('Successfully fetched user data:', userRecord.toJSON());
                             req.user = userRecord;
-                            next()
+                            next();
                         })
                         .catch(error => {
                             console.log('Error fetching user data:', error);
@@ -32,6 +30,28 @@ export class AddFireBaseUserToRequest implements NestMiddleware {
 
 }
 
+@Injectable()
+export class AdminMiddleware implements NestMiddleware {
+    private readonly logger = new Logger('AdminMiddleware', true);
+
+        use (req, res, next)  {
+            const extractedToken = getToken(req.headers);
+            if (extractedToken) {
+                admin.auth().verifyIdToken(extractedToken).then((claims) => {
+                    this.logger.log(claims);
+                    if (claims.admin === true) {
+                        this.logger.log('ik ben admin');
+                        next();
+                    }
+                    else {
+                        next(new ForbiddenException('Om wijzigingen door te kunnen voeren moet je admin zijn'));
+                    }
+                });
+            } else {
+                next(new UnauthorizedException('We konden je niet verifieren, log opnieuw in.'));
+            }
+        };
+}
 
 const getToken = headers => {
     if (headers && headers.authorization) {

@@ -8,7 +8,7 @@ import {Etappe} from '../etappe/etappe.entity';
 export class YouthclassificationService {
     constructor(@InjectRepository(Youthclassification)
                 private readonly youthclassificationRepository: Repository<Youthclassification>,
-                private readonly connection: Connection,) {
+                private readonly connection: Connection) {
     }
 
     async findByTourId(tourId): Promise<Youthclassification[]> {
@@ -19,7 +19,7 @@ export class YouthclassificationService {
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoinAndSelect('youthclassification.tour', 'tour')
             .where('tour.id = :tourId', {tourId})
-            .orderBy("youthclassification.position", "ASC")
+            .orderBy('youthclassification.position', 'ASC')
             .getMany();
     }
 

@@ -3,6 +3,7 @@ import {Prediction} from '../prediction/prediction.entity';
 import {Tour} from '../tour/tour.entity';
 import {Stageclassification} from '../stageclassification/stageclassification.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
+import {PredictionScore} from '../prediction-score/prediction-score.entity';
 
 @Entity()
 export class Etappe {
@@ -32,4 +33,8 @@ export class Etappe {
 
     @OneToMany(type => Tourriders, tourriders => tourriders.rider)
     tourridersout: Tourriders[];
+
+    @OneToMany(type => PredictionScore, predictionScore  => predictionScore.prediction)
+    predictionScore: PredictionScore[];
+
 }

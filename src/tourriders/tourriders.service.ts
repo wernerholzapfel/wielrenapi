@@ -1,7 +1,7 @@
 import {HttpStatus, Injectable, Logger, HttpException} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Tourriders, TourridersRead} from './tourriders.entity';
-import {Connection, Repository} from 'typeorm';
+import {Connection, DeleteResult, Repository} from 'typeorm';
 import {Tour, TourRead} from '../tour/tour.entity';
 import {Team} from '../teams/team.entity';
 import {Etappe} from '../etappe/etappe.entity';
@@ -9,6 +9,7 @@ import {Stageclassification} from '../stageclassification/stageclassification.en
 import {Prediction} from '../prediction/prediction.entity';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class TourridersService {
@@ -92,6 +93,16 @@ export class TourridersService {
     }
 
 
+    async updateTourridersFirebase(tourId: string) {
+        const tourriders = await this.getDetails(tourId);
+        const db = admin.database();
+        const ref = db.ref(tourId);
+
+        const rennersRef = ref.child('renners');
+        rennersRef.set(tourriders);
+        return tourriders;
+    }
+
     async create(tourriders: CreateTourridersDto): Promise<Tourriders> {
         return await this.tourridersRepository.save(tourriders)
             .catch((err) => {
@@ -100,6 +111,15 @@ export class TourridersService {
                     statusCode: HttpStatus.BAD_REQUEST,
                 }, HttpStatus.BAD_REQUEST);
             });
+    }
+
+    async delete(tourriderId): Promise<DeleteResult> {
+        return await this.connection
+            .getRepository(Tourriders)
+            .createQueryBuilder()
+            .delete()
+            .where("id = :id", { id: tourriderId })
+            .execute();
     }
 
     async getTeamClassifications(id: string): Promise<Team[]> {
@@ -274,15 +294,15 @@ export class TourridersService {
                 return acc + value;
             });
 
-        this.logger.log('totalteampoints wd: ' + rider.rider.surName + ' ' + totalTeampoints);
+        // this.logger.log('totalteampoints wd: ' + rider.rider.surName + ' ' + totalTeampoints);
         const riderPoints = newStage.position ? this.calculatePoints(newStage, etappeFactor) : 0;
-        this.logger.log('riderPoints wd: ' + rider.rider.surName + ' ' + riderPoints);
+        // this.logger.log('riderPoints wd: ' + rider.rider.surName + ' ' + riderPoints);
 
         const calculation = '((' + totalTeampoints + '-' + riderPoints + ') / (' + team.tourRiders.length + '-' + 1 + ')) - ' + riderPoints;
         const stagePointsWD = Math.round(((totalTeampoints - riderPoints) / (team.tourRiders.length - 1)) -
             riderPoints);
 
-        this.logger.log('stagePointsWd: ' + newStage.etappe.etappeNumber + ' - ' + rider.rider.surName + ' ' + stagePointsWD);
+        // this.logger.log('stagePointsWd: ' + newStage.etappe.etappeNumber + ' - ' + rider.rider.surName + ' ' + stagePointsWD);
         Object.assign(newStage, {stagePoints: stagePointsWD, calculation: calculation});
         return newStage;
     }

@@ -1,10 +1,8 @@
 
-import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
+import {Body, CacheInterceptor, Controller, Delete, Get, Logger, Param, Post, Put, Req, UseInterceptors} from '@nestjs/common';
 import {TourridersService} from './tourriders.service';
-import {Tourriders} from './tourriders.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
 import {Tour} from '../tour/tour.entity';
-import {TourService} from '../tour/tour.service';
 
 @Controller('tourriders')
 export class TourridersController {
@@ -18,9 +16,15 @@ export class TourridersController {
         return this.tourridersService.findActive();
     }
 
+    @UseInterceptors(CacheInterceptor)
     @Get('/details/:tourId')
     async getDetails(@Param('tourId') tourId): Promise<any[]> {
         return this.tourridersService.getDetails(tourId);
+    }
+
+    @Put('/details/:tourId')
+    async updateTourridersFirebase(@Param('tourId') tourId): Promise<any[]> {
+        return this.tourridersService.updateTourridersFirebase(tourId);
     }
 
     @Post()
@@ -28,5 +32,10 @@ export class TourridersController {
         this.logger.log('post tourriders');
         const newTourriders = Object.assign({}, createTourridersDto);
         return await this.tourridersService.create(newTourriders);
+    }
+
+    @Delete(':tourridersId')
+    async delete(@Param('tourridersId') tourridersId) {
+        return await this.tourridersService.delete(tourridersId);
     }
 }

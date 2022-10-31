@@ -1,5 +1,6 @@
 import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Prediction, PredictionRead} from '../prediction/prediction.entity';
+import {PredictionScore} from '../prediction-score/prediction-score.entity';
 
 @Entity()
 export class Participant {
@@ -18,6 +19,9 @@ export class Participant {
     @OneToMany(type => Prediction, prediction => prediction.participant)
     predictions: Prediction[];
 
+    @OneToMany(type => PredictionScore, predictionScore  => predictionScore.prediction)
+    predictionScore: PredictionScore[];
+
     // todo tours koppelen
 }
 
@@ -26,4 +30,8 @@ export class ParticipantRead extends Participant {
     previousTotalPoints?: number;
     totalPoints?: number;
     deltaTotalStagePoints?: number;
+    totalYouthPoints?: number;
+    totalMountainPoints?: number;
+    totalTourPoints?: number;
+    totalPointsPoints?: number;
 }
