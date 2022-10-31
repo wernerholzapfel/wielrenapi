@@ -11,6 +11,7 @@
     "prestart": "npm run build",
     "prepublish": "npm run build",
     "start": "node dist/main.js",
+    "start:prod": "node dist/main",
     "lint": "tslint -c tslint.json 'src/**/*.{ts,tsx}'",
     "pretest": "npm run lint",
     "test": "jest",
