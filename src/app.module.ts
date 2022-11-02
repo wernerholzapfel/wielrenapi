@@ -1,4 +1,4 @@
-import {CacheModule, MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
+import {CacheModule, Logger, MiddlewareConsumer, Module, NestModule, RequestMethod} from '@nestjs/common';
 import {AppController} from './app.controller';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import 'dotenv/config';

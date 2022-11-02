@@ -5,7 +5,8 @@ import {TourridersService} from './tourriders.service';
 import {TourridersController} from './tourriders.controller';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Tourriders]), CacheModule.register({ttl: 0})],
+    imports: [TypeOrmModule.forFeature([Tourriders]),
+        CacheModule.register({ttl: 0})],
     providers: [TourridersService],
     controllers: [TourridersController],
 })
