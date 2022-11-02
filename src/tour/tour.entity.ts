@@ -9,6 +9,7 @@ import {Youthclassification} from '../youthclassification/youthclassification.en
 import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
 import {Pointsclassification} from '../pointsclassification/pointsclassification.entity';
 import {Headline} from '../headlines/headline.entity';
+import {PredictionScore} from '../prediction-score/prediction-score.entity';
 
 @Entity()
 export class Tour {
@@ -59,6 +60,9 @@ export class Tour {
 
     @OneToMany(type => Pointsclassification, pointscf => pointscf.tour)
     pointsclassifications: Pointsclassification[];
+
+    @OneToMany(type => PredictionScore, predictionScore  => predictionScore.prediction)
+    predictionScore: PredictionScore[];
 
     @OneToMany(type => Headline, headline => headline.tour)
     headlines: Headline[];

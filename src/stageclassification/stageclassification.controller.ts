@@ -19,7 +19,6 @@ export class StageclassificationController {
     @Post()
     async create(@Req() req, @Body() body: Stageclassification[]) {
         this.logger.log('post stageclassification');
-        // const newStageclassification = Object.assign({}, createStageclassificationDto);
         return await this.stageclassificationService.create(body);
     }
 }

@@ -18,6 +18,9 @@ import {MountainclassificationModule} from './mountainclassification/mountaincla
 import {PointsclassificationModule} from './pointsclassification/pointsclassification.module';
 import {PredictionMiddleware} from './prediction.middleware';
 import {HeadlineModule} from './headlines/headline.module';
+import {PredictionScoreModule} from './prediction-score/prediction-score.module';
+import {RawBodyMiddleware} from './raw-body-middleware.middleware';
+import {JsonBodyMiddleware} from './json-body-middleware.middleware';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -38,25 +41,31 @@ import {HeadlineModule} from './headlines/headline.module';
         YouthclassificationModule,
         MountainclassificationModule,
         PointsclassificationModule,
-        HeadlineModule],
+        HeadlineModule,
+        PredictionScoreModule],
     controllers: [AppController],
     providers: [],
 })
 export class AppModule implements NestModule {
-    private readonly logger = new Logger('AppModule', true);
 
     configure(consumer: MiddlewareConsumer): void {
-
+        consumer
+            // .apply(RawBodyMiddleware)
+            // .forRoutes({path: '/prediction-score/**', method: RequestMethod.GET})
+            // .apply(JsonBodyMiddleware)
+            // .exclude({path: '/prediction-score/**', method: RequestMethod.GET})
+            // .forRoutes('*');
         consumer.apply(AddFireBaseUserToRequest).forRoutes(
             {path: '/**', method: RequestMethod.POST},
-            {path: '/predictions/user/**', method: RequestMethod.GET},
-            {path: '/participants/loggedIn', method: RequestMethod.GET});
-        consumer.apply(PredictionMiddleware).forRoutes(
-            {path: '/predictions', method: RequestMethod.POST},
-        );
-        consumer.apply(AdminMiddleware).forRoutes(
             {path: '/**', method: RequestMethod.DELETE},
-        )
+            {path: '/predictions/user/**', method: RequestMethod.GET},
+            {path: '/participants/loggedIn', method: RequestMethod.GET},
+        );
+        consumer.apply(PredictionMiddleware).forRoutes(
+            {path: '/predictions', method: RequestMethod.POST},);
+        consumer.apply(AdminMiddleware).forRoutes(
+            {path: '/tourriders/**', method: RequestMethod.DELETE},
+        );
 
         // admin.auth().setCustomUserClaims('ENPg7LZlewdswg6vqVd65K4QjQy1', {admin: true}).then(() => {
         //     this.logger.log('customerset');

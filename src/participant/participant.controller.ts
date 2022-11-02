@@ -3,8 +3,6 @@ import {Body, CacheInterceptor, Controller, Get, Logger, Param, Post, Req, UseIn
 import {ParticipantService} from './participant.service';
 import {Participant} from './participant.entity';
 import {CreateParticipantDto} from './create-participant.dto';
-import {Tour} from '../tour/tour.entity';
-import {Prediction} from '../prediction/prediction.entity';
 
 @Controller('participants')
 export class ParticipantController {
@@ -32,13 +30,15 @@ export class ParticipantController {
         // } 
         else {
             return this.participantService.updateTable(id);
+      return [];
+        } else {
+            return this.participantService.getTable(id);
         }
     }
 
     @Get('/updateTable/:id')
     async setLastUpdateDate(@Param('id') id): Promise<void> {
         return this.participantService.invalidateCacheAndSetLastUpdated(id);
-
     }
 
     @UseInterceptors(CacheInterceptor)

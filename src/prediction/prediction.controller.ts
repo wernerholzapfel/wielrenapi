@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
+import {Body, Controller, Delete, Get, Logger, Param, Post, Req} from '@nestjs/common';
 import {PredictionService} from './prediction.service';
 import {Prediction} from './prediction.entity';
 import {CreatePredictionDto} from './create-prediction.dto';
@@ -15,14 +15,18 @@ export class PredictionController {
         return this.predictionService.findAll();
     }
 
-    @Get('user/:id')
-    async findByParticipant(@Param('id') id, @Req() req): Promise<Prediction[]> {
-        return this.predictionService.findByParticipant(req.user.email, id);
+    @Get('user/:tourid')
+    async findByParticipant(@Param('tourid') tourid, @Req() req): Promise<Prediction[]> {
+        return this.predictionService.findByParticipant(req.user.email, tourid);
     }
 
     @Post()
-    async create(@Req() req, @Body() body,  createPredictionDto: CreatePredictionDto) {
-        this.logger.log(body.riders.length);
-        return await this.predictionService.create(body, req.user.email, req.user.displayName);
+    async createPrediction(@Req() req, @Body() body,  createPredictionDto: CreatePredictionDto) {
+        return await this.predictionService.createPrediction(body, req.user.email, req.user.displayName);
+    }
+
+    @Delete(':predictionId')
+    async delete(@Param('predictionId') predictionId, @Req() req) {
+        return await this.predictionService.delete(predictionId, req.user.email);
     }
 }

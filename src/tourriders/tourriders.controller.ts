@@ -1,10 +1,8 @@
 
 import {Body, CacheInterceptor, Controller, Delete, Get, Logger, Param, Post, Put, Req, UseInterceptors} from '@nestjs/common';
 import {TourridersService} from './tourriders.service';
-import {Tourriders} from './tourriders.entity';
 import {CreateTourridersDto} from './create-tourriders.dto';
 import {Tour} from '../tour/tour.entity';
-import {TourService} from '../tour/tour.service';
 
 @Controller('tourriders')
 export class TourridersController {
