@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Prediction} from '../prediction/prediction.entity';
 import {Tour} from '../tour/tour.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
@@ -21,12 +21,15 @@ export class PredictionScore {
     @Column({type: 'int'})
     punten: number;
 
+    @Index()
     @ManyToOne(type => Participant, participant => participant.predictionScore)
     participant: Participant;
 
+    @Index()
     @ManyToOne(type => Tour, tour => tour.predictionScore)
     tour?: Tour;
 
+    @Index()
     @ManyToOne(type => Prediction, prediction => prediction.predictionScore)
     prediction: Prediction;
 
@@ -37,9 +40,11 @@ export class PredictionScore {
     })
     predictionType: PredictionEnum
 
+    @Index()
     @ManyToOne(type => Etappe, etappe => etappe.predictionScore)
     etappe?: Etappe;
 
+    @Index()
     @ManyToOne(type => Stageclassification, stageClassification => stageClassification.predictionScore)
     stageClassification?: Stageclassification;
 

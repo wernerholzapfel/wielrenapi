@@ -22,28 +22,29 @@ export class PredictionScoreService {
     constructor(@InjectRepository(PredictionScore)
                 private readonly repository: Repository<PredictionScore>,
                 private readonly connection: Connection,) {
-
-        // this.updateAlleEtappes();
-        // this.updatePredictionScoreEtappe('169eec18-1a62-407a-804d-fe3db719de67','ad756953-cb34-48bb-bbea-4dd52b993598').then(response => {
+                    
+        // const tourId = 'ccdb55e4-c42b-4095-b4e4-c0958dcee6e6'
+        // this.updateAlleEtappes(tourId);
+        
+        // this.updatePredictionScoreAlgemeen(tourId).then(response => {
         //     this.logger.log(response);
         // });
-        // this.updatePredictionScoreAlgemeen('ad756953-cb34-48bb-bbea-4dd52b993598').then(response => {
+
+        // this.updatePredictionScoreBerg(tourId).then(response => {
         //     this.logger.log(response);
         // });
-
-        //     this.updatePredictionScoreBerg('ad756953-cb34-48bb-bbea-4dd52b993598').then(response => {
-        //         this.logger.log(response);
-        //     });
-        //     this.updatePredictionScorePunten('ad756953-cb34-48bb-bbea-4dd52b993598').then(response => {
-        //         this.logger.log(response);
-        //     });
-        //     this.updatePredictionScoreJongeren('ad756953-cb34-48bb-bbea-4dd52b993598').then(response => {
-        //         this.logger.log(response);
-        //     });
+        // this.updatePredictionScorePunten(tourId).then(response => {
+        //     this.logger.log(response);
+        // });
+        // this.updatePredictionScoreJongeren(tourId).then(response => {
+        //     this.logger.log(response);
+        // });
         // this.getEtappeStand('037445ab-29b3-4841-bed9-920018b4295b').then(response => {
         //     this.logger.log(response);
         // })
-
+// this.updatePredictionScoreEtappe('169eec18-1a62-407a-804d-fe3db719de67','ad756953-cb34-48bb-bbea-4dd52b993598').then(response => {
+        //     this.logger.log(response);
+        // });
     }
 
     private sorteerStand(stand: any, valueToSortOn: string) {
@@ -125,17 +126,17 @@ export class PredictionScoreService {
         });
     }
 
-    async updateAlleEtappes(): Promise<any> {
+    async updateAlleEtappes(tourId: string): Promise<any> {
         const etappes = await this.connection
             .getRepository(Etappe)
             .createQueryBuilder('etappe')
             .leftJoin('etappe.tour', 'tour')
-            .where('tour.id = :tourId', {tourId: 'ad756953-cb34-48bb-bbea-4dd52b993598'})
+            .where('tour.id = :tourId', {tourId})
             .getMany();
 
         for (const etappe of etappes) {
             this.logger.log(etappe.id + ': start');
-            await this.updatePredictionScoreEtappe(etappe.id, 'ad756953-cb34-48bb-bbea-4dd52b993598').then(result => {
+            await this.updatePredictionScoreEtappe(etappe.id, tourId).then(result => {
                 this.logger.log(etappe.id + ': done');
             });
         }
@@ -194,6 +195,7 @@ export class PredictionScoreService {
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
 
+            this.logger.log(stand.length)
         const valueToSortOn = tour.hasEnded ? 'totaalpunten' : 'etappepunten';
         return this.sorteerStand(stand, valueToSortOn);
     }
@@ -205,13 +207,17 @@ export class PredictionScoreService {
     }
 
     async getTeamForParticipant(tourId, participantId): Promise<any> {
-        const tourhasEnded = true;
+        this.logger.log(`getTeamForParticipant ${tourId}, ${participantId}`)
         const tour = await this.connection.getRepository(Tour)
             .createQueryBuilder('tour')
             .where('tour.id= :tourId', {tourId})
             .getOne();
 
+        this.logger.log(`tour ${tourId}, ${participantId}`)
+            
         const latestEtappe = await this.getLatestEtappe(tourId);
+
+        this.logger.log(`latestEtappe ${latestEtappe.id}`)
 
         const team = await this.connection
             .getRepository(Prediction)
@@ -302,7 +308,7 @@ export class PredictionScoreService {
             .select('participant.id', 'id')
             .addSelect('participant.displayName', 'displayName')
             .addSelect('participant.teamName', 'teamName')
-            .addSelect('SUM(predictionscore.punten)', 'punten')
+            .addSelect('SUM(predictionscore.punten)', 'totalStagePoints')
             .leftJoin('predictionscore.participant', 'participant')
             .leftJoin('predictionscore.etappe', 'etappe')
             .where('etappe.id = :etappeId', {etappeId})
@@ -310,7 +316,7 @@ export class PredictionScoreService {
             .addGroupBy('etappe.id')
             .getRawMany();
 
-        return this.sorteerStand(stand, 'punten');
+        return this.sorteerStand(stand, 'totalStagePoints');
 
     }
 
@@ -466,8 +472,11 @@ export class PredictionScoreService {
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
             .where('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.ALGEMEEN})
+            .andWhere('predictionscore."tourId" = :tourId', {tourId})
             .getMany();
 
+            this.logger.log("oldScores.length")
+            this.logger.log(oldScores.length)
         await oldScores.forEach(async oldscore => {
             await this.connection
                 .getRepository(PredictionScore)
@@ -529,6 +538,7 @@ export class PredictionScoreService {
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
             .where('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.BERG})
+            .andWhere('predictionscore."tourId" = :tourId', {tourId})
             .getMany();
 
         await oldScores.forEach(async oldscore => {
@@ -591,6 +601,7 @@ export class PredictionScoreService {
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
             .where('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.PUNTEN})
+            .andWhere('predictionscore."tourId" = :tourId', {tourId})
             .getMany();
 
         await oldScores.forEach(async oldscore => {
@@ -654,6 +665,7 @@ export class PredictionScoreService {
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
             .where('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.JONGEREN})
+            .andWhere('predictionscore."tourId" = :tourId', {tourId})
             .getMany();
 
         await oldScores.forEach(async oldscore => {

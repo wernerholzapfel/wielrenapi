@@ -23,17 +23,7 @@ export class ParticipantController {
     @UseInterceptors(CacheInterceptor)
     @Get('/table/:id')
     async getTable(@Param('id') id): Promise<any[]> {
-        if (id === 'ad756953-cb34-48bb-bbea-4dd52b993598') {
-            return [];
-        }
-        //  if (id === '52acae2f-a69d-467d-a5ef-1ecd304436e3') {
-        // } 
-        else {
-            return this.participantService.updateTable(id);
-      return [];
-        } else {
             return this.participantService.getTable(id);
-        }
     }
 
     @Get('/updateTable/:id')

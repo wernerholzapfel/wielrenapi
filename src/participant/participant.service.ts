@@ -13,7 +13,6 @@ import {Tourclassification} from '../tourclassification/tourclassification.entit
 import {CreateParticipantDto} from './create-participant.dto';
 import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
 import {Tour} from '../tour/tour.entity';
-import {Cache} from 'cache-manager';
 
 // Get a database reference
 @Injectable()
@@ -341,28 +340,6 @@ export class ParticipantService {
         return participants;
     }
 
-    async invalidateCacheAndSetLastUpdated(tourId: string): Promise<void> {
-        await this.cacheManager.reset()
-
-        const db = admin.database();
-        const ref = db.ref(tourId);
-
-        const lastUpdated = ref.child('lastUpdated');
-
-        admin.messaging().sendToDevice(
-            'emwL9z2ezkaCtJJJ8Q7zba:APA91bEusyrxdBokagifRMLHDyornA0cvUDA9dhtJI0Soa8laZNXqCanoKMVizqOe4T5HbRMJtZ_nOxm51Vu_VNc8iTqACqsSzEujJPsYQomH7mTp_ot1nyHB3hvkxT_0FfMmUBprHfl',
-            {
-                notification: {
-                    title: 'Het Wielerspel',
-                    body: 'De stand is geupdate'
-                }
-            }).then(response => {
-            this.logger.log(response);
-        }).catch(err => {
-            this.logger.log(err);
-        });
-        return lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
-    }
 
     async create(participant: CreateParticipantDto, email: string): Promise<Participant> {
         const newParticipant: Participant = Object.assign(participant);
