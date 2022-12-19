@@ -1,4 +1,4 @@
-import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, Entity, Index, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Prediction, PredictionRead} from '../prediction/prediction.entity';
 import {PredictionScore} from '../prediction-score/prediction-score.entity';
 
@@ -7,6 +7,7 @@ export class Participant {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index()
     @Column({select: false, unique: true})
     email: string;
 

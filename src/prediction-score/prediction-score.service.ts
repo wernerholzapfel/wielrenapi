@@ -113,6 +113,7 @@ export class PredictionScoreService {
             return {
                 ...item,
                 etappepunten: item.etappepunten ? parseInt(item.etappepunten, 10) : 0,
+                deltaEtappepunten: item.deltaEtappepunten ? parseInt(item.deltaEtappepunten, 10) : 0,
                 algemeenpunten: item.algemeenpunten ? parseInt(item.algemeenpunten, 10) : 0,
                 bergpunten: item.bergpunten ? parseInt(item.bergpunten, 10) : 0,
                 puntenpunten: item.puntenpunten ? parseInt(item.puntenpunten, 10) : 0,
@@ -247,6 +248,14 @@ export class PredictionScoreService {
                     .andWhere('pssub.predictionType = :predictionTypeEtappe', {predictionTypeEtappe: PredictionEnum.ETAPPE})
                     .groupBy('"predictionId"');
             }, 'etappepunten')
+            .addSelect((subQuery) => {
+                return subQuery.select('SUM("punten")', 'deltaEtappe')
+                    .from(PredictionScore, 'pssub')
+                    .where('pssub."predictionId" = prediction.id')
+                    .andWhere('pssub.predictionType = :predictionTypeEtappe', {predictionTypeEtappe: PredictionEnum.ETAPPE})
+                    .andWhere('pssub."etappeId" = :latestEtappeId', {latestEtappeId: latestEtappe.id})
+                    .groupBy('"predictionId"');
+            }, 'deltaEtappepunten')
             .addSelect((subQuery) => {
                 return subQuery.select('SUM("punten")', 'punten')
                     .from(PredictionScore, 'pssub')
