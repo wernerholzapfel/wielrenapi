@@ -3,12 +3,12 @@ import {InjectRepository} from '@nestjs/typeorm';
 import {Tour} from './tour.entity';
 import {Connection, getConnection, getRepository, Repository} from 'typeorm';
 import {Team} from '../teams/team.entity';
-import {CreateTourDto} from './create-tour.dto';
+import {AddTeamsRequestDto, CreateTourDto} from './create-tour.dto';
 
-export interface AddTeamsRequest {
-    tour: Tour;
-    teams: Team[];
-}
+// export interface AddTeamsRequest {
+    // tour: Tour;
+    // teams: Team[];
+// }
 
 @Injectable()
 export class TourService {
@@ -24,6 +24,14 @@ export class TourService {
             .getRepository(Tour)
             .createQueryBuilder('tour')
             .getMany();
+    }
+    
+    async getActiveTour(): Promise<Tour> {
+        return await this.connection
+            .getRepository(Tour)
+            .createQueryBuilder('tour')
+            .where('tour.isActive = true')
+            .getOne();
     }
 
     async findTour(id: string): Promise<Tour> {
@@ -66,7 +74,7 @@ export class TourService {
         });
     }
 
-    async addTeamsToTour(bodyTour: AddTeamsRequest): Promise<any> {
+    async addTeamsToTour(bodyTour: AddTeamsRequestDto): Promise<any> {
         return await getConnection()
             .createQueryBuilder()
             .relation(Tour, 'teams')

@@ -1,14 +1,14 @@
-import {HttpStatus, Injectable, Logger, HttpException} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Tourriders, TourridersRead} from './tourriders.entity';
-import {Connection, DeleteResult, Repository} from 'typeorm';
-import {Tour, TourRead} from '../tour/tour.entity';
-import {Team} from '../teams/team.entity';
-import {Etappe} from '../etappe/etappe.entity';
-import {Stageclassification} from '../stageclassification/stageclassification.entity';
-import {Prediction} from '../prediction/prediction.entity';
-import {Tourclassification} from '../tourclassification/tourclassification.entity';
-import {CreateTourridersDto} from './create-tourriders.dto';
+import { HttpStatus, Injectable, Logger, HttpException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Tourriders, TourridersRead } from './tourriders.entity';
+import { Connection, DeleteResult, Repository } from 'typeorm';
+import { Tour, TourRead } from '../tour/tour.entity';
+import { Team } from '../teams/team.entity';
+import { Etappe } from '../etappe/etappe.entity';
+import { Stageclassification } from '../stageclassification/stageclassification.entity';
+import { Prediction } from '../prediction/prediction.entity';
+import { Tourclassification } from '../tourclassification/tourclassification.entity';
+import { CreateTourridersDto } from './create-tourriders.dto';
 import * as admin from 'firebase-admin';
 
 @Injectable()
@@ -16,8 +16,8 @@ export class TourridersService {
     private readonly logger = new Logger('TourridersService', true);
 
     constructor(private readonly connection: Connection,
-                @InjectRepository(Tourriders)
-                private readonly tourridersRepository: Repository<Tourriders>,) {
+        @InjectRepository(Tourriders)
+        private readonly tourridersRepository: Repository<Tourriders>,) {
     }
 
     async findActive(): Promise<Tour> {
@@ -31,6 +31,30 @@ export class TourridersService {
             .andWhere('(teamriders.tour.id = tour.id OR teamriders.tour.id IS NULL)')
             .getOne();
     }
+
+    async tourridersForTour(tourId): Promise<Tourriders[]> {
+        return await this.connection
+            .getRepository(Tourriders)
+            .createQueryBuilder('tourriders')
+            .leftJoinAndSelect('tourriders.rider', 'rider')
+            .leftJoin('tourriders.tour', 'tour')
+            .where('tour.id = :tourId', { tourId })
+            .getMany();
+    }
+
+    async tourridersForTeam(tourId, teamId): Promise<Tourriders[]> {
+        return await this.connection
+            .getRepository(Tourriders)
+            .createQueryBuilder('tourriders')
+            .leftJoinAndSelect('tourriders.rider', 'rider')
+            .leftJoin('tourriders.tour', 'tour')
+            .leftJoin('tourriders.team', 'team')
+            .where('tour.id = :tourId', { tourId })
+            .andWhere('team.id = :teamId', { teamId })
+            .orderBy('tourriders.waarde')
+            .getMany();
+    }
+
 
     async getDetails(tourId: string): Promise<TourridersRead[]> {
         const tourriders: TourridersRead[] = await this.connection
@@ -48,7 +72,7 @@ export class TourridersService {
             .leftJoinAndSelect('tourrider.predictions', 'tourriderpredictions')
             .leftJoinAndSelect('tourriderpredictions.participant', 'tourriderpredictionsparticipant')
             .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
-            .where('tour.id = :id', {id: tourId})
+            .where('tour.id = :id', { id: tourId })
             .getMany();
 
         const teams: Team[] = await this.getTeamClassifications(tourId);
@@ -59,7 +83,7 @@ export class TourridersService {
             rider.stageclassifications =
                 [...rider.stageclassifications]
                     .map(sc =>
-                        Object.assign(sc, {stagePoints: this.calculatePoints(sc, etappeFactor)})
+                        Object.assign(sc, { stagePoints: this.calculatePoints(sc, etappeFactor) })
                     );
             if (rider.isOut) {
                 rider.stageclassifications.push({
@@ -69,24 +93,83 @@ export class TourridersService {
             }
             [...rider.tourclassifications]
                 .map(tc =>
-                    Object.assign(rider, {tourPoints: this.calculatePoints(tc, tourFactor)})
+                    Object.assign(rider, { tourPoints: this.calculatePoints(tc, tourFactor) })
                 );
             [...rider.youthclassifications]
                 .map(yc =>
-                    Object.assign(rider, {youthPoints: this.calculatePoints(yc, youthFactor)})
+                    Object.assign(rider, { youthPoints: this.calculatePoints(yc, youthFactor) })
                 );
             [...rider.mountainclassifications]
                 .map(mc =>
-                    Object.assign(rider, {mountainPoints: this.calculatePoints(mc, mountainFactor)})
+                    Object.assign(rider, { mountainPoints: this.calculatePoints(mc, mountainFactor) })
                 );
             [...rider.pointsclassifications]
                 .map(pc =>
-                    Object.assign(rider, {pointsPoints: this.calculatePoints(pc, pointsFactor)})
+                    Object.assign(rider, { pointsPoints: this.calculatePoints(pc, pointsFactor) })
                 );
-            Object.assign(rider, {waterdragerTruienPoints: this.determineWDTruienPunten(rider, teams)});
-            Object.assign(rider, {waterdragerEtappePoints: this.determineWDEtappepunten(rider, teams, etappes)});
-            Object.assign(rider, {waterdragerTotalPoints: rider.waterdragerTruienPoints + rider.waterdragerEtappePoints});
-            Object.assign(rider, {totalStagePoints: this.determineSCTotaalpunten(rider, teams, etappes.length)});
+            Object.assign(rider, { waterdragerTruienPoints: this.determineWDTruienPunten(rider, teams) });
+            Object.assign(rider, { waterdragerEtappePoints: this.determineWDEtappepunten(rider, teams, etappes) });
+            Object.assign(rider, { waterdragerTotalPoints: rider.waterdragerTruienPoints + rider.waterdragerEtappePoints });
+            Object.assign(rider, { totalStagePoints: this.determineSCTotaalpunten(rider, teams, etappes.length) });
+        });
+        return tourriders;
+
+    }
+    async getNewDetails(tourId: string): Promise<TourridersRead[]> {
+        const tourriders: TourridersRead[] = await this.connection
+            .getRepository(Tourriders)
+            .createQueryBuilder('tourrider')
+            .leftJoinAndSelect('tourrider.team', 'team')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoin('tourrider.tour', 'tour')
+            .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
+            .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
+            .leftJoinAndSelect('tourrider.tourclassifications', 'tourclassifications')
+            .leftJoinAndSelect('tourrider.mountainclassifications', 'mountainclassifications')
+            .leftJoinAndSelect('tourrider.youthclassifications', 'youthclassifications')
+            .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
+            .leftJoinAndSelect('tourrider.predictions', 'tourriderpredictions')
+            .leftJoinAndSelect('tourriderpredictions.participant', 'tourriderpredictionsparticipant')
+            .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
+            .where('tour.id = :id', { id: tourId })
+            .getMany();
+
+        const teams: Team[] = await this.getTeamClassifications(tourId);
+        const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
+
+
+        tourriders.map(rider => {
+            rider.stageclassifications =
+                [...rider.stageclassifications]
+                    .map(sc =>
+                        Object.assign(sc, { stagePoints: this.calculatePoints(sc, etappeFactor) })
+                    );
+            if (rider.isOut) {
+                rider.stageclassifications.push({
+                    stagePoints: rider.isOut ? didNotFinishPoints : 0,
+                    etappe: rider.latestEtappe,
+                });
+            }
+            [...rider.tourclassifications]
+                .map(tc =>
+                    Object.assign(rider, { tourPoints: this.calculatePoints(tc, tourFactor) })
+                );
+            [...rider.youthclassifications]
+                .map(yc =>
+                    Object.assign(rider, { youthPoints: this.calculatePoints(yc, youthFactor) })
+                );
+            [...rider.mountainclassifications]
+                .map(mc =>
+                    Object.assign(rider, { mountainPoints: this.calculatePoints(mc, mountainFactor) })
+                );
+            [...rider.pointsclassifications]
+                .map(pc =>
+                    Object.assign(rider, { pointsPoints: this.calculatePoints(pc, pointsFactor) })
+                );
+            Object.assign(rider, { waterdragerTruienPoints: this.determineWDTruienPunten(rider, teams) });
+            Object.assign(rider, { waterdragerEtappePoints: this.determineWDEtappepunten(rider, teams, etappes) });
+            Object.assign(rider, { waterdragerTotalPoints: rider.waterdragerTruienPoints + rider.waterdragerEtappePoints });
+            Object.assign(rider, { totalStagePoints: this.determineSCTotaalpunten(rider, teams, etappes.length) });
         });
         return tourriders;
 
@@ -135,8 +218,8 @@ export class TourridersService {
             .leftJoinAndSelect('tourRiders.youthclassifications', 'yc')
             .leftJoinAndSelect('tourRiders.pointsclassifications', 'pc')
             .leftJoinAndSelect('sc.etappe', 'etappe')
-            .where('tour.id = :id', {id})
-            .andWhere('tourRidersTour.id = :id', {id})
+            .where('tour.id = :id', { id })
+            .andWhere('tourRidersTour.id = :id', { id })
             .getMany();
     }
 
@@ -145,7 +228,7 @@ export class TourridersService {
             .getRepository(Etappe)
             .createQueryBuilder('etappe')
             .leftJoinAndSelect('etappe.tour', 'tour')
-            .where('tour.id = :id', {id})
+            .where('tour.id = :id', { id })
             .andWhere('etappe.isDriven')
             .getMany();
 
@@ -276,7 +359,7 @@ export class TourridersService {
 
     determineWDPunten(rider: Tourriders, etappe: Etappe, teams: Team[], etappeFactor: number) {
         const etappePosition = this.determinePositionInEtappe(etappe, rider.stageclassifications);
-        const newStage = {id: null, position: etappePosition, etappe: etappe, stagePoints: null};
+        const newStage = { id: null, position: etappePosition, etappe: etappe, stagePoints: null };
 
         const team = teams.find(team => team.id === rider.team.id);
 
@@ -303,7 +386,7 @@ export class TourridersService {
             riderPoints);
 
         // this.logger.log('stagePointsWd: ' + newStage.etappe.etappeNumber + ' - ' + rider.rider.surName + ' ' + stagePointsWD);
-        Object.assign(newStage, {stagePoints: stagePointsWD, calculation: calculation});
+        Object.assign(newStage, { stagePoints: stagePointsWD, calculation: calculation });
         return newStage;
     }
 

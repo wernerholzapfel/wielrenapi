@@ -1,4 +1,5 @@
-import {IsBoolean, IsDefined, IsString, IsDateString, Length} from 'class-validator';
+import {IsBoolean, IsDefined, IsString, IsDateString, Length, IsArray} from 'class-validator';
+import { Tour } from './tour.entity';
 
 export class CreateTourDto {
     readonly id: string;
@@ -10,5 +11,11 @@ export class CreateTourDto {
     @IsDefined() @IsDateString() readonly endDate: Date;
 
     @IsBoolean() readonly isActive: boolean;
+
+}
+
+export class AddTeamsRequestDto {
+    @IsDefined() readonly tour: Tour;
+    @IsDefined() @IsArray() readonly teams: any[];
 
 }

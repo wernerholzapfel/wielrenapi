@@ -316,11 +316,11 @@ export class ParticipantService {
         });
 
 
-        // const db = admin.database();
-        // const ref = db.ref(tourId);
+        const db = admin.database();
+        const ref = db.ref(tourId);
 
-        // const standRef = ref.child('stand');
-        // standRef.set(participants);
+        const standRef = ref.child('stand');
+        standRef.set(participants);
         // const lastUpdated = ref.child('lastUpdated');
         // lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 

@@ -3,6 +3,7 @@ import {Body, CacheInterceptor, Controller, Delete, Get, Logger, Param, Post, Pu
 import {TourridersService} from './tourriders.service';
 import {CreateTourridersDto} from './create-tourriders.dto';
 import {Tour} from '../tour/tour.entity';
+import { Tourriders } from './tourriders.entity';
 
 @Controller('tourriders')
 export class TourridersController {
@@ -15,11 +16,24 @@ export class TourridersController {
     async findActive(): Promise<Tour> {
         return this.tourridersService.findActive();
     }
+     @Get('tour/:id')
+    async tourridersForTour(@Param('id') tourId): Promise<Tourriders[]> {
+        return this.tourridersService.tourridersForTour(tourId);
+    }
+        @Get('tour/:tourid/team/:teamid')
+    async tourridersForTeam(@Param('tourid') tourId, @Param('teamid') teamId): Promise<Tourriders[]> {
+        return this.tourridersService.tourridersForTeam(tourId, teamId);
+    }
 
     @UseInterceptors(CacheInterceptor)
     @Get('/details/:tourId')
     async getDetails(@Param('tourId') tourId): Promise<any[]> {
         return this.tourridersService.getDetails(tourId);
+    }
+
+    @Get('/newdetails/:tourId')
+    async getNewDetails(@Param('tourId') tourId): Promise<any[]> {
+        return this.tourridersService.getNewDetails(tourId);
     }
 
     @Put('/details/:tourId')

@@ -1,8 +1,8 @@
 
 import {Body, Controller, Get, Logger, Param, Post, Req} from '@nestjs/common';
-import {AddTeamsRequest, TourService} from './tour.service';
+import {TourService} from './tour.service';
 import {Tour} from './tour.entity';
-import {CreateTourDto} from './create-tour.dto';
+import {AddTeamsRequestDto, CreateTourDto} from './create-tour.dto';
 
 @Controller()
 export class TourController {
@@ -14,6 +14,12 @@ export class TourController {
     @Get('tours')
     async findAll(): Promise<Tour[]> {
         return this.tourService.findAll();
+
+    }  
+    
+    @Get('tour/active')
+    async getActiveTour(): Promise<Tour> {
+        return this.tourService.getActiveTour();
     }
 
     @Get('tours/:id')
@@ -22,10 +28,12 @@ export class TourController {
     }
 
     @Post('tours/setteams')
-    async addTeams(@Req() req, @Body() body: AddTeamsRequest) {
-        await this.tourService.deleteTeamsFromTour(body.tour);
-        await this.tourService.addTeamsToTour(body);
-        return await this.tourService.findTour(body.tour.id);
+    async addTeams(@Req() req, @Body() addTeamsRequestDto: AddTeamsRequestDto) {
+        this.logger.log('AddTeamsRequest');
+        this.logger.log(addTeamsRequestDto);
+        await this.tourService.deleteTeamsFromTour(addTeamsRequestDto.tour);
+        await this.tourService.addTeamsToTour(addTeamsRequestDto);
+        return await this.tourService.findTour(addTeamsRequestDto.tour.id);
     }
 
     @Post('tours')

@@ -1,7 +1,7 @@
-import {Body, Controller, Get, Logger, Post, Req} from '@nestjs/common';
-import {TeamService} from './team.service';
-import {Team} from './team.entity';
-import {CreateTeamDto} from './create-team.dto';
+import { Body, Controller, Get, Logger, Param, Post, Req } from '@nestjs/common';
+import { TeamService } from './team.service';
+import { Team } from './team.entity';
+import { CreateTeamDto } from './create-team.dto';
 
 @Controller('teams')
 export class TeamController {
@@ -13,6 +13,14 @@ export class TeamController {
     @Get()
     async findAll(): Promise<Team[]> {
         return this.teamService.findAll();
+    }
+    @Get('tour/:id')
+    async getTeamsForTour(@Param('id') tourId): Promise<Team[]> {
+        return this.teamService.getTeamsForTour(tourId);
+    }
+    @Get('admin/tour/:id')
+    async getAllTeamsWithTourIndicator(@Param('id') tourId): Promise<Team[]> {
+        return this.teamService.getAllTeamsWithTourIndicator(tourId);
     }
 
     @Post()
