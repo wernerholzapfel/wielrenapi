@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Param, Post, Req} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, Put, Req} from '@nestjs/common';
 import {Stageclassification} from '../stageclassification/stageclassification.entity';
 import {StageclassificationService} from '../stageclassification/stageclassification.service';
 import {PredictionScoreService} from './prediction-score.service';
@@ -51,7 +51,24 @@ export class PredictionScoreController {
         return this.predictionsScoreService.getJongerenStand(tourId);
     }
 
-    @Post('stageclassification/:tourId/:etappeId')
+    @Put('algemeen/:tourId')
+    async putAlgemeenStand(@Param('tourId') tourId): Promise<Stageclassification[]> {
+        return this.predictionsScoreService.updatePredictionScoreAlgemeen(tourId);
+    }
+    @Put('berg/:tourId')
+    async putBergStand(@Param('tourId') tourId): Promise<Stageclassification[]> {
+        return this.predictionsScoreService.updatePredictionScoreBerg(tourId);
+    }
+    @Put('punten/:tourId')
+    async putPuntenStand(@Param('tourId') tourId): Promise<Stageclassification[]> {
+        return this.predictionsScoreService.updatePredictionScorePunten(tourId);
+    }
+    @Put('jongeren/:tourId')
+    async putJongerenStand(@Param('tourId') tourId): Promise<Stageclassification[]> {
+        return this.predictionsScoreService.updatePredictionScoreJongeren(tourId);
+    }
+
+    @Put('etappe/:tourId/:etappeId')
     async create(@Req() req, @Param('etappeId') etappeId, @Param('tourId') tourId) {
         return await this.predictionsScoreService.updatePredictionScoreEtappe(etappeId, tourId);
     }
