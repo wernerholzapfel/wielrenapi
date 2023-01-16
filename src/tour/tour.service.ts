@@ -1,13 +1,13 @@
-import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Tour} from './tour.entity';
-import {Connection, getConnection, getRepository, Repository} from 'typeorm';
-import {Team} from '../teams/team.entity';
-import {AddTeamsRequestDto, CreateTourDto} from './create-tour.dto';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Tour } from './tour.entity';
+import { Connection, getConnection, getRepository, Repository } from 'typeorm';
+import { Team } from '../teams/team.entity';
+import { AddTeamsRequestDto, CreateTourDto } from './create-tour.dto';
 
 // export interface AddTeamsRequest {
-    // tour: Tour;
-    // teams: Team[];
+// tour: Tour;
+// teams: Team[];
 // }
 
 @Injectable()
@@ -15,8 +15,8 @@ export class TourService {
     private readonly logger = new Logger('TourService', true);
 
     constructor(private readonly connection: Connection,
-                @InjectRepository(Tour)
-                private readonly tourRepository: Repository<Tour>,) {
+        @InjectRepository(Tour)
+        private readonly tourRepository: Repository<Tour>,) {
     }
 
     async findAll(): Promise<Tour[]> {
@@ -25,7 +25,7 @@ export class TourService {
             .createQueryBuilder('tour')
             .getMany();
     }
-    
+
     async getActiveTour(): Promise<Tour> {
         return await this.connection
             .getRepository(Tour)
@@ -39,11 +39,11 @@ export class TourService {
             .getRepository(Tour)
             .createQueryBuilder('tour')
             .leftJoinAndSelect('tour.teams', 'team')
-            .leftJoinAndSelect('team.tourRiders', 'tourriders', '(tourriders.tour.id = :id OR tourriders.tour.id IS NULL)', {id})
+            .leftJoinAndSelect('team.tourRiders', 'tourriders', '(tourriders.tour.id = :id OR tourriders.tour.id IS NULL)', { id })
             .leftJoinAndSelect('tourriders.rider', 'rider')
             .leftJoinAndSelect('tourriders.latestEtappe', 'latestEtappe')
-            .where('tour.id = :id', {id})
-            .andWhere('(tourriders.tour.id = :id OR tourriders.tour.id IS NULL)', {id})
+            .where('tour.id = :id', { id })
+            .andWhere('(tourriders.tour.id = :id OR tourriders.tour.id IS NULL)', { id })
             .getOne();
     }
 
@@ -60,18 +60,20 @@ export class TourService {
     async deleteTeamsFromTour(tour: Tour): Promise<any> {
         const storedTour = await getRepository(Tour).createQueryBuilder('tour')
             .leftJoinAndSelect('tour.teams', 'teams')
-            .where('tour.id = :tourId', {tourId: tour.id})
+            .where('tour.id = :tourId', { tourId: tour.id })
             .getOne();
 
-        return await storedTour.teams.forEach(async team => {
-            this.logger.log('delete: ' + team.teamName);
-            await
+
+        for (const team of storedTour.teams) {
+            const contents = await
                 getConnection()
                     .createQueryBuilder()
                     .relation(Tour, 'teams')
                     .of(tour)
                     .remove(team);
-        });
+            this.logger.log('delete: ' + team.teamName);
+        }
+        return [];
     }
 
     async addTeamsToTour(bodyTour: AddTeamsRequestDto): Promise<any> {

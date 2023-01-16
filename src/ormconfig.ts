@@ -36,6 +36,6 @@ export const ormconfig: TypeOrmModuleOptions = {
         Pointsclassification,
         PredictionScore,
         Headline],
-    logging: true,
-    synchronize: true, // DEV only, do not use on PROD!
+    logging: false,
+    synchronize: false, // DEV only, do not use on PROD!
 };
