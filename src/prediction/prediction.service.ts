@@ -44,9 +44,9 @@ export class PredictionService {
                 ...predictions,
                 ...this.setEmptyRiders(predictions),
                 this.setEmptyLinkebal(predictions),
-                this.setBeschermdeRennerLinkebal(predictions),
-                this.setMeesterknechtLinkebal(predictions),
-                this.setWaterdragerLinkebal(predictions)
+                this.setBeschermdeRenner(predictions),
+                this.setMeesterknecht(predictions),
+                this.setWaterdrager(predictions)
             ]
                 .filter(n => n)             // remove null values
                 .map((r, i) => {
@@ -74,8 +74,8 @@ export class PredictionService {
         } : null;
     }
 
-    setWaterdragerLinkebal(predictions: Prediction[]) {
-        return !predictions.find(p => p.isLinkebal) ? {
+    setWaterdrager(predictions: Prediction[]) {
+        return !predictions.find(p => p.isWaterdrager) ? {
             'isRider': false,
             'isWaterdrager': true,
             'isMeesterknecht': false,
@@ -90,8 +90,8 @@ export class PredictionService {
         } : null;
     }
 
-    setMeesterknechtLinkebal(predictions: Prediction[]) {
-        return !predictions.find(p => p.isLinkebal) ? {
+    setMeesterknecht(predictions: Prediction[]) {
+        return !predictions.find(p => p.isMeesterknecht) ? {
             'isRider': false,
             'isWaterdrager': false,
             'isMeesterknecht': true,
@@ -106,8 +106,8 @@ export class PredictionService {
         } : null;
     }
 
-    setBeschermdeRennerLinkebal(predictions: Prediction[]) {
-        return !predictions.find(p => p.isLinkebal) ? {
+    setBeschermdeRenner(predictions: Prediction[]) {
+        return !predictions.find(p => p.isBeschermdeRenner) ? {
             'isRider': false,
             'isWaterdrager': false,
             'isMeesterknecht': false,
