@@ -51,7 +51,7 @@ export class TourridersService {
             .leftJoin('tourriders.team', 'team')
             .where('tour.id = :tourId', { tourId })
             .andWhere('team.id = :teamId', { teamId })
-            .orderBy('tourriders.waarde')
+            .orderBy('rider.surName')
             .getMany();
     }
 
