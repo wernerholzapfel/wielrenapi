@@ -19,6 +19,11 @@ export class PredictionController {
     async findByParticipant(@Param('tourid') tourid, @Req() req): Promise<Prediction[]> {
         return this.predictionService.findByParticipant(req.user.email, tourid);
     }
+    
+    @Get('state/:tourid')
+    async getPredictionsstate(@Param('tourid') tourid): Promise<Prediction[]> {
+        return this.predictionService.getPredictionsstate(tourid);
+    }
 
     @Post()
     async createPrediction(@Req() req, @Body() body,  createPredictionDto: CreatePredictionDto) {

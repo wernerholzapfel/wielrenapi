@@ -1,17 +1,17 @@
-import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Prediction} from './prediction.entity';
-import {Connection, DeleteResult, getConnection, Repository} from 'typeorm';
-import {Participant} from '../participant/participant.entity';
-import {Tour} from '../tour/tour.entity';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Prediction } from './prediction.entity';
+import { Connection, DeleteResult, getConnection, Repository } from 'typeorm';
+import { Participant } from '../participant/participant.entity';
+import { Tour } from '../tour/tour.entity';
 
 @Injectable()
 export class PredictionService {
     private readonly logger = new Logger('PredictionService', true);
 
     constructor(@InjectRepository(Prediction)
-                private readonly predictionRepository: Repository<Prediction>,
-                private readonly connection: Connection,) {
+    private readonly predictionRepository: Repository<Prediction>,
+        private readonly connection: Connection,) {
     }
 
     async findAll(): Promise<Prediction[]> {
@@ -21,11 +21,68 @@ export class PredictionService {
             .getMany();
     }
 
+
+
+    async getPredictionsstate(tourId: string): Promise<any[]> {
+        const predictions = await this.connection
+            .getRepository(Prediction)
+            .createQueryBuilder('prediction')
+            .select('participant.id', 'id')
+            .addSelect('participant.displayName', 'displayName')
+            .addSelect('participant.teamName', 'teamName')
+            .addSelect('COUNT(prediction) filter (where prediction.isRider)', 'renners')
+            .addSelect('COUNT(prediction) filter (where prediction.isMeesterknecht)', 'meesterknecht')
+            .addSelect('COUNT(prediction) filter (where prediction.isBeschermdeRenner)', 'beschermderenner')
+            .addSelect('COUNT(prediction) filter (where prediction.isWaterdrager)', 'waterdrager')
+            .addSelect('COUNT(prediction) filter (where prediction.isLinkebal)', 'joker')
+            .addSelect('COUNT(prediction)', 'totaalRenners')
+            .addSelect('SUM("tourrider"."waarde") filter (where prediction.isRider)', 'waardeRenners')
+            .addSelect('SUM("tourrider"."waarde") filter (where prediction.isMeesterknecht)', 'waardeMeesterknecht')
+            .addSelect('SUM("tourrider"."waarde") filter (where prediction.isBeschermdeRenner)', 'waardeBeschermderenner')
+            .addSelect('SUM("tourrider"."waarde") filter (where prediction.isWaterdrager)', 'waardeWaterdrager')
+            .addSelect('SUM("tourrider"."waarde") filter (where prediction.isLinkebal)', 'waardeJoker')
+            //    .addSelect('SUM(CASE "isRider"\n' +
+            //    '        when true then "1"\n' +
+            //    '        else 0\n' +
+            //    '        end\n' +
+            //    '        )', 'totaalWaarde')
+            // .addSelect('SUM(CASE "predictionType"\n' +
+            //     '        when \'berg\' then "punten"\n' +
+            //     '        else 0\n' +
+            //     '        end\n' +
+            //     '        )', 'bergpunten')
+            // .addSelect('SUM(CASE "predictionType"\n' +
+            //     '        when \'algemeen\' then "punten"\n' +
+            //     '        else 0\n' +
+            //     '        end\n' +
+            //     '        )', 'algemeenpunten')
+            // .addSelect('SUM(CASE "predictionType"\n' +
+            //     '        when \'punten\' then "punten"\n' +
+            //     '        else 0\n' +
+            //     '        end\n' +
+            //     '        )', 'puntenpunten')
+            // .addSelect('SUM(CASE "predictionType"\n' +
+            //     '        when \'jongeren\' then "punten"\n' +
+            //     '        else 0\n' +
+            //     '        end\n' +
+            //     '        )', 'jongerenpunten')
+            // .addSelect('SUM(punten)', 'totaalpunten')
+            .leftJoin('prediction.participant', 'participant')
+            .leftJoin('prediction.rider', 'tourrider')
+            .leftJoin('prediction.tour', 'tour')
+            .leftJoin('tourrider.rider', 'rider')
+            .leftJoin('tourrider.team', 'team')
+            .where('tour.id = :id', { id: tourId })
+            .groupBy('participant.id')
+            .getRawMany();
+
+        return predictions
+    }
     async findByParticipant(email: string, tourId: string): Promise<any[]> {
         const participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
-            .where('participant.email = :email', {email: email.toLowerCase()})
+            .where('participant.email = :email', { email: email.toLowerCase() })
             .getOne();
 
         if (participant) {
@@ -36,8 +93,8 @@ export class PredictionService {
                 .leftJoinAndSelect('prediction.tour', 'tour')
                 .leftJoinAndSelect('tourrider.rider', 'rider')
                 .leftJoinAndSelect('tourrider.team', 'team')
-                .where('prediction.participant.id = :participantID', {participantID: participant.id})
-                .andWhere('tour.id = :id', {id: tourId})
+                .where('prediction.participant.id = :participantID', { participantID: participant.id })
+                .andWhere('tour.id = :id', { id: tourId })
                 .orderBy('rider.surName', 'ASC')
                 .getMany();
 
@@ -51,7 +108,7 @@ export class PredictionService {
             ]
                 .filter(n => n)             // remove null values
                 .map((r, i) => {
-                    return {...r, index: i};
+                    return { ...r, index: i };
                 });
         } else {
             this.logger.log('geen participant');
@@ -153,7 +210,7 @@ export class PredictionService {
         let participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
-            .where('participant.email = :email', {email: email.toLowerCase()})
+            .where('participant.email = :email', { email: email.toLowerCase() })
             .getOne();
 
         if (!participant) {
@@ -162,13 +219,13 @@ export class PredictionService {
                 .insert()
                 .into(Participant)
                 .values([
-                    {email: email.toLowerCase(), displayName: displayName}
+                    { email: email.toLowerCase(), displayName: displayName }
                 ])
                 .execute().then(async response => {
                     participant = await this.connection
                         .getRepository(Participant)
                         .createQueryBuilder('participant')
-                        .where('participant.email = :email', {email: email.toLowerCase()})
+                        .where('participant.email = :email', { email: email.toLowerCase() })
                         .getOne();
                 });
         }
@@ -181,8 +238,8 @@ export class PredictionService {
             .leftJoin('prediction.participant', 'participant')
             .leftJoin('prediction.tour', 'tour')
             .leftJoinAndSelect('prediction.rider', 'rider')
-            .where('participant.id = :participantId', {participantId: participant.id})
-            .andWhere('tour.id = :tourId', {tourId: body.tour.id})
+            .where('participant.id = :participantId', { participantId: participant.id })
+            .andWhere('tour.id = :tourId', { tourId: body.tour.id })
             .getMany();
 
         this.logger.log('oldPrediction length: ' + oldPrediction.length);
@@ -195,7 +252,7 @@ export class PredictionService {
                 .createQueryBuilder()
                 .delete()
                 .from(Prediction, 'prediction')
-                .where('id = :id', {id: prediction.id})
+                .where('id = :id', { id: prediction.id })
                 .execute();
         });
 
@@ -227,16 +284,16 @@ export class PredictionService {
             .createQueryBuilder('prediction')
             .leftJoin('prediction.participant', 'participant')
             .leftJoinAndSelect('prediction.rider', 'rider')
-            .where('participant.id = :id', {id: participant.id})
+            .where('participant.id = :id', { id: participant.id })
             .getMany();
     }
 
-    async createPrediction(body: {prediction: any, tour: Tour }, email: string, displayName: string): Promise<Prediction> {
+    async createPrediction(body: { prediction: any, tour: Tour }, email: string, displayName: string): Promise<Prediction> {
         this.logger.log(email);
         let participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
-            .where('participant.email = :email', {email: email.toLowerCase()})
+            .where('participant.email = :email', { email: email.toLowerCase() })
             .getOne();
 
         if (!participant) {
@@ -245,13 +302,13 @@ export class PredictionService {
                 .insert()
                 .into(Participant)
                 .values([
-                    {email: email.toLowerCase(), displayName: displayName}
+                    { email: email.toLowerCase(), displayName: displayName }
                 ])
                 .execute().then(async response => {
                     participant = await this.connection
                         .getRepository(Participant)
                         .createQueryBuilder('participant')
-                        .where('participant.email = :email', {email: email.toLowerCase()})
+                        .where('participant.email = :email', { email: email.toLowerCase() })
                         .getOne();
                 });
         }
@@ -276,11 +333,11 @@ export class PredictionService {
             });
     }
 
-    async delete(predictionId: string, email:string): Promise<DeleteResult> {
+    async delete(predictionId: string, email: string): Promise<DeleteResult> {
         const participant = await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
-            .where('participant.email = :email', {email: email.toLowerCase()})
+            .where('participant.email = :email', { email: email.toLowerCase() })
             .getOne();
 
         return await this.connection
@@ -288,8 +345,8 @@ export class PredictionService {
             .createQueryBuilder()
             .delete()
             .from(Prediction, 'prediction')
-            .where('id = :predictionId', {predictionId})
-            .andWhere('participant.id = :participantId', {participantId: participant.id})
+            .where('id = :predictionId', { predictionId })
+            .andWhere('participant.id = :participantId', { participantId: participant.id })
             .execute();
     }
 }
