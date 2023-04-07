@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, CreateDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn} from 'typeorm';
 import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
 import {Tour} from '../tour/tour.entity';
 import {Participant} from '../participant/participant.entity';
@@ -6,6 +6,7 @@ import {Stageclassification} from '../stageclassification/stageclassification.en
 import {PredictionScore} from '../prediction-score/prediction-score.entity';
 
 @Entity()
+@Index(['participant', 'tour', 'rider' ], {unique: true})
 export class Prediction {
     @PrimaryGeneratedColumn('uuid')
     id: string;
@@ -39,6 +40,12 @@ export class Prediction {
 
     @OneToMany(type => PredictionScore, predictionScore  => predictionScore.prediction)
     predictionScore: PredictionScore[];
+
+    @UpdateDateColumn()
+    updatedDate: Date;
+
+    @CreateDateColumn()
+    createdDate: Date;
 
 }
 

@@ -38,6 +38,7 @@ export class PredictionService {
                 .leftJoinAndSelect('tourrider.team', 'team')
                 .where('prediction.participant.id = :participantID', {participantID: participant.id})
                 .andWhere('tour.id = :id', {id: tourId})
+                .orderBy('rider.surName', 'ASC')
                 .getMany();
 
             return [
