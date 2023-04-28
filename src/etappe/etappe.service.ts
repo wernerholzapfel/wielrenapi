@@ -17,6 +17,7 @@ export class EtappeService {
             .createQueryBuilder('etappe')
             .leftJoin('etappe.tour', 'tour')
             .where('tour.id = :id', {id: tourId})
+            .orderBy('etappe.date')
             .getMany();
     }
 
