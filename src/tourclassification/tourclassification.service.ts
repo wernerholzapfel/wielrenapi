@@ -1,14 +1,15 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Tourclassification} from './tourclassification.entity';
-import {Connection, getConnection, Repository} from 'typeorm';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Tourclassification } from './tourclassification.entity';
+import { Connection, getConnection, Repository } from 'typeorm';
 
 @Injectable()
 export class TourclassificationService {
     constructor(@InjectRepository(Tourclassification)
-                private readonly tourclassificationRepository: Repository<Tourclassification>,
-                private readonly connection: Connection,) {
+    private readonly tourclassificationRepository: Repository<Tourclassification>,
+        private readonly connection: Connection,) {
     }
+    private readonly logger = new Logger('TourclassificationService', true);
 
     async findByTourId(tourId): Promise<Tourclassification[]> {
         return await this.connection
@@ -17,7 +18,7 @@ export class TourclassificationService {
             .leftJoinAndSelect('tourclassification.tourrider', 'tourrider')
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoinAndSelect('tourclassification.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .orderBy("tourclassification.position", "ASC")
             .getMany();
     }
@@ -28,35 +29,37 @@ export class TourclassificationService {
             .getRepository(Tourclassification)
             .createQueryBuilder('tourcf')
             .leftJoin('tourcf.tour', 'tour')
-            .where('tour.id = :tourId', {tourId: tourclassifications[0].tour.id})
+            .where('tour.id = :tourId', { tourId: tourclassifications[0].tour.id })
             .getMany();
 
-        await oldSC.forEach(async scf => {
-            await this.connection
-                .getRepository(Tourclassification)
-                .createQueryBuilder()
-                .delete()
-                .from(Tourclassification, 'scf')
-                .where('id = :id', {id: scf.id})
-                .execute();
-        });
+        await this.tourclassificationRepository
+            .createQueryBuilder()
+            .delete()
+            .from(Tourclassification, 'scf')
+            .where('id IN (:...id)', { id: oldSC.map(sc => sc.id) })
+            .execute();
 
-        await tourclassifications.forEach(async tourClassificiation => {
-            await this.tourclassificationRepository.save(tourClassificiation)
-                .catch((err) => {
-                    throw new HttpException({
-                        message: err.message,
-                        statusCode: HttpStatus.BAD_REQUEST,
-                    }, HttpStatus.BAD_REQUEST);
-                });
-        });
+        await this.tourclassificationRepository
+            .createQueryBuilder()
+            .insert()
+            .into(Tourclassification)
+            .values(tourclassifications)
+            .execute()
+
+        // await this.tourclassificationRepository.save(tourClassificiation)
+        //     .catch((err) => {
+        //         throw new HttpException({
+        //             message: err.message,
+        //             statusCode: HttpStatus.BAD_REQUEST,
+        //         }, HttpStatus.BAD_REQUEST);
+        //     });
 
         return await this.connection
             .getRepository(Tourclassification)
             .createQueryBuilder('tourclassification')
             .leftJoinAndSelect('tourclassification.tourrider', 'rider')
             .leftJoinAndSelect('tourclassification.tour', 'tour')
-            .where('tour.id = :tourId', {tourId: tourclassifications[0].tour.id})
+            .where('tour.id = :tourId', { tourId: tourclassifications[0].tour.id })
             .getMany();
     }
 }

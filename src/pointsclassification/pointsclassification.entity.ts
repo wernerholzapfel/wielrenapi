@@ -1,10 +1,12 @@
-import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Prediction} from '../prediction/prediction.entity';
 import {Tour} from '../tour/tour.entity';
 import {Tourriders} from '../tourriders/tourriders.entity';
 import {Etappe} from '../etappe/etappe.entity';
 
 @Entity()
+@Index(['tour', 'tourrider'], {unique: true})
+
 export class Pointsclassification {
     @PrimaryGeneratedColumn('uuid')
     id: string;

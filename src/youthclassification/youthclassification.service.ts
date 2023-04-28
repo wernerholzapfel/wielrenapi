@@ -32,25 +32,19 @@ export class YouthclassificationService {
             .where('tour.id = :tourId', {tourId: youthclassifications[0].tour.id})
             .getMany();
 
-        await oldSC.forEach(async scf => {
-            await this.connection
-                .getRepository(Youthclassification)
-                .createQueryBuilder()
-                .delete()
-                .from(Youthclassification, 'scf')
-                .where('id = :id', {id: scf.id})
-                .execute();
-        });
+        await this.youthclassificationRepository
+            .createQueryBuilder()
+            .delete()
+            .from(Youthclassification)
+            .where('id IN (:...id)', { id: oldSC.map(sc => sc.id) })
+            .execute();
 
-        await youthclassifications.forEach(async tourClassificiation => {
-            await this.youthclassificationRepository.save(tourClassificiation)
-                .catch((err) => {
-                    throw new HttpException({
-                        message: err.message,
-                        statusCode: HttpStatus.BAD_REQUEST,
-                    }, HttpStatus.BAD_REQUEST);
-                });
-        });
+        await this.youthclassificationRepository
+            .createQueryBuilder()
+            .insert()
+            .into(Youthclassification)
+            .values(youthclassifications)
+            .execute()
 
         return await this.connection
             .getRepository(Youthclassification)
