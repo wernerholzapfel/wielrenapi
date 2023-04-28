@@ -30,6 +30,11 @@ export class ParticipantController {
     async setLastUpdateDate(@Param('id') id): Promise<void> {
         return this.participantService.invalidateCacheAndSetLastUpdated(id);
     }
+    
+    @Get('/cache/')
+    async invalidateCache(): Promise<void> {
+        return this.participantService.invalidateCache();
+    }
 
     @UseInterceptors(CacheInterceptor)
     @Get('/table/:tourId/etappe/:etappeId')

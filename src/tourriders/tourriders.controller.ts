@@ -20,7 +20,8 @@ export class TourridersController {
     async tourridersForTour(@Param('id') tourId): Promise<Tourriders[]> {
         return this.tourridersService.tourridersForTour(tourId);
     }
-        @Get('tour/:tourid/team/:teamid')
+    
+    @Get('tour/:tourid/team/:teamid')
     async tourridersForTeam(@Param('tourid') tourId, @Param('teamid') teamId): Promise<Tourriders[]> {
         return this.tourridersService.tourridersForTeam(tourId, teamId);
     }
