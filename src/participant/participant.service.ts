@@ -191,7 +191,8 @@ export class ParticipantService {
 
 
     async invalidateCache(): Promise<void> {
-        return await this.cacheManager.reset();
+        await this.cacheManager.reset();
+        return;
     }
     
     async invalidateCacheAndSetLastUpdated(tourId): Promise<void> {

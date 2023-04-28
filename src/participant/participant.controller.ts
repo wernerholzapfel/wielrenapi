@@ -1,5 +1,5 @@
 
-import {Body, CacheInterceptor, Controller, Get, Logger, Param, Post, Req, UseInterceptors} from '@nestjs/common';
+import {Body, CacheInterceptor, Controller, Get, Logger, Param, Post, Put, Req, UseInterceptors} from '@nestjs/common';
 import {ParticipantService} from './participant.service';
 import {Participant} from './participant.entity';
 import {CreateParticipantDto} from './create-participant.dto';
@@ -31,7 +31,7 @@ export class ParticipantController {
         return this.participantService.invalidateCacheAndSetLastUpdated(id);
     }
     
-    @Get('/cache/')
+    @Put('/cache')
     async invalidateCache(): Promise<void> {
         return this.participantService.invalidateCache();
     }
