@@ -48,6 +48,11 @@ export class TourridersController {
         const newTourriders = Object.assign({}, createTourridersDto);
         return await this.tourridersService.create(newTourriders);
     }
+    @Put()
+    async update(@Req() req, @Body() updateTourridersDto: any) {
+        this.logger.log('update tourriders');
+        return await this.tourridersService.update(updateTourridersDto);
+    }
 
     @Delete(':tourridersId')
     async delete(@Param('tourridersId') tourridersId) {

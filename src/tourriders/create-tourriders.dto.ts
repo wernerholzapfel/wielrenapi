@@ -1,7 +1,8 @@
-import {IsDefined, IsNumber} from 'class-validator';
+import {IsDefined, IsNumber, IsOptional} from 'class-validator';
 import {Rider} from '../rider/rider.entity';
 import {Tour} from '../tour/tour.entity';
 import {Team} from '../teams/team.entity';
+import { Etappe } from 'etappe/etappe.entity';
 
 export class CreateTourridersDto {
     readonly id: string;

@@ -46,14 +46,6 @@ export class TourclassificationService {
             .values(tourclassifications)
             .execute()
 
-        // await this.tourclassificationRepository.save(tourClassificiation)
-        //     .catch((err) => {
-        //         throw new HttpException({
-        //             message: err.message,
-        //             statusCode: HttpStatus.BAD_REQUEST,
-        //         }, HttpStatus.BAD_REQUEST);
-        //     });
-
         return await this.connection
             .getRepository(Tourclassification)
             .createQueryBuilder('tourclassification')

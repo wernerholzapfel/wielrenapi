@@ -195,6 +195,15 @@ export class TourridersService {
                 }, HttpStatus.BAD_REQUEST);
             });
     }
+    
+    async update(tourriders: any): Promise<any> {
+        return await this.tourridersRepository
+        .createQueryBuilder()
+        .update(Tourriders)
+        .set(tourriders)
+        .where("id = :id", { id: tourriders.id })
+        .execute()
+    }
 
     async delete(tourriderId): Promise<DeleteResult> {
         return await this.connection
