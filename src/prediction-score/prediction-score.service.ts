@@ -1,18 +1,18 @@
-import {HttpException, HttpStatus, Injectable, Logger} from '@nestjs/common';
-import {Stageclassification, StageClassificationRead} from '../stageclassification/stageclassification.entity';
-import {Etappe} from '../etappe/etappe.entity';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Connection, Repository} from 'typeorm';
-import {Participant} from '../participant/participant.entity';
-import {PredictionEnum, PredictionScore} from './prediction-score.entity';
-import {Prediction} from '../prediction/prediction.entity';
-import {Tourclassification} from '../tourclassification/tourclassification.entity';
-import {Mountainclassification} from '../mountainclassification/mountainclassification.entity';
-import {Pointsclassification} from '../pointsclassification/pointsclassification.entity';
-import {Youthclassification} from '../youthclassification/youthclassification.entity';
-import {Tourriders} from '../tourriders/tourriders.entity';
-import {Tour} from '../tour/tour.entity';
-import {parse} from 'url';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Stageclassification, StageClassificationRead } from '../stageclassification/stageclassification.entity';
+import { Etappe } from '../etappe/etappe.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Connection, Repository } from 'typeorm';
+import { Participant } from '../participant/participant.entity';
+import { PredictionEnum, PredictionScore } from './prediction-score.entity';
+import { Prediction } from '../prediction/prediction.entity';
+import { Tourclassification } from '../tourclassification/tourclassification.entity';
+import { Mountainclassification } from '../mountainclassification/mountainclassification.entity';
+import { Pointsclassification } from '../pointsclassification/pointsclassification.entity';
+import { Youthclassification } from '../youthclassification/youthclassification.entity';
+import { Tourriders } from '../tourriders/tourriders.entity';
+import { Tour } from '../tour/tour.entity';
+import { parse } from 'url';
 
 @Injectable()
 export class PredictionScoreService {
@@ -20,12 +20,12 @@ export class PredictionScoreService {
     private readonly logger = new Logger('PredictionScoreService', true);
 
     constructor(@InjectRepository(PredictionScore)
-                private readonly repository: Repository<PredictionScore>,
-                private readonly connection: Connection,) {
-                    
+    private readonly repository: Repository<PredictionScore>,
+        private readonly connection: Connection,) {
+
         // const tourId = 'ccdb55e4-c42b-4095-b4e4-c0958dcee6e6'
         // this.updateAlleEtappes(tourId);
-        
+
         // this.updatePredictionScoreAlgemeen(tourId).then(response => {
         //     this.logger.log(response);
         // });
@@ -42,7 +42,7 @@ export class PredictionScoreService {
         // this.getEtappeStand('037445ab-29b3-4841-bed9-920018b4295b').then(response => {
         //     this.logger.log(response);
         // })
-// this.updatePredictionScoreEtappe('169eec18-1a62-407a-804d-fe3db719de67','ad756953-cb34-48bb-bbea-4dd52b993598').then(response => {
+        // this.updatePredictionScoreEtappe('169eec18-1a62-407a-804d-fe3db719de67','ad756953-cb34-48bb-bbea-4dd52b993598').then(response => {
         //     this.logger.log(response);
         // });
     }
@@ -88,8 +88,8 @@ export class PredictionScoreService {
         });
 
         const sortedStand = [...standMetvorigePositie].sort((a, b) => {
-                return b[valueToSortOn] - a[valueToSortOn];
-            }
+            return b[valueToSortOn] - a[valueToSortOn];
+        }
         );
 
         return sortedStand.map((item, index) => {
@@ -132,7 +132,7 @@ export class PredictionScoreService {
             .getRepository(Etappe)
             .createQueryBuilder('etappe')
             .leftJoin('etappe.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         for (const etappe of etappes) {
@@ -146,12 +146,12 @@ export class PredictionScoreService {
     async getTotaalStand(tourId): Promise<any[]> {
         const tour = await this.connection.getRepository(Tour)
             .createQueryBuilder('tour')
-            .where('tour.id= :tourId', {tourId})
+            .where('tour.id= :tourId', { tourId })
             .getOne();
 
         const latestEtappe = await this.getLatestEtappe(tourId);
 
-        const stand = await this.connection
+        let stand = await this.connection
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
             .select('participant.id', 'id')
@@ -186,23 +186,27 @@ export class PredictionScoreService {
             .addSelect((subQuery) => {
                 return subQuery.select('SUM("punten")', 'deltapunten')
                     .from(PredictionScore, 'pssub')
-                    .where('"etappeId" = :etappeId', {etappeId: latestEtappe.id})
+                    .where('"etappeId" = :etappeId', { etappeId: latestEtappe.id })
                     .andWhere('pssub."participantId" = "participant".id')
                     .groupBy('"participantId"');
             }, 'deltapunten')
             .leftJoin('predictionscore.participant', 'participant')
-            .where('"tourId" = :tourId', {tourId})
+            .where('"tourId" = :tourId', { tourId })
             .groupBy('participant.id')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
 
-            this.logger.log(stand.length)
-        const valueToSortOn = tour.hasEnded ? 'totaalpunten' : 'etappepunten';
-        return this.sorteerStand(stand, valueToSortOn);
+        stand = tour.hasEnded ? stand : stand.map(line => {
+            return {
+                ...line,
+                totaalpunten: line.etappepunten
+            }
+        });
+        return this.sorteerStand(stand, 'totaalpunten');
     }
 
     async getTotaalStandForParticipant(tourId, participantId): Promise<any> {
-      const stand = await this.getTotaalStand(tourId)
+        const stand = await this.getTotaalStand(tourId)
 
         return stand.find(line => line.id === participantId);
     }
@@ -211,11 +215,11 @@ export class PredictionScoreService {
         this.logger.log(`getTeamForParticipant ${tourId}, ${participantId}`)
         const tour = await this.connection.getRepository(Tour)
             .createQueryBuilder('tour')
-            .where('tour.id= :tourId', {tourId})
+            .where('tour.id= :tourId', { tourId })
             .getOne();
 
         this.logger.log(`tour ${tourId}, ${participantId}`)
-            
+
         const latestEtappe = await this.getLatestEtappe(tourId);
 
         this.logger.log(`latestEtappe ${latestEtappe.id}`)
@@ -238,29 +242,29 @@ export class PredictionScoreService {
                 return subQuery.select('SUM("punten")', 'algemeen')
                     .from(PredictionScore, 'pssub')
                     .where('pssub."predictionId" = prediction.id')
-                    .andWhere('pssub.predictionType = :predictionTypeAlgemeen', {predictionTypeAlgemeen: PredictionEnum.ALGEMEEN})
+                    .andWhere('pssub.predictionType = :predictionTypeAlgemeen', { predictionTypeAlgemeen: PredictionEnum.ALGEMEEN })
                     .groupBy('"predictionId"');
             }, 'algemeenpunten')
             .addSelect((subQuery) => {
                 return subQuery.select('SUM("punten")', 'etappe')
                     .from(PredictionScore, 'pssub')
                     .where('pssub."predictionId" = prediction.id')
-                    .andWhere('pssub.predictionType = :predictionTypeEtappe', {predictionTypeEtappe: PredictionEnum.ETAPPE})
+                    .andWhere('pssub.predictionType = :predictionTypeEtappe', { predictionTypeEtappe: PredictionEnum.ETAPPE })
                     .groupBy('"predictionId"');
             }, 'etappepunten')
             .addSelect((subQuery) => {
                 return subQuery.select('SUM("punten")', 'deltaEtappe')
                     .from(PredictionScore, 'pssub')
                     .where('pssub."predictionId" = prediction.id')
-                    .andWhere('pssub.predictionType = :predictionTypeEtappe', {predictionTypeEtappe: PredictionEnum.ETAPPE})
-                    .andWhere('pssub."etappeId" = :latestEtappeId', {latestEtappeId: latestEtappe.id})
+                    .andWhere('pssub.predictionType = :predictionTypeEtappe', { predictionTypeEtappe: PredictionEnum.ETAPPE })
+                    .andWhere('pssub."etappeId" = :latestEtappeId', { latestEtappeId: latestEtappe.id })
                     .groupBy('"predictionId"');
             }, 'deltaEtappepunten')
             .addSelect((subQuery) => {
                 return subQuery.select('SUM("punten")', 'punten')
                     .from(PredictionScore, 'pssub')
                     .where('pssub."predictionId" = prediction.id')
-                    .andWhere('pssub.predictionType = :predictionTypePunten', {predictionTypePunten: PredictionEnum.PUNTEN})
+                    .andWhere('pssub.predictionType = :predictionTypePunten', { predictionTypePunten: PredictionEnum.PUNTEN })
                     .groupBy('"predictionId"');
             }, 'puntenpunten')
 
@@ -268,14 +272,14 @@ export class PredictionScoreService {
                 return subQuery.select('SUM("punten")', 'berg')
                     .from(PredictionScore, 'pssub')
                     .where('pssub."predictionId" = prediction.id')
-                    .andWhere('pssub.predictionType = :predictionTypeBerg', {predictionTypeBerg: PredictionEnum.BERG})
+                    .andWhere('pssub.predictionType = :predictionTypeBerg', { predictionTypeBerg: PredictionEnum.BERG })
                     .groupBy('"predictionId"');
             }, 'bergpunten')
             .addSelect((subQuery) => {
                 return subQuery.select('SUM("punten")', 'jongeren')
                     .from(PredictionScore, 'pssub')
                     .where('pssub."predictionId" = prediction.id')
-                    .andWhere('pssub.predictionType = :predictionTypeJongeren', {predictionTypeJongeren: PredictionEnum.JONGEREN})
+                    .andWhere('pssub.predictionType = :predictionTypeJongeren', { predictionTypeJongeren: PredictionEnum.JONGEREN })
                     .groupBy('"predictionId"');
             }, 'jongerenpunten')
             .leftJoin('prediction.predictionScore', 'predictionscore')
@@ -283,8 +287,8 @@ export class PredictionScoreService {
             .leftJoinAndSelect('prediction.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoin('tourrider.latestEtappe', 'latestEtappe')
-            .where('prediction."tourId" = :tourId', {tourId})
-            .andWhere('prediction."participantId" = :participantId', {participantId})
+            .where('prediction."tourId" = :tourId', { tourId })
+            .andWhere('prediction."participantId" = :participantId', { participantId })
             .groupBy('participant.id, prediction.id, tourrider.id, rider.id, latestEtappe.etappeNumber')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
@@ -297,7 +301,7 @@ export class PredictionScoreService {
     async getLatestEtappe(tourId): Promise<Etappe> {
         return await this.connection
             .getRepository(Etappe).createQueryBuilder('etappe')
-            .where('tour.id= :tourId', {tourId})
+            .where('tour.id= :tourId', { tourId })
             .andWhere('etappe.isDriven')
             .leftJoin('etappe.tour', 'tour')
             .orderBy('etappe.etappeNumber', 'DESC')
@@ -320,7 +324,7 @@ export class PredictionScoreService {
             .addSelect('SUM(predictionscore.punten)', 'totalStagePoints')
             .leftJoin('predictionscore.participant', 'participant')
             .leftJoin('predictionscore.etappe', 'etappe')
-            .where('etappe.id = :etappeId', {etappeId})
+            .where('etappe.id = :etappeId', { etappeId })
             .groupBy('participant.id')
             .addGroupBy('etappe.id')
             .getRawMany();
@@ -336,8 +340,8 @@ export class PredictionScoreService {
             .select('SUM(predictionscore.punten)', 'totaalpunten')
             .leftJoinAndSelect('predictionscore.participant', 'participant')
             .leftJoin('predictionscore.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
-            .andWhere('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.ALGEMEEN})
+            .where('tour.id = :tourId', { tourId })
+            .andWhere('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.ALGEMEEN })
             .groupBy('participant.id')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
@@ -350,8 +354,8 @@ export class PredictionScoreService {
             .select('SUM(predictionscore.punten)', 'totaalpunten')
             .leftJoinAndSelect('predictionscore.participant', 'participant')
             .leftJoin('predictionscore.tour', 'tour')
-            .where('tour.id = :tourId', {tourId: tourId})
-            .andWhere('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.BERG})
+            .where('tour.id = :tourId', { tourId: tourId })
+            .andWhere('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.BERG })
             .groupBy('participant.id')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
@@ -364,8 +368,8 @@ export class PredictionScoreService {
             .select('SUM(predictionscore.punten)', 'totaalpunten')
             .leftJoinAndSelect('predictionscore.participant', 'participant')
             .leftJoin('predictionscore.tour', 'tour')
-            .where('tour.id = :tourId', {tourId: tourId})
-            .andWhere('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.PUNTEN})
+            .where('tour.id = :tourId', { tourId: tourId })
+            .andWhere('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.PUNTEN })
             .groupBy('participant.id')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
@@ -378,8 +382,8 @@ export class PredictionScoreService {
             .select('SUM(predictionscore.punten)', 'totaalpunten')
             .leftJoinAndSelect('predictionscore.participant', 'participant')
             .leftJoin('predictionscore.tour', 'tour')
-            .where('tour.id = :tourId', {tourId: tourId})
-            .andWhere('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.JONGEREN})
+            .where('tour.id = :tourId', { tourId: tourId })
+            .andWhere('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.JONGEREN })
             .groupBy('participant.id')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
@@ -393,9 +397,9 @@ export class PredictionScoreService {
             .leftJoinAndSelect('predictionscore.prediction', 'prediction')
             .leftJoin('predictionscore.participant', 'participant')
             .leftJoin('predictionscore.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
-            .andWhere('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.ETAPPE})
-            .andWhere('participant.id = :participantId', {participantId})
+            .where('tour.id = :tourId', { tourId })
+            .andWhere('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.ETAPPE })
+            .andWhere('participant.id = :participantId', { participantId })
             .groupBy('prediction.id')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
@@ -407,16 +411,17 @@ export class PredictionScoreService {
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
             .leftJoin('predictionscore.etappe', 'etappe')
-            .where('etappe.id = :etappeId', {etappeId})
+            .where('etappe.id = :etappeId', { etappeId })
             .getMany();
 
+        // todo improve
         await oldScores.forEach(async oldscore => {
             await this.connection
                 .getRepository(PredictionScore)
                 .createQueryBuilder()
                 .delete()
                 .from(PredictionScore, 'predictionscore')
-                .where('id = :id', {id: oldscore.id})
+                .where('id = :id', { id: oldscore.id })
                 .execute();
         });
 
@@ -424,7 +429,7 @@ export class PredictionScoreService {
             .getRepository(Tourriders)
             .createQueryBuilder('tourriders')
             .leftJoin('tourriders.latestEtappe', 'latestEtappe')
-            .where('latestEtappe.id = :latestEtappeId', {latestEtappeId: etappeId})
+            .where('latestEtappe.id = :latestEtappeId', { latestEtappeId: etappeId })
             .getMany();
 
         const predictions = await this.connection
@@ -435,7 +440,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
             .leftJoin('prediction.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         const stageclassifications = await this.connection
@@ -445,7 +450,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('stageclassification.etappe', 'etappe')
             .leftJoin('stageclassification.tour', 'tour')
-            .where('etappe.id = :etappeId', {etappeId})
+            .where('etappe.id = :etappeId', { etappeId })
             .getMany();
 
         const tourriderIds: string[] = stageclassifications.map(sc => sc.tourrider.id);
@@ -456,12 +461,12 @@ export class PredictionScoreService {
             const sc = stageclassifications.find(sc => sc && sc.tourrider.id === prediction.rider.id);
             return {
                 punten: this.determinePunten(sc, stageclassifications, prediction, etappeFactor, true, uitvallers),
-                participant: {id: prediction.participant.id},
-                tour: {id: tourId},
-                prediction: {id: prediction.id},
+                participant: { id: prediction.participant.id },
+                tour: { id: tourId },
+                prediction: { id: prediction.id },
                 predictionType: PredictionEnum.ETAPPE,
-                etappe: {id: etappeId},
-                stageClassification: {id: sc ? sc.id : null}
+                etappe: { id: etappeId },
+                stageClassification: { id: sc ? sc.id : null }
             };
         });
 
@@ -480,19 +485,19 @@ export class PredictionScoreService {
         const oldScores = await this.connection
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
-            .where('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.ALGEMEEN})
-            .andWhere('predictionscore."tourId" = :tourId', {tourId})
+            .where('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.ALGEMEEN })
+            .andWhere('predictionscore."tourId" = :tourId', { tourId })
             .getMany();
 
-            this.logger.log("oldScores.length")
-            this.logger.log(oldScores.length)
+        this.logger.log("oldScores.length")
+        this.logger.log(oldScores.length)
         await oldScores.forEach(async oldscore => {
             await this.connection
                 .getRepository(PredictionScore)
                 .createQueryBuilder()
                 .delete()
                 .from(PredictionScore, 'predictionscore')
-                .where('id = :id', {id: oldscore.id})
+                .where('id = :id', { id: oldscore.id })
                 .execute();
         });
 
@@ -503,7 +508,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('prediction.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('prediction.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         const classifications = await this.connection
@@ -512,7 +517,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('classification.tourrider', 'tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('classification.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         const tourriderIds: string[] = classifications.map(sc => sc.tourrider.id);
@@ -524,9 +529,9 @@ export class PredictionScoreService {
             const sc = classifications.find(sc => sc && sc.tourrider.id === prediction.rider.id);
             return {
                 punten: this.determinePunten(sc, classifications, prediction, algemeenFactor, false),
-                participant: {id: prediction.participant.id},
-                tour: {id: tourId},
-                prediction: {id: prediction.id},
+                participant: { id: prediction.participant.id },
+                tour: { id: tourId },
+                prediction: { id: prediction.id },
                 predictionType: PredictionEnum.ALGEMEEN,
             };
         });
@@ -546,8 +551,8 @@ export class PredictionScoreService {
         const oldScores = await this.connection
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
-            .where('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.BERG})
-            .andWhere('predictionscore."tourId" = :tourId', {tourId})
+            .where('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.BERG })
+            .andWhere('predictionscore."tourId" = :tourId', { tourId })
             .getMany();
 
         await oldScores.forEach(async oldscore => {
@@ -556,7 +561,7 @@ export class PredictionScoreService {
                 .createQueryBuilder()
                 .delete()
                 .from(PredictionScore, 'predictionscore')
-                .where('id = :id', {id: oldscore.id})
+                .where('id = :id', { id: oldscore.id })
                 .execute();
         });
 
@@ -567,7 +572,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('prediction.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('prediction.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         const classifications = await this.connection
@@ -576,7 +581,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('classification.tourrider', 'tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('classification.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         const tourriderIds: string[] = classifications.map(sc => sc.tourrider.id);
@@ -587,9 +592,9 @@ export class PredictionScoreService {
             const sc = classifications.find(sc => sc && sc.tourrider.id === prediction.rider.id);
             return {
                 punten: this.determinePunten(sc, classifications, prediction, mountainFactor, false),
-                participant: {id: prediction.participant.id},
-                tour: {id: tourId},
-                prediction: {id: prediction.id},
+                participant: { id: prediction.participant.id },
+                tour: { id: tourId },
+                prediction: { id: prediction.id },
                 predictionType: PredictionEnum.BERG,
             };
         });
@@ -609,8 +614,8 @@ export class PredictionScoreService {
         const oldScores = await this.connection
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
-            .where('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.PUNTEN})
-            .andWhere('predictionscore."tourId" = :tourId', {tourId})
+            .where('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.PUNTEN })
+            .andWhere('predictionscore."tourId" = :tourId', { tourId })
             .getMany();
 
         await oldScores.forEach(async oldscore => {
@@ -619,7 +624,7 @@ export class PredictionScoreService {
                 .createQueryBuilder()
                 .delete()
                 .from(PredictionScore, 'predictionscore')
-                .where('id = :id', {id: oldscore.id})
+                .where('id = :id', { id: oldscore.id })
                 .execute();
         });
 
@@ -630,7 +635,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('prediction.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('prediction.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         const classifications = await this.connection
@@ -639,7 +644,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('classification.tourrider', 'tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('classification.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         const tourriderIds: string[] = classifications.map(sc => sc.tourrider.id);
@@ -651,9 +656,9 @@ export class PredictionScoreService {
             const sc = classifications.find(sc => sc && sc.tourrider.id === prediction.rider.id);
             return {
                 punten: this.determinePunten(sc, classifications, prediction, pointsFactor, false),
-                participant: {id: prediction.participant.id},
-                tour: {id: tourId},
-                prediction: {id: prediction.id},
+                participant: { id: prediction.participant.id },
+                tour: { id: tourId },
+                prediction: { id: prediction.id },
                 predictionType: PredictionEnum.PUNTEN,
             };
         });
@@ -673,8 +678,8 @@ export class PredictionScoreService {
         const oldScores = await this.connection
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
-            .where('predictionscore.predictionType = :predictionType', {predictionType: PredictionEnum.JONGEREN})
-            .andWhere('predictionscore."tourId" = :tourId', {tourId})
+            .where('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.JONGEREN })
+            .andWhere('predictionscore."tourId" = :tourId', { tourId })
             .getMany();
 
         await oldScores.forEach(async oldscore => {
@@ -683,7 +688,7 @@ export class PredictionScoreService {
                 .createQueryBuilder()
                 .delete()
                 .from(PredictionScore, 'predictionscore')
-                .where('id = :id', {id: oldscore.id})
+                .where('id = :id', { id: oldscore.id })
                 .execute();
         });
 
@@ -694,7 +699,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('prediction.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('prediction.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         const classifications = await this.connection
@@ -703,7 +708,7 @@ export class PredictionScoreService {
             .leftJoinAndSelect('classification.tourrider', 'tourrider')
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoin('classification.tour', 'tour')
-            .where('tour.id = :tourId', {tourId})
+            .where('tour.id = :tourId', { tourId })
             .getMany();
 
         this.logger.log(predictions.length);
@@ -719,9 +724,9 @@ export class PredictionScoreService {
             const sc = classifications.find(sc => sc && sc.tourrider.id === prediction.rider.id);
             return {
                 punten: this.determinePunten(sc, classifications, prediction, youthFactor, false),
-                participant: {id: prediction.participant.id},
-                tour: {id: tourId},
-                prediction: {id: prediction.id},
+                participant: { id: prediction.participant.id },
+                tour: { id: tourId },
+                prediction: { id: prediction.id },
                 predictionType: PredictionEnum.JONGEREN,
             };
         });
