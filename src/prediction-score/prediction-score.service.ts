@@ -224,7 +224,7 @@ export class PredictionScoreService {
 
         this.logger.log(`latestEtappe ${latestEtappe.id}`)
 
-        const team = await this.connection
+        let team = await this.connection
             .getRepository(Prediction)
             .createQueryBuilder('prediction')
             .select('prediction', 'prediction')
@@ -293,8 +293,13 @@ export class PredictionScoreService {
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
 
+        team = tour.hasEnded ? team : team.map(line => {
+                return {
+                    ...line,
+                    totaalpunten: line.etappepunten
+                }
+            });
         this.logger.log(team.length);
-        // const valueToSortOn = tour.hasEnded ? 'totaalpunten' : 'etappepunten';
         return this.sorteerPrediction(team, 'tourrider_waarde');
     }
 
