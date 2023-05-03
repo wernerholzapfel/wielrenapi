@@ -47,6 +47,7 @@ export class TourridersService {
             .getRepository(Tourriders)
             .createQueryBuilder('tourriders')
             .leftJoinAndSelect('tourriders.rider', 'rider')
+            .leftJoinAndSelect('tourriders.latestEtappe', 'latestEtappe')
             .leftJoin('tourriders.tour', 'tour')
             .leftJoin('tourriders.team', 'team')
             .where('tour.id = :tourId', { tourId })

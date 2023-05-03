@@ -313,6 +313,69 @@ export class PredictionService {
                 });
         }
 
+        let predictions = await this.connection
+            .getRepository(Prediction)
+            .createQueryBuilder('prediction')
+            .leftJoin('prediction.participant', 'participant')
+            .leftJoin('prediction.tour', 'tour')
+            .leftJoinAndSelect('prediction.rider', 'rider')
+            .where('prediction.participant.id = :participantID', { participantID: participant.id })
+            .andWhere('tour.id = :id', { id: body.tour.id })
+            .getMany();
+
+        if (body.prediction.isRider &&
+            predictions.filter(p => p.isRider).length === 11) {
+            throw new HttpException({
+                message: 'Je hebt al 11 renners. Refresh de pagina',
+                statusCode: HttpStatus.FORBIDDEN,
+            }, HttpStatus.FORBIDDEN);
+        }
+
+        if (body.prediction.isMeesterknecht &&
+            predictions.filter(p => p.isMeesterknecht).length === 1) {
+            throw new HttpException({
+                message: 'Je hebt al een meesterknecht. Refresh de pagina',
+                statusCode: HttpStatus.FORBIDDEN,
+            }, HttpStatus.FORBIDDEN);
+        }
+        
+        if (body.prediction.isBeschermdeRenner &&
+            predictions.filter(p => p.isBeschermdeRenner).length === 1) {
+            throw new HttpException({
+                message: 'Je hebt al een beschermde renner. Refresh de pagina',
+                statusCode: HttpStatus.FORBIDDEN,
+            }, HttpStatus.FORBIDDEN);
+        }
+
+        if (body.prediction.isLinkebal &&
+            predictions.filter(p => p.isLinkebal).length === 1) {
+            throw new HttpException({
+                message: 'Je hebt al een joker. Refresh de pagina',
+                statusCode: HttpStatus.FORBIDDEN,
+            }, HttpStatus.FORBIDDEN);
+        }
+
+        if (body.prediction.isWaterdrager &&
+            predictions.filter(p => p.isWaterdrager).length === 1) {
+            throw new HttpException({
+                message: 'Je hebt al een waterdrager. Refresh de pagina',
+                statusCode: HttpStatus.FORBIDDEN,
+            }, HttpStatus.FORBIDDEN);
+        }
+
+        if ((body.prediction.isMeesterknecht
+            && !!predictions.find(p => p.isBeschermdeRenner)
+            && body.prediction.waarde !=
+            predictions.find(p => p.isBeschermdeRenner).rider.waarde) ||
+            !!predictions.find(p => p.isMeesterknecht) &&
+            body.prediction.isBeschermdeRenner && body.prediction.waarde !=
+            predictions.find(p => p.isMeesterknecht).rider.waarde) {
+            throw new HttpException({
+                message: 'Je meesterknecht en beschermderenner hebben niet dezelfde waarde. Refresh de pagina en probeer opnieuw.',
+                statusCode: HttpStatus.FORBIDDEN,
+            }, HttpStatus.FORBIDDEN);
+        }
+
         const value: Prediction = Object.assign({
             rider: body.prediction.rider,
             isRider: body.prediction.isRider,
