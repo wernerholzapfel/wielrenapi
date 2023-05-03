@@ -365,11 +365,12 @@ export class PredictionService {
 
         if ((body.prediction.isMeesterknecht
             && !!predictions.find(p => p.isBeschermdeRenner)
-            && body.prediction.waarde !=
+            && body.prediction.rider.waarde !=
             predictions.find(p => p.isBeschermdeRenner).rider.waarde) ||
-            !!predictions.find(p => p.isMeesterknecht) &&
-            body.prediction.isBeschermdeRenner && body.prediction.waarde !=
-            predictions.find(p => p.isMeesterknecht).rider.waarde) {
+            (body.prediction.isBeschermdeRenner
+                && !!predictions.find(p => p.isMeesterknecht)
+             && body.prediction.rider.waarde !=
+            predictions.find(p => p.isMeesterknecht).rider.waarde)) {
             throw new HttpException({
                 message: 'Je meesterknecht en beschermderenner hebben niet dezelfde waarde. Refresh de pagina en probeer opnieuw.',
                 statusCode: HttpStatus.FORBIDDEN,
