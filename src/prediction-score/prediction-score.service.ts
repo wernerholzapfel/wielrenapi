@@ -303,14 +303,16 @@ export class PredictionScoreService {
         return this.sorteerPrediction(team, 'tourrider_waarde');
     }
 
-    async getLatestEtappe(tourId): Promise<Etappe> {
-        return await this.connection
+    async getLatestEtappe(tourId): Promise<Etappe| any> {
+        const latestEtappe  = await this.connection
             .getRepository(Etappe).createQueryBuilder('etappe')
             .where('tour.id= :tourId', { tourId })
             .andWhere('etappe.isDriven')
             .leftJoin('etappe.tour', 'tour')
             .orderBy('etappe.etappeNumber', 'DESC')
             .getOne();
+
+            return latestEtappe ? latestEtappe : {id: '7ba32936-e9da-11ed-a05b-0242ac120003'}
     }
 
     async getLatestEtappeStand(tourId): Promise<any[]> {
