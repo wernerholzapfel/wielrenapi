@@ -186,7 +186,7 @@ export class PredictionScoreService {
             .addSelect((subQuery) => {
                 return subQuery.select('SUM("punten")', 'deltapunten')
                     .from(PredictionScore, 'pssub')
-                    .where('"etappeId" = :etappeId', { etappeId: latestEtappe.id })
+                    .where('"etappeId" = :etappeId', { etappeId: latestEtappe ? latestEtappe.id : '7ba32936-e9da-11ed-a05b-0242ac120003' })
                     .andWhere('pssub."participantId" = "participant".id')
                     .groupBy('"participantId"');
             }, 'deltapunten')
@@ -315,8 +315,7 @@ export class PredictionScoreService {
 
     async getLatestEtappeStand(tourId): Promise<any[]> {
         const latestEtappe = await this.getLatestEtappe(tourId);
-        return this.getEtappeStand(latestEtappe.id);
-
+        return latestEtappe ? this.getEtappeStand(latestEtappe.id) : [];
     }
 
     async getEtappeStand(etappeId): Promise<any[]> {
