@@ -66,6 +66,11 @@ export class AppModule implements NestModule {
         consumer.apply(AdminMiddleware).forRoutes(
             {path: '/tourriders/**', method: RequestMethod.DELETE},
             {path: '/participants/cache', method: RequestMethod.GET},
+            {path: '/stageclassifications', method: RequestMethod.POST},
+            {path: '/tourclassifications', method: RequestMethod.POST},
+            {path: '/mountainclassifications', method: RequestMethod.POST},
+            {path: '/pointsclassifications', method: RequestMethod.POST},
+            {path: '/youthclassifications', method: RequestMethod.POST},
         );
 
         // admin.auth().setCustomUserClaims('ENPg7LZlewdswg6vqVd65K4QjQy1', {admin: true}).then(() => {

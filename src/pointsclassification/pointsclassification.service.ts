@@ -25,18 +25,11 @@ export class PointsclassificationService {
 
     async create(pointsclassifications: Pointsclassification[]): Promise<Pointsclassification[]> {
 
-        const oldSC = await this.connection
-            .getRepository(Pointsclassification)
-            .createQueryBuilder('tourcf')
-            .leftJoin('tourcf.tour', 'tour')
-            .where('tour.id = :tourId', { tourId: pointsclassifications[0].tour.id })
-            .getMany();
-
         await this.pointsclassificationRepository
             .createQueryBuilder()
             .delete()
             .from(Pointsclassification, 'scf')
-            .where('id IN (:...id)', { id: oldSC.map(sc => sc.id) })
+            .where('tour.id = :tourId', { tourId: pointsclassifications[0].tour.id })
             .execute();
 
         await this.pointsclassificationRepository

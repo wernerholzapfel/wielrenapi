@@ -24,18 +24,11 @@ export class MountainclassificationService {
 
     async create(mountainclassifications: Mountainclassification[]): Promise<Mountainclassification[]> {
 
-        const oldSC = await this.connection
-            .getRepository(Mountainclassification)
-            .createQueryBuilder('tourcf')
-            .leftJoin('tourcf.tour', 'tour')
-            .where('tour.id = :tourId', { tourId: mountainclassifications[0].tour.id })
-            .getMany();
-
         await this.mountainclassificationRepository
             .createQueryBuilder()
             .delete()
             .from(Mountainclassification, 'scf')
-            .where('id IN (:...id)', { id: oldSC.map(sc => sc.id) })
+            .where('tour.id = :tourId', { tourId: mountainclassifications[0].tour.id })
             .execute();
 
         await this.mountainclassificationRepository
