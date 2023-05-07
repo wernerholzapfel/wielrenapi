@@ -335,7 +335,24 @@ export class PredictionScoreService {
             .addGroupBy('etappe.id')
             .getRawMany();
 
-        return this.sorteerStand(stand, 'totalStagePoints');
+        const sortedStand =  this.sorteerStand(stand, 'totalStagePoints');
+        const participants = 
+        await this.connection
+        .getRepository(Participant)
+        .createQueryBuilder('participant')
+        .select('participant.id', 'id')
+        .leftJoinAndSelect('participant.predictions', 'predictions')
+        .leftJoin('predictions.tour', 'tour')
+        .where('tour.id = :tourId', {tourId : '260d2387-4e73-41ad-95f2-80975811c7ca'})
+        .getMany()
+
+        this.logger.log(participants)
+        return sortedStand.map(stand => {
+            return {
+                ...stand,
+                participant: participants.find(p=> p.id === stand.id)
+            }
+        })
 
     }
 
@@ -409,6 +426,26 @@ export class PredictionScoreService {
             .groupBy('prediction.id')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
+    
+        }
+    async getEtappePointsForParticipant(etappeId, tourId, participantId): Promise<any[]> {
+        return await this.connection
+            .getRepository(PredictionScore)
+            .createQueryBuilder('predictionscore')
+            .leftJoinAndSelect('predictionscore.prediction', 'prediction')
+            .leftJoinAndSelect('prediction.rider', 'tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
+            .leftJoin('predictionscore.participant', 'participant')
+            .leftJoin('predictionscore.tour', 'tour')
+            .leftJoin('predictionscore.etappe', 'etappe')
+            .where('tour.id = :tourId', { tourId })
+            .andWhere('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.ETAPPE })
+            .andWhere('etappe.id = :etappeId', { etappeId })
+            .andWhere('participant.id = :participantId', { participantId })
+            .getMany();
+
+        
     }
 
     async updatePredictionScoreEtappe(etappeId: string, tourId: string): Promise<any[]> {
