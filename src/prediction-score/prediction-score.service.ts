@@ -444,8 +444,22 @@ export class PredictionScoreService {
             .andWhere('etappe.id = :etappeId', { etappeId })
             .andWhere('participant.id = :participantId', { participantId })
             .getMany();
-
-        
+    }
+    async getPredictionScoresPointsForParticipant(predictionType: PredictionEnum, tourId, participantId): Promise<any[]> {
+        return await this.connection
+            .getRepository(PredictionScore)
+            .createQueryBuilder('predictionscore')
+            .leftJoinAndSelect('predictionscore.prediction', 'prediction')
+            .leftJoinAndSelect('prediction.rider', 'tourrider')
+            .leftJoinAndSelect('tourrider.rider', 'rider')
+            .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
+            .leftJoin('predictionscore.participant', 'participant')
+            .leftJoin('predictionscore.tour', 'tour')
+            .leftJoin('predictionscore.etappe', 'etappe')
+            .where('tour.id = :tourId', { tourId })
+            .andWhere('predictionscore.predictionType = :predictionType', { predictionType })
+            .andWhere('participant.id = :participantId', { participantId })
+            .getMany();
     }
 
     async updatePredictionScoreEtappe(etappeId: string, tourId: string): Promise<any[]> {
