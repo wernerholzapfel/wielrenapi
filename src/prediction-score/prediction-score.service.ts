@@ -541,7 +541,7 @@ export class PredictionScoreService {
 
         await this.connection
             .getRepository(PredictionScore)
-            .createQueryBuilder()
+            .createQueryBuilder('predictionscore')
             .delete()
             .from(PredictionScore, 'predictionscore')
             .where('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.ALGEMEEN })
