@@ -22,7 +22,7 @@ import {PredictionScoreModule} from './prediction-score/prediction-score.module'
 import {RawBodyMiddleware} from './raw-body-middleware.middleware';
 import {JsonBodyMiddleware} from './json-body-middleware.middleware';
 import { PushtokenModule } from './pushtoken/pushtoken.module';
-import { NotificationModule } from 'notification/notification.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
