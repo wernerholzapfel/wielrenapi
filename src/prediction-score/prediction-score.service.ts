@@ -544,8 +544,8 @@ export class PredictionScoreService {
             .createQueryBuilder('predictionscore')
             .delete()
             .from(PredictionScore, 'predictionscore')
-            .where('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.ALGEMEEN })
-            .andWhere('predictionscore."tourId" = :tourId', { tourId })
+            .where('predictionType = :predictionType', { predictionType: PredictionEnum.ALGEMEEN })
+            .andWhere('"tourId" = :tourId', { tourId })
             .execute();
 
         const predictions = await this.connection
