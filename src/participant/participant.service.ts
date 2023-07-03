@@ -13,7 +13,7 @@ import {Tourclassification} from '../tourclassification/tourclassification.entit
 import {AddPushTokenDto, CreateParticipantDto, UpdateParticipantDto} from './create-participant.dto';
 import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
 import {Tour} from '../tour/tour.entity';
-import { Pushtoken } from 'pushtoken/pushtoken.entity';
+import { Pushtoken } from '../pushtoken/pushtoken.entity';
 
 // Get a database reference
 @Injectable()

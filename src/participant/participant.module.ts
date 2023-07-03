@@ -3,7 +3,7 @@ import {TypeOrmModule} from '@nestjs/typeorm';
 import {Participant} from './participant.entity';
 import {ParticipantService} from './participant.service';
 import {ParticipantController} from './participant.controller';
-import { Pushtoken } from 'pushtoken/pushtoken.entity';
+import { Pushtoken } from '../pushtoken/pushtoken.entity';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Participant, Pushtoken]),
