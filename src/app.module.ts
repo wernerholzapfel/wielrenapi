@@ -21,7 +21,7 @@ import {HeadlineModule} from './headlines/headline.module';
 import {PredictionScoreModule} from './prediction-score/prediction-score.module';
 import {RawBodyMiddleware} from './raw-body-middleware.middleware';
 import {JsonBodyMiddleware} from './json-body-middleware.middleware';
-import { PushtokenModule } from 'pushtoken/pushtoken.module';
+import { PushtokenModule } from './pushtoken/pushtoken.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
