@@ -22,6 +22,7 @@ import {PredictionScoreModule} from './prediction-score/prediction-score.module'
 import {RawBodyMiddleware} from './raw-body-middleware.middleware';
 import {JsonBodyMiddleware} from './json-body-middleware.middleware';
 import { PushtokenModule } from './pushtoken/pushtoken.module';
+import { NotificationModule } from 'notification/notification.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -42,6 +43,7 @@ import { PushtokenModule } from './pushtoken/pushtoken.module';
         TourclassificationModule,
         YouthclassificationModule,
         MountainclassificationModule,
+        NotificationModule,
         PointsclassificationModule,
         HeadlineModule,
         PredictionScoreModule],
@@ -74,6 +76,7 @@ export class AppModule implements NestModule {
             {path: '/mountainclassifications', method: RequestMethod.POST},
             {path: '/pointsclassifications', method: RequestMethod.POST},
             {path: '/youthclassifications', method: RequestMethod.POST},
+            {path: '/notification', method: RequestMethod.POST},
         );
 
         // admin.auth().setCustomUserClaims('ENPg7LZlewdswg6vqVd65K4QjQy1', {admin: true}).then(() => {
