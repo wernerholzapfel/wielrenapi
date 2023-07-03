@@ -17,6 +17,9 @@ export class Participant {
     @Column({ nullable: true })
     teamName: string;
 
+    @Column({select: false, nullable: true})
+    firebaseIdentifier: string;
+
     @OneToMany(type => Prediction, prediction => prediction.participant)
     predictions: Prediction[];
 

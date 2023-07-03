@@ -10,9 +10,10 @@ import {Cache} from 'cache-manager'
 // Import Admin SDK
 import * as admin from 'firebase-admin';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
-import {CreateParticipantDto, UpdateParticipantDto} from './create-participant.dto';
+import {AddPushTokenDto, CreateParticipantDto, UpdateParticipantDto} from './create-participant.dto';
 import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
 import {Tour} from '../tour/tour.entity';
+import { Pushtoken } from 'pushtoken/pushtoken.entity';
 
 // Get a database reference
 @Injectable()
@@ -22,6 +23,8 @@ export class ParticipantService {
 
     constructor(@InjectRepository(Participant)
                 private readonly participantRepository: Repository<Participant>,
+                @InjectRepository(Pushtoken)
+                private readonly pushTokenRepo: Repository<Pushtoken>,
                 private readonly connection: Connection,
                 @Inject(CACHE_MANAGER) private cacheManager: Cache) {
     }
@@ -347,9 +350,11 @@ export class ParticipantService {
     }
 
 
-    async create(participant: CreateParticipantDto, email: string): Promise<Participant> {
+    async create(participant: CreateParticipantDto, email: string, firebaseIdentifier: string): Promise<Participant> {
         const newParticipant: Participant = Object.assign(participant);
         newParticipant.email = email.toLowerCase();
+        newParticipant.firebaseIdentifier = firebaseIdentifier;
+
         return await this.participantRepository.save(newParticipant)
             .catch((err) => {
                 throw new HttpException({
@@ -378,6 +383,34 @@ export class ParticipantService {
         });
 
         return this.loggedIn(email);
+    }
+    async addPushToken(body: AddPushTokenDto, firebaseIdentifier: string): Promise<({ pushToken: string; participant: Participant } & Pushtoken) | void> {
+        const participant = await this.participantRepository
+            .createQueryBuilder('participant')
+            .where('participant.firebaseIdentifier = :firebaseIdentifier', {firebaseIdentifier})
+            .getOne();
+
+        const pushtokenRecord = await this.pushTokenRepo
+            .createQueryBuilder('pushtoken')
+            .where('pushtoken.pushToken = :pushtoken', {pushtoken: body.pushtoken})
+            .getCount()
+
+        if (pushtokenRecord < 1) {
+            return await this.pushTokenRepo
+                .save({participant: participant, pushToken: body.pushtoken})
+                .catch((err) => {
+                    throw new HttpException({
+                        message: err.message,
+                        statusCode: HttpStatus.BAD_REQUEST,
+                    }, HttpStatus.BAD_REQUEST);
+                });
+        } else {
+            throw new HttpException({
+                message: 'pushtoken al bekend',
+                statusCode: HttpStatus.NO_CONTENT,
+            }, HttpStatus.NO_CONTENT);
+        }
+
     }
 
     determinePredictionsTotalPoints(participant: ParticipantRead, hasEnded: boolean) {

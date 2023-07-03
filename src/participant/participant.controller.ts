@@ -2,7 +2,7 @@
 import {Body, CacheInterceptor, Controller, Get, Logger, Param, Post, Put, Req, UseInterceptors} from '@nestjs/common';
 import {ParticipantService} from './participant.service';
 import {Participant} from './participant.entity';
-import {CreateParticipantDto, UpdateParticipantDto} from './create-participant.dto';
+import {AddPushTokenDto, CreateParticipantDto, UpdateParticipantDto} from './create-participant.dto';
 
 @Controller('participants')
 export class ParticipantController {
@@ -57,12 +57,17 @@ export class ParticipantController {
     async create(@Req() req, @Body() createParticipantDto: CreateParticipantDto) {
         this.logger.log('post participant');
         const newParticipant = Object.assign({}, createParticipantDto);
-        return await this.participantService.create(newParticipant, req.user.email);
+        return await this.participantService.create(newParticipant, req.user.email, req.user.uid);
     }
     
     @Put()
     async update(@Req() req, @Body() updateParticipantDto: UpdateParticipantDto) {
         const updatedParticipant = Object.assign({}, updateParticipantDto);
         return await this.participantService.update(updatedParticipant, req.user.email.toLowerCase());
+    }
+
+    @Put('pushtoken')
+    async addPushtoken(@Req() req, @Body() addPushTokenDto: AddPushTokenDto) {
+        return await this.participantService.addPushToken(addPushTokenDto, req.user.uid);
     }
 }
