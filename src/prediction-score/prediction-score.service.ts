@@ -294,17 +294,17 @@ export class PredictionScoreService {
             .getRawMany();
 
         team = tour.hasEnded ? team : team.map(line => {
-                return {
-                    ...line,
-                    totaalpunten: line.etappepunten
-                }
-            });
+            return {
+                ...line,
+                totaalpunten: line.etappepunten
+            }
+        });
         this.logger.log(team.length);
         return this.sorteerPrediction(team, 'tourrider_waarde');
     }
 
-    async getLatestEtappe(tourId): Promise<Etappe| any> {
-        const latestEtappe  = await this.connection
+    async getLatestEtappe(tourId): Promise<Etappe | any> {
+        const latestEtappe = await this.connection
             .getRepository(Etappe).createQueryBuilder('etappe')
             .where('tour.id= :tourId', { tourId })
             .andWhere('etappe.isDriven')
@@ -312,7 +312,7 @@ export class PredictionScoreService {
             .orderBy('etappe.etappeNumber', 'DESC')
             .getOne();
 
-            return latestEtappe ? latestEtappe : {id: '7ba32936-e9da-11ed-a05b-0242ac120003'}
+        return latestEtappe ? latestEtappe : { id: '7ba32936-e9da-11ed-a05b-0242ac120003' }
     }
 
     async getLatestEtappeStand(tourId): Promise<any[]> {
@@ -335,22 +335,22 @@ export class PredictionScoreService {
             .addGroupBy('etappe.id')
             .getRawMany();
 
-        const sortedStand =  this.sorteerStand(stand, 'totalStagePoints');
-        const participants = 
-        await this.connection
-        .getRepository(Participant)
-        .createQueryBuilder('participant')
-        .select('participant.id', 'id')
-        .leftJoinAndSelect('participant.predictions', 'predictions')
-        .leftJoin('predictions.tour', 'tour')
-        .where('tour.id = :tourId', {tourId : '260d2387-4e73-41ad-95f2-80975811c7ca'})
-        .getMany()
+        const sortedStand = this.sorteerStand(stand, 'totalStagePoints');
+        const participants =
+            await this.connection
+                .getRepository(Participant)
+                .createQueryBuilder('participant')
+                .select('participant.id', 'id')
+                .leftJoinAndSelect('participant.predictions', 'predictions')
+                .leftJoin('predictions.tour', 'tour')
+                .where('tour.id = :tourId', { tourId: '260d2387-4e73-41ad-95f2-80975811c7ca' })
+                .getMany()
 
         this.logger.log(participants)
         return sortedStand.map(stand => {
             return {
                 ...stand,
-                participant: participants.find(p=> p.id === stand.id)
+                participant: participants.find(p => p.id === stand.id)
             }
         })
 
@@ -426,8 +426,8 @@ export class PredictionScoreService {
             .groupBy('prediction.id')
             .orderBy('totaalpunten', 'DESC')
             .getRawMany();
-    
-        }
+
+    }
     async getEtappePointsForParticipant(etappeId, tourId, participantId): Promise<any[]> {
         return await this.connection
             .getRepository(PredictionScore)
@@ -539,24 +539,14 @@ export class PredictionScoreService {
 
     async updatePredictionScoreAlgemeen(tourId: string): Promise<any[]> {
 
-        const oldScores = await this.connection
+        await this.connection
             .getRepository(PredictionScore)
-            .createQueryBuilder('predictionscore')
+            .createQueryBuilder()
+            .delete()
+            .from(PredictionScore, 'predictionscore')
             .where('predictionscore.predictionType = :predictionType', { predictionType: PredictionEnum.ALGEMEEN })
             .andWhere('predictionscore."tourId" = :tourId', { tourId })
-            .getMany();
-
-        this.logger.log("oldScores.length")
-        this.logger.log(oldScores.length)
-        await oldScores.forEach(async oldscore => {
-            await this.connection
-                .getRepository(PredictionScore)
-                .createQueryBuilder()
-                .delete()
-                .from(PredictionScore, 'predictionscore')
-                .where('id = :id', { id: oldscore.id })
-                .execute();
-        });
+            .execute();
 
         const predictions = await this.connection
             .getRepository(Prediction)

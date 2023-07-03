@@ -57,6 +57,7 @@ export class AppModule implements NestModule {
             // .forRoutes('*');
         consumer.apply(AddFireBaseUserToRequest).forRoutes(
             {path: '/**', method: RequestMethod.POST},
+            {path: '/**', method: RequestMethod.PUT},
             {path: '/**', method: RequestMethod.DELETE},
             {path: '/predictions/user/**', method: RequestMethod.GET},
             {path: '/participants/loggedIn', method: RequestMethod.GET},

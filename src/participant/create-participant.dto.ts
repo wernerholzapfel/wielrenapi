@@ -10,3 +10,12 @@ export class CreateParticipantDto {
     @IsDefined() @IsString() readonly teamName: string;
 
 }
+
+
+export class UpdateParticipantDto {
+    readonly id: string;
+
+    @IsDefined() @IsString() readonly displayName: string;
+
+    @IsDefined() @IsString() readonly teamName: string;
+}

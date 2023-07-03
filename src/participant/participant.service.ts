@@ -10,7 +10,7 @@ import {Cache} from 'cache-manager'
 // Import Admin SDK
 import * as admin from 'firebase-admin';
 import {Tourclassification} from '../tourclassification/tourclassification.entity';
-import {CreateParticipantDto} from './create-participant.dto';
+import {CreateParticipantDto, UpdateParticipantDto} from './create-participant.dto';
 import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
 import {Tour} from '../tour/tour.entity';
 
@@ -357,6 +357,27 @@ export class ParticipantService {
                     statusCode: HttpStatus.BAD_REQUEST,
                 }, HttpStatus.BAD_REQUEST);
             });
+    }
+    
+    async update(participant: UpdateParticipantDto, email: string): Promise<Participant> {
+        await this.connection
+        .getRepository(Participant)
+        .createQueryBuilder()
+        .update(Participant)
+        .set({
+            teamName: participant.teamName,
+            displayName: participant.displayName
+        })
+        .where('email =:email', { email })
+        .execute()
+        .catch((err) => {
+            throw new HttpException({
+                message: err.message,
+                statusCode: HttpStatus.BAD_REQUEST,
+            }, HttpStatus.BAD_REQUEST);
+        });
+
+        return this.loggedIn(email);
     }
 
     determinePredictionsTotalPoints(participant: ParticipantRead, hasEnded: boolean) {
