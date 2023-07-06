@@ -15,7 +15,7 @@ import {TypeOrmModuleOptions} from '@nestjs/typeorm';
 import {Headline} from './headlines/headline.entity';
 import {PredictionScore} from './prediction-score/prediction-score.entity';
 import { Pushtoken } from './pushtoken/pushtoken.entity';
-import { Halloffame } from 'halloffame/halloffame.entity';
+import { Halloffame } from './halloffame/halloffame.entity';
 
 // @ts-ignore
 export const ormconfig: TypeOrmModuleOptions = {
