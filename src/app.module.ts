@@ -23,6 +23,7 @@ import {RawBodyMiddleware} from './raw-body-middleware.middleware';
 import {JsonBodyMiddleware} from './json-body-middleware.middleware';
 import { PushtokenModule } from './pushtoken/pushtoken.module';
 import { NotificationModule } from './notification/notification.module';
+import { HalloffameModule } from 'halloffame/halloffame.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -39,6 +40,7 @@ import { NotificationModule } from './notification/notification.module';
         ParticipantModule,
         PushtokenModule,
         EtappeModule,
+        HalloffameModule,
         StageclassificationModule,
         TourclassificationModule,
         YouthclassificationModule,
