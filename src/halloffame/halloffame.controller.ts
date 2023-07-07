@@ -11,7 +11,7 @@ export class HalloffameController {
     }
 
     @Get()
-    async findAll(@Param('tourId') tourId): Promise<Halloffame[]> {
-        return this.halloffameService.findAllByTourId(tourId);
+    async findAll(): Promise<Halloffame[]> {
+        return this.halloffameService.findAll();
     }
 }

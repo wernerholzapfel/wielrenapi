@@ -12,10 +12,11 @@ export class HalloffameService {
                 private readonly headlineRepository: Repository<Halloffame>,) {
     }
 
-    async findAllByTourId(tourId: string): Promise<Halloffame[]> {
+    async findAll(): Promise<Halloffame[]> {
         const halloffame = await this.connection
             .getRepository(Halloffame)
             .createQueryBuilder('halloffame')
+            .orderBy('halloffame.order', "DESC")
             .getMany();
 
             return halloffame.reduce((result: any, item) => ({
