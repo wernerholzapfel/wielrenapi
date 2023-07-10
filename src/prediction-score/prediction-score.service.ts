@@ -13,6 +13,7 @@ import { Youthclassification } from '../youthclassification/youthclassification.
 import { Tourriders } from '../tourriders/tourriders.entity';
 import { Tour } from '../tour/tour.entity';
 import { parse } from 'url';
+import { Career } from 'career/career.entity';
 
 @Injectable()
 export class PredictionScoreService {
@@ -206,6 +207,15 @@ export class PredictionScoreService {
     }
 
     async getCarriere(tourId: string): Promise<any> {
+
+        await this.connection
+            .createQueryBuilder()
+            .delete()
+            .from(Career)
+            .where("tour.id = :id", { id: tourId })
+            .execute();
+
+
         const table = await this.getTotaalStand(tourId)
         const tour = await this.connection.getRepository(Tour)
             .createQueryBuilder('tour')
@@ -214,26 +224,35 @@ export class PredictionScoreService {
         let yearDifference = new Date(Date.now() - Date.parse(tour.startDate.toString())).getFullYear() - 1970
         let carriereFactor = yearDifference === 0 ? 1 : Math.pow(0.9, yearDifference)
         let carriereStepInit = Math.round((1000 / table.length))
-        let carriereStepCurrent =  yearDifference === 0 ? carriereStepInit : Math.round((900 / table.length))
+        let carriereStepCurrent = yearDifference === 0 ? carriereStepInit : Math.round((900 / table.length))
         let carriereStartCurrent = yearDifference === 0 ? 1000 : 900
-        return {
+        const career = {
             yearDifference: yearDifference,
             carriereFactor: carriereFactor,
             carriereStepInit: carriereStepInit,
             carriereStepCurrent: carriereStepCurrent,
             participants: table.map(line => {
                 return {
-                    id: line.id,
-                    displayName: line.displayName,
-                    teamName: line.teamName,
-                    positie: line.positie,
-                    carriereInit: 1000 - ((line.positie - 1) * carriereStepInit),
-                    carriereCurrent: Math.round((1000 - ((line.positie - 1) * carriereStepInit)) * carriereFactor),
-                    carriereCurrentStepCurrent: (carriereStartCurrent - ((line.positie - 1) * carriereStepCurrent)),
+                    participant: { id: line.id, displayName: line.displayName },
+                    // displayName: line.displayName,
+                    // teamName: line.teamName,
+                    // positie: line.positie,
+                    careerInitScore: 1000 - ((line.positie - 1) * carriereStepInit),
+                    careerCurrentScore: Math.round((1000 - ((line.positie - 1) * carriereStepInit)) * carriereFactor),
+                    tour: { id: tourId }
+                    // carriereCurrentStepCurrent: (carriereStartCurrent - ((line.positie - 1) * carriereStepCurrent)),
                 }
             })
         }
 
+        await this.connection
+            .createQueryBuilder()
+            .insert()
+            .into(Career)
+            .values(career.participants)
+            .execute();
+
+        return career;
     }
     async getTotaalStandForParticipant(tourId, participantId): Promise<any> {
         const stand = await this.getTotaalStand(tourId)

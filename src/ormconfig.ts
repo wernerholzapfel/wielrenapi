@@ -16,6 +16,7 @@ import {Headline} from './headlines/headline.entity';
 import {PredictionScore} from './prediction-score/prediction-score.entity';
 import { Pushtoken } from './pushtoken/pushtoken.entity';
 import { Halloffame } from './halloffame/halloffame.entity';
+import { Career } from './career/career.entity';
 
 // @ts-ignore
 export const ormconfig: TypeOrmModuleOptions = {
@@ -31,6 +32,7 @@ export const ormconfig: TypeOrmModuleOptions = {
         Prediction,
         Participant,
         Etappe,
+        Career,
         Pushtoken,
         Halloffame,
         Stageclassification,
@@ -40,6 +42,6 @@ export const ormconfig: TypeOrmModuleOptions = {
         Pointsclassification,
         PredictionScore,
         Headline],
-    logging: false,
+    logging: true,
     synchronize: false, // DEV only, do not use on PROD!
 };

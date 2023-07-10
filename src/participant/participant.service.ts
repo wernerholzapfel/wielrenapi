@@ -1,18 +1,18 @@
-import {CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable, Logger} from '@nestjs/common';
-import {Participant, ParticipantRead} from './participant.entity';
-import {InjectRepository} from '@nestjs/typeorm';
-import {Connection, Repository} from 'typeorm';
-import {Stageclassification, StageClassificationRead} from '../stageclassification/stageclassification.entity';
-import {Prediction, PredictionRead} from '../prediction/prediction.entity';
-import {Team} from '../teams/team.entity';
-import {Etappe} from '../etappe/etappe.entity';
-import {Cache} from 'cache-manager'
+import { CACHE_MANAGER, HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
+import { Participant, ParticipantRead } from './participant.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Connection, Repository } from 'typeorm';
+import { Stageclassification, StageClassificationRead } from '../stageclassification/stageclassification.entity';
+import { Prediction, PredictionRead } from '../prediction/prediction.entity';
+import { Team } from '../teams/team.entity';
+import { Etappe } from '../etappe/etappe.entity';
+import { Cache } from 'cache-manager'
 // Import Admin SDK
 import * as admin from 'firebase-admin';
-import {Tourclassification} from '../tourclassification/tourclassification.entity';
-import {AddPushTokenDto, CreateParticipantDto, UpdateParticipantDto} from './create-participant.dto';
-import {Tourriders, TourridersRead} from '../tourriders/tourriders.entity';
-import {Tour} from '../tour/tour.entity';
+import { Tourclassification } from '../tourclassification/tourclassification.entity';
+import { AddPushTokenDto, CreateParticipantDto, UpdateParticipantDto } from './create-participant.dto';
+import { Tourriders, TourridersRead } from '../tourriders/tourriders.entity';
+import { Tour } from '../tour/tour.entity';
 import { Pushtoken } from '../pushtoken/pushtoken.entity';
 
 // Get a database reference
@@ -22,18 +22,18 @@ export class ParticipantService {
 
 
     constructor(@InjectRepository(Participant)
-                private readonly participantRepository: Repository<Participant>,
-                @InjectRepository(Pushtoken)
-                private readonly pushTokenRepo: Repository<Pushtoken>,
-                private readonly connection: Connection,
-                @Inject(CACHE_MANAGER) private cacheManager: Cache) {
+    private readonly participantRepository: Repository<Participant>,
+        @InjectRepository(Pushtoken)
+        private readonly pushTokenRepo: Repository<Pushtoken>,
+        private readonly connection: Connection,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache) {
     }
 
     async loggedIn(email: string): Promise<Participant> {
         return await this.connection
             .getRepository(Participant)
             .createQueryBuilder('participant')
-            .where('participant.email = :email', {email: email.toLowerCase()})
+            .where('participant.email = :email', { email: email.toLowerCase() })
             .getOne();
     }
 
@@ -45,7 +45,7 @@ export class ParticipantService {
             .leftJoinAndSelect('predictions.rider', 'tourrider')
             .leftJoinAndSelect('tourrider.rider', 'rider')
             .leftJoin('predictions.tour', 'tour')
-            .where('tour.id = :id', {id: tourId})
+            .where('tour.id = :id', { id: tourId })
             .getMany();
     }
 
@@ -62,8 +62,8 @@ export class ParticipantService {
             .leftJoinAndSelect('tourRiders.youthclassifications', 'yc')
             .leftJoinAndSelect('tourRiders.pointsclassifications', 'pc')
             .leftJoinAndSelect('sc.etappe', 'etappe')
-            .where('tour.id = :id', {id: tourId})
-            .andWhere('tourRidersTour.id = :id', {id: tourId})
+            .where('tour.id = :id', { id: tourId })
+            .andWhere('tourRidersTour.id = :id', { id: tourId })
             .getMany();
 
     }
@@ -73,7 +73,7 @@ export class ParticipantService {
             .getRepository(Etappe)
             .createQueryBuilder('etappe')
             .leftJoinAndSelect('etappe.tour', 'tour')
-            .where('tour.id = :id', {id: tourId})
+            .where('tour.id = :id', { id: tourId })
             .andWhere('etappe.isDriven')
             .getMany();
 
@@ -87,7 +87,7 @@ export class ParticipantService {
             .leftJoinAndSelect('etappe.stageclassifications', 'stageclassifications')
             .leftJoinAndSelect('stageclassifications.tourrider', 'tourrider')
             .leftJoinAndSelect('tourrider.rider', 'rider')
-            .where('tour.id = :id', {id: tourId})
+            .where('tour.id = :id', { id: tourId })
             .andWhere('etappe.isDriven')
             .orderBy('etappe.etappeNumber', 'DESC')
             .getOne();
@@ -107,9 +107,9 @@ export class ParticipantService {
             .leftJoinAndSelect('tourrider.team', 'team')
             .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
             .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
-            .leftJoinAndSelect('stageclassifications.etappe', 'scetappe', 'scetappe.id = :scEtappeId', {scEtappeId: etappeId})
+            .leftJoinAndSelect('stageclassifications.etappe', 'scetappe', 'scetappe.id = :scEtappeId', { scEtappeId: etappeId })
             .leftJoin('predictions.tour', 'tour')
-            .where('tour.id = :id', {id: tourId})
+            .where('tour.id = :id', { id: tourId })
             .getMany();
 
         const teams: Team[] = await this.getTeamClassifications(tourId);
@@ -117,7 +117,7 @@ export class ParticipantService {
         const tour: Tour = await this.connection
             .getRepository(Tour)
             .createQueryBuilder('tour')
-            .where('tour.id = :id', {id: tourId})
+            .where('tour.id = :id', { id: tourId })
             .getOne();
         let previousPosition = 1;
 
@@ -132,7 +132,7 @@ export class ParticipantService {
                         prediction.rider.stageclassifications =
                             [...prediction.rider.stageclassifications.filter(sc => sc.etappe && sc.etappe.id === etappeId)]
                                 .map(sc =>
-                                    Object.assign(sc, {stagePoints: this.determinePunten(sc, prediction, etappeFactor)})
+                                    Object.assign(sc, { stagePoints: this.determinePunten(sc, prediction, etappeFactor) })
                                 );
                         if (prediction.rider.isOut && prediction.rider.latestEtappe.id === etappeId && !prediction.isWaterdrager) {
                             prediction.rider.stageclassifications.push({
@@ -143,10 +143,10 @@ export class ParticipantService {
                             });
                         }
                     }
-                    Object.assign(prediction, {totalStagePoints: this.determineSCTotaalpunten(prediction)});
+                    Object.assign(prediction, { totalStagePoints: this.determineSCTotaalpunten(prediction) });
 
                 });
-            Object.assign(participant, {totalStagePoints: this.determinePredictionsTotalPoints(participant, false)});
+            Object.assign(participant, { totalStagePoints: this.determinePredictionsTotalPoints(participant, false) });
         });
 
         participants.sort((a, b) => {
@@ -156,9 +156,9 @@ export class ParticipantService {
         // assign position
         participants.map((participant, index) => {
             if (index > 0 && participant.totalStagePoints === participants[index - 1].totalStagePoints) {
-                Object.assign(participant, {position: previousPosition});
+                Object.assign(participant, { position: previousPosition });
             } else {
-                Object.assign(participant, {position: index + 1});
+                Object.assign(participant, { position: index + 1 });
                 previousPosition = index + 1;
             }
         });
@@ -182,7 +182,7 @@ export class ParticipantService {
             // .leftJoinAndSelect('tourrider.youthclassifications', 'youthclassifications')
             // .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
             .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
-            .where('tourrider.id = :id', {id: tourriderId})
+            .where('tourrider.id = :id', { id: tourriderId })
             .getOne();
 
         tourrider.stageclassifications.map(sc => {
@@ -197,7 +197,7 @@ export class ParticipantService {
         await this.cacheManager.reset();
         return;
     }
-    
+
     async invalidateCacheAndSetLastUpdated(tourId): Promise<void> {
 
         await this.cacheManager.reset()
@@ -205,7 +205,7 @@ export class ParticipantService {
         const ref = db.ref(tourId);
 
         const lastUpdated = ref.child('lastUpdated');
-        lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
+        lastUpdated.set({ tour: tourId, lastUpdated: Date.now() });
 
         admin.messaging().sendToDevice(
             'cTBoX8_6BEqBnGTMPSqNwf:APA91bFZtbbfIElGBikmrJ2lh5h2yjhoy9gSK9wsheqsYnsCNH2R6-37vEVuKXZnXmswRK79HvSd75babtTEx4ySGSPOqOVPRDnM3jrZGOvLfHqq5GJjDLQ5Hs6TlFuZjyXYaJSX1T-2',
@@ -215,139 +215,139 @@ export class ParticipantService {
                     body: 'De stand is geupdate'
                 }
             }).then(response => {
-            this.logger.log(response);
-        }).catch(err => {
-            this.logger.log(err);
-        });
+                this.logger.log(response);
+            }).catch(err => {
+                this.logger.log(err);
+            });
         return;
     }
 
-    async getTable(tourId: string): Promise<any[]> {
+    // async getTable(tourId: string): Promise<any[]> {
 
-        const participants: ParticipantRead[] = await this.connection
-            .getRepository(Participant)
-            .createQueryBuilder('participant')
-            .leftJoinAndSelect('participant.predictions', 'predictions')
-            .leftJoinAndSelect('predictions.rider', 'tourrider')
-            .leftJoinAndSelect('tourrider.rider', 'rider')
-            .leftJoinAndSelect('tourrider.team', 'team')
-            .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
-            .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
-            .leftJoinAndSelect('tourrider.tourclassifications', 'tourclassifications')
-            .leftJoinAndSelect('tourrider.mountainclassifications', 'mountainclassifications')
-            .leftJoinAndSelect('tourrider.youthclassifications', 'youthclassifications')
-            .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
-            .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
-            .leftJoin('predictions.tour', 'tour')
-            .where('tour.id = :id', {id: tourId})
-            .getMany();
+    //     const participants: ParticipantRead[] = await this.connection
+    //         .getRepository(Participant)
+    //         .createQueryBuilder('participant')
+    //         .leftJoinAndSelect('participant.predictions', 'predictions')
+    //         .leftJoinAndSelect('predictions.rider', 'tourrider')
+    //         .leftJoinAndSelect('tourrider.rider', 'rider')
+    //         .leftJoinAndSelect('tourrider.team', 'team')
+    //         .leftJoinAndSelect('tourrider.latestEtappe', 'latestEtappe')
+    //         .leftJoinAndSelect('tourrider.stageclassifications', 'stageclassifications')
+    //         .leftJoinAndSelect('tourrider.tourclassifications', 'tourclassifications')
+    //         .leftJoinAndSelect('tourrider.mountainclassifications', 'mountainclassifications')
+    //         .leftJoinAndSelect('tourrider.youthclassifications', 'youthclassifications')
+    //         .leftJoinAndSelect('tourrider.pointsclassifications', 'pointsclassifications')
+    //         .leftJoinAndSelect('stageclassifications.etappe', 'etappe')
+    //         .leftJoin('predictions.tour', 'tour')
+    //         .where('tour.id = :id', { id: tourId })
+    //         .getMany();
 
-        const teams: Team[] = await this.getTeamClassifications(tourId);
-        const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
-        const tour: any = etappes.length > 0 ? etappes[0].tour : {id: tourId, hasEnded: false};
-        let previousPosition = 1;
+    //     const teams: Team[] = await this.getTeamClassifications(tourId);
+    //     const etappes: Etappe[] = await this.getDrivenEtappes(tourId);
+    //     const tour: any = etappes.length > 0 ? etappes[0].tour : { id: tourId, hasEnded: false };
+    //     let previousPosition = 1;
 
-        participants.map(participant => {
-            [...participant.predictions]
-                .map(prediction => {
-                    if (prediction.isWaterdrager) {
-                        const newStageClassifications: StageClassificationRead[] = this.determineWDPunten(prediction, etappes, teams, etappeFactor);
-                        prediction.rider.stageclassifications = [...newStageClassifications];
-                        Object.assign(prediction, {tourPoints: this.determineWDTourPunten(prediction, teams, tourFactor)});
-                        Object.assign(prediction, {mountainPoints: this.determineWDMountainPunten(prediction, teams, mountainFactor)});
-                        Object.assign(prediction, {youthPoints: this.determineWDYouthPunten(prediction, teams, youthFactor)});
-                        Object.assign(prediction, {pointsPoints: this.determineWDPointsPunten(prediction, teams, pointsFactor)});
-                    } else {
-                        prediction.rider.stageclassifications =
-                            [...prediction.rider.stageclassifications]
-                                .map(sc =>
-                                    Object.assign(sc, {stagePoints: this.determinePunten(sc, prediction, etappeFactor)})
-                                );
-                        if (prediction.rider.isOut && !prediction.isWaterdrager) {
-                            prediction.rider.stageclassifications.push({
-                                stagePoints: prediction.isBeschermdeRenner ?
-                                    this.determineBeschermdeRennerIsOutPunten(tour.scoreTable) :
-                                    !prediction.isMeesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
-                                etappe: prediction.rider.latestEtappe,
-                            });
-                        }
-                        [...prediction.rider.tourclassifications]
-                            .map(tc =>
-                                Object.assign(prediction, {tourPoints: this.determinePunten(tc, prediction, tourFactor)})
-                            );
-                        [...prediction.rider.youthclassifications]
-                            .map(yc =>
-                                Object.assign(prediction, {youthPoints: this.determinePunten(yc, prediction, youthFactor)})
-                            );
-                        [...prediction.rider.mountainclassifications]
-                            .map(mc =>
-                                Object.assign(prediction, {mountainPoints: this.determinePunten(mc, prediction, mountainFactor)})
-                            );
-                        [...prediction.rider.pointsclassifications]
-                            .map(pc =>
-                                Object.assign(prediction, {pointsPoints: this.determinePunten(pc, prediction, pointsFactor)})
-                            );
-                    }
-                    Object.assign(prediction, {totalStagePoints: this.determineSCTotaalpunten(prediction)});
-                    Object.assign(prediction, {deltaStagePoints: this.determineDeltaScTotalpoints(prediction, teams, etappes)});
+    //     participants.map(participant => {
+    //         [...participant.predictions]
+    //             .map(prediction => {
+    //                 if (prediction.isWaterdrager) {
+    //                     const newStageClassifications: StageClassificationRead[] = this.determineWDPunten(prediction, etappes, teams, etappeFactor);
+    //                     prediction.rider.stageclassifications = [...newStageClassifications];
+    //                     Object.assign(prediction, { tourPoints: this.determineWDTourPunten(prediction, teams, tourFactor) });
+    //                     Object.assign(prediction, { mountainPoints: this.determineWDMountainPunten(prediction, teams, mountainFactor) });
+    //                     Object.assign(prediction, { youthPoints: this.determineWDYouthPunten(prediction, teams, youthFactor) });
+    //                     Object.assign(prediction, { pointsPoints: this.determineWDPointsPunten(prediction, teams, pointsFactor) });
+    //                 } else {
+    //                     prediction.rider.stageclassifications =
+    //                         [...prediction.rider.stageclassifications]
+    //                             .map(sc =>
+    //                                 Object.assign(sc, { stagePoints: this.determinePunten(sc, prediction, etappeFactor) })
+    //                             );
+    //                     if (prediction.rider.isOut && !prediction.isWaterdrager) {
+    //                         prediction.rider.stageclassifications.push({
+    //                             stagePoints: prediction.isBeschermdeRenner ?
+    //                                 this.determineBeschermdeRennerIsOutPunten(tour.scoreTable) :
+    //                                 !prediction.isMeesterknecht ? didNotFinishPoints : (-1 * prediction.rider.waarde),
+    //                             etappe: prediction.rider.latestEtappe,
+    //                         });
+    //                     }
+    //                     [...prediction.rider.tourclassifications]
+    //                         .map(tc =>
+    //                             Object.assign(prediction, { tourPoints: this.determinePunten(tc, prediction, tourFactor) })
+    //                         );
+    //                     [...prediction.rider.youthclassifications]
+    //                         .map(yc =>
+    //                             Object.assign(prediction, { youthPoints: this.determinePunten(yc, prediction, youthFactor) })
+    //                         );
+    //                     [...prediction.rider.mountainclassifications]
+    //                         .map(mc =>
+    //                             Object.assign(prediction, { mountainPoints: this.determinePunten(mc, prediction, mountainFactor) })
+    //                         );
+    //                     [...prediction.rider.pointsclassifications]
+    //                         .map(pc =>
+    //                             Object.assign(prediction, { pointsPoints: this.determinePunten(pc, prediction, pointsFactor) })
+    //                         );
+    //                 }
+    //                 Object.assign(prediction, { totalStagePoints: this.determineSCTotaalpunten(prediction) });
+    //                 Object.assign(prediction, { deltaStagePoints: this.determineDeltaScTotalpoints(prediction, teams, etappes) });
 
-                });
-            Object.assign(participant, {totalPoints: this.determinePredictionsTotalPoints(participant, tour.hasEnded)});
-            Object.assign(participant, {totalStagePoints: this.determinePredictionsTotalPoints(participant, false)});
-            Object.assign(participant, {totalTourPoints: this.determineTotalTourPoints(participant.predictions)});
-            Object.assign(participant, {totalMountainPoints: this.determineTotalMountainPoints(participant.predictions)});
-            Object.assign(participant, {totalYouthPoints: this.determineTotalYouthPoints(participant.predictions)});
-            Object.assign(participant, {totalPointsPoints: this.determineTotalPointsPoints(participant.predictions)});
-            Object.assign(participant, {deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant, tour.hasEnded)});
-            Object.assign(participant, {previousTotalPoints: (participant.totalPoints - participant.deltaTotalStagePoints)});
-        });
+    //             });
+    //         Object.assign(participant, { totalPoints: this.determinePredictionsTotalPoints(participant, tour.hasEnded) });
+    //         Object.assign(participant, { totalStagePoints: this.determinePredictionsTotalPoints(participant, false) });
+    //         Object.assign(participant, { totalTourPoints: this.determineTotalTourPoints(participant.predictions) });
+    //         Object.assign(participant, { totalMountainPoints: this.determineTotalMountainPoints(participant.predictions) });
+    //         Object.assign(participant, { totalYouthPoints: this.determineTotalYouthPoints(participant.predictions) });
+    //         Object.assign(participant, { totalPointsPoints: this.determineTotalPointsPoints(participant.predictions) });
+    //         Object.assign(participant, { deltaTotalStagePoints: this.determineDeltaTotalstagePoints(participant, tour.hasEnded) });
+    //         Object.assign(participant, { previousTotalPoints: (participant.totalPoints - participant.deltaTotalStagePoints) });
+    //     });
 
-        participants.sort((a, b) => {
-            return b.previousTotalPoints - a.previousTotalPoints;
-        }).map((participant, index) => {
-            if (index > 0 && participant.previousTotalPoints === participants[index - 1].previousTotalPoints) {
-                Object.assign(participant, {previousPosition});
-            } else {
-                Object.assign(participant, {previousPosition: index + 1});
-                previousPosition = index + 1;
-            }
-        });
+    //     participants.sort((a, b) => {
+    //         return b.previousTotalPoints - a.previousTotalPoints;
+    //     }).map((participant, index) => {
+    //         if (index > 0 && participant.previousTotalPoints === participants[index - 1].previousTotalPoints) {
+    //             Object.assign(participant, { previousPosition });
+    //         } else {
+    //             Object.assign(participant, { previousPosition: index + 1 });
+    //             previousPosition = index + 1;
+    //         }
+    //     });
 
-        participants.sort((a, b) => {
-            return b.totalPoints - a.totalPoints;
-        }).map((participant, index) => {
-            if (index > 0 && participant.totalPoints === participants[index - 1].totalPoints) {
-                Object.assign(participant, {position: previousPosition});
-            } else {
-                Object.assign(participant, {position: index + 1});
-                previousPosition = index + 1;
-            }
-        });
+    //     participants.sort((a, b) => {
+    //         return b.totalPoints - a.totalPoints;
+    //     }).map((participant, index) => {
+    //         if (index > 0 && participant.totalPoints === participants[index - 1].totalPoints) {
+    //             Object.assign(participant, { position: previousPosition });
+    //         } else {
+    //             Object.assign(participant, { position: index + 1 });
+    //             previousPosition = index + 1;
+    //         }
+    //     });
 
 
-        const db = admin.database();
-        const ref = db.ref(tourId);
+    //     const db = admin.database();
+    //     const ref = db.ref(tourId);
 
-        const standRef = ref.child('stand');
-        standRef.set(participants);
-        // const lastUpdated = ref.child('lastUpdated');
-        // lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
+    //     const standRef = ref.child('stand');
+    //     standRef.set(participants);
+    //     // const lastUpdated = ref.child('lastUpdated');
+    //     // lastUpdated.set({tour: tourId, lastUpdated: Date.now()});
 
-        // admin.messaging().sendToDevice(
-        //     'emwL9z2ezkaCtJJJ8Q7zba:APA91bEusyrxdBokagifRMLHDyornA0cvUDA9dhtJI0Soa8laZNXqCanoKMVizqOe4T5HbRMJtZ_nOxm51Vu_VNc8iTqACqsSzEujJPsYQomH7mTp_ot1nyHB3hvkxT_0FfMmUBprHfl',
-        //     {
-        //         notification: {
-        //             title: 'Het Wielerspel',
-        //             body: 'De stand is geupdate'
-        //         }
-        //     }).then(response => {
-        //     this.logger.log(response);
-        // }).catch(err => {
-        //     this.logger.log(err);
-        // });
+    //     // admin.messaging().sendToDevice(
+    //     //     'emwL9z2ezkaCtJJJ8Q7zba:APA91bEusyrxdBokagifRMLHDyornA0cvUDA9dhtJI0Soa8laZNXqCanoKMVizqOe4T5HbRMJtZ_nOxm51Vu_VNc8iTqACqsSzEujJPsYQomH7mTp_ot1nyHB3hvkxT_0FfMmUBprHfl',
+    //     //     {
+    //     //         notification: {
+    //     //             title: 'Het Wielerspel',
+    //     //             body: 'De stand is geupdate'
+    //     //         }
+    //     //     }).then(response => {
+    //     //     this.logger.log(response);
+    //     // }).catch(err => {
+    //     //     this.logger.log(err);
+    //     // });
 
-        return participants;
-    }
+    //     return participants;
+    // }
 
 
     async create(participant: CreateParticipantDto, email: string, firebaseIdentifier: string): Promise<Participant> {
@@ -363,41 +363,41 @@ export class ParticipantService {
                 }, HttpStatus.BAD_REQUEST);
             });
     }
-    
+
     async update(participant: UpdateParticipantDto, email: string): Promise<Participant> {
         await this.connection
-        .getRepository(Participant)
-        .createQueryBuilder()
-        .update(Participant)
-        .set({
-            teamName: participant.teamName,
-            displayName: participant.displayName
-        })
-        .where('email =:email', { email })
-        .execute()
-        .catch((err) => {
-            throw new HttpException({
-                message: err.message,
-                statusCode: HttpStatus.BAD_REQUEST,
-            }, HttpStatus.BAD_REQUEST);
-        });
+            .getRepository(Participant)
+            .createQueryBuilder()
+            .update(Participant)
+            .set({
+                teamName: participant.teamName,
+                displayName: participant.displayName
+            })
+            .where('email =:email', { email })
+            .execute()
+            .catch((err) => {
+                throw new HttpException({
+                    message: err.message,
+                    statusCode: HttpStatus.BAD_REQUEST,
+                }, HttpStatus.BAD_REQUEST);
+            });
 
         return this.loggedIn(email);
     }
     async addPushToken(body: AddPushTokenDto, firebaseIdentifier: string): Promise<({ pushToken: string; participant: Participant } & Pushtoken) | void> {
         const participant = await this.participantRepository
             .createQueryBuilder('participant')
-            .where('participant.firebaseIdentifier = :firebaseIdentifier', {firebaseIdentifier})
+            .where('participant.firebaseIdentifier = :firebaseIdentifier', { firebaseIdentifier })
             .getOne();
 
         const pushtokenRecord = await this.pushTokenRepo
             .createQueryBuilder('pushtoken')
-            .where('pushtoken.pushToken = :pushtoken', {pushtoken: body.pushtoken})
+            .where('pushtoken.pushToken = :pushtoken', { pushtoken: body.pushtoken })
             .getCount()
 
         if (pushtokenRecord < 1) {
             return await this.pushTokenRepo
-                .save({participant: participant, pushToken: body.pushtoken})
+                .save({ participant: participant, pushToken: body.pushtoken })
                 .catch((err) => {
                     throw new HttpException({
                         message: err.message,
@@ -538,7 +538,7 @@ export class ParticipantService {
     determineWDPunten(prediction: Prediction, etappes: Etappe[], teams: Team[], etappeFactor: number) {
         const newStageCF = etappes.map(etappe => {
             const etappePosition = this.determinePositionInEtappe(etappe, prediction);
-            return {id: null, position: etappePosition, etappe};
+            return { id: null, position: etappePosition, etappe };
         });
 
         const team = teams.find(item => item.id === prediction.rider.team.id);
@@ -567,7 +567,7 @@ export class ParticipantService {
                 riderPoints);
 
             // this.logger.log('stagePointsWd: ' + prediction.rider.rider.surName + ' ' + stagePointsWD);
-            Object.assign(newStage, {stagePoints: stagePointsWD, calculation});
+            Object.assign(newStage, { stagePoints: stagePointsWD, calculation });
             return newStage;
         });
 

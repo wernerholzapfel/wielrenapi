@@ -20,11 +20,11 @@ export class ParticipantController {
         return this.participantService.findAll(tourId);
     }
 
-    @UseInterceptors(CacheInterceptor)
-    @Get('/table/:id')
-    async getTable(@Param('id') id): Promise<any[]> {
-            return this.participantService.getTable(id);
-    }
+    // @UseInterceptors(CacheInterceptor)
+    // @Get('/table/:id')
+    // async getTable(@Param('id') id): Promise<any[]> {
+    //         return this.participantService.getTable(id);
+    // }
 
     @Get('/updateTable/:id')
     async setLastUpdateDate(@Param('id') id): Promise<void> {

@@ -24,6 +24,7 @@ import {JsonBodyMiddleware} from './json-body-middleware.middleware';
 import { PushtokenModule } from './pushtoken/pushtoken.module';
 import { NotificationModule } from './notification/notification.module';
 import { HalloffameModule } from './halloffame/halloffame.module';
+import { CareerModule } from './career/career.module';
 
 @Module({
     imports: [TypeOrmModule.forRoot(
@@ -38,6 +39,7 @@ import { HalloffameModule } from './halloffame/halloffame.module';
         TourridersModule,
         PredictionModule,
         ParticipantModule,
+        CareerModule,
         PushtokenModule,
         EtappeModule,
         HalloffameModule,

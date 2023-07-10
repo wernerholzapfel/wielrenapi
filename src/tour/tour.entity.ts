@@ -10,6 +10,7 @@ import {Mountainclassification} from '../mountainclassification/mountainclassifi
 import {Pointsclassification} from '../pointsclassification/pointsclassification.entity';
 import {Headline} from '../headlines/headline.entity';
 import {PredictionScore} from '../prediction-score/prediction-score.entity';
+import { Career } from 'career/career.entity';
 
 @Entity()
 export class Tour {
@@ -57,6 +58,9 @@ export class Tour {
 
     @OneToMany(type => Mountainclassification, mountaincf => mountaincf.tour)
     mountainclassifications: Mountainclassification[];
+    
+    @OneToMany(type => Career, career => career.tour)
+    career: Career[];
 
     @OneToMany(type => Pointsclassification, pointscf => pointscf.tour)
     pointsclassifications: Pointsclassification[];
