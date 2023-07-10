@@ -1,5 +1,5 @@
-import { Participant } from 'participant/participant.entity';
-import { Tour } from 'tour/tour.entity';
+import { Participant } from '../participant/participant.entity';
+import { Tour } from '../tour/tour.entity';
 import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
