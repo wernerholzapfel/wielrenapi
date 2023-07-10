@@ -33,6 +33,11 @@ export class PredictionScoreController {
     async getTotaalStand(@Param('tourId') tourId): Promise<Stageclassification[]> {
         return this.predictionsScoreService.getTotaalStand(tourId);
     }
+    
+    @Get('totaal/:tourId/carriere')
+    async getCarriere(@Param('tourId') tourId): Promise<Stageclassification[]> {
+        return this.predictionsScoreService.getCarriere(tourId);
+    }
     @Get('totaal/:tourId/participant/:participantId')
     async getTotaalStandForParticipant(@Param('tourId') tourId, @Param('participantId') participantId): Promise<Stageclassification[]> {
         return this.predictionsScoreService.getTotaalStandForParticipant(tourId, participantId);
