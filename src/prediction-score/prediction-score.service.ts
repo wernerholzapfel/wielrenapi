@@ -13,7 +13,7 @@ import { Youthclassification } from '../youthclassification/youthclassification.
 import { Tourriders } from '../tourriders/tourriders.entity';
 import { Tour } from '../tour/tour.entity';
 import { parse } from 'url';
-import { Career } from 'career/career.entity';
+import { Career } from '../career/career.entity';
 
 @Injectable()
 export class PredictionScoreService {

@@ -1,7 +1,7 @@
 import {Column, Entity, Index, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
 import {Prediction, PredictionRead} from '../prediction/prediction.entity';
 import {PredictionScore} from '../prediction-score/prediction-score.entity';
-import { Career } from 'career/career.entity';
+import { Career } from '../career/career.entity';
 
 @Entity()
 export class Participant {

@@ -10,7 +10,7 @@ import {Mountainclassification} from '../mountainclassification/mountainclassifi
 import {Pointsclassification} from '../pointsclassification/pointsclassification.entity';
 import {Headline} from '../headlines/headline.entity';
 import {PredictionScore} from '../prediction-score/prediction-score.entity';
-import { Career } from 'career/career.entity';
+import { Career } from '../career/career.entity';
 
 @Entity()
 export class Tour {
