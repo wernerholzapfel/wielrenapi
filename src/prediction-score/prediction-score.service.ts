@@ -206,7 +206,33 @@ export class PredictionScoreService {
         return this.sorteerStand(stand, 'totaalpunten');
     }
 
-    async getCarriere(tourId: string): Promise<any> {
+    async updateCareer(): Promise<any> {
+        const tours = await this.connection
+            .getRepository(Tour)
+            .createQueryBuilder('tour')
+            .getMany();
+
+        const dateFrom = new Date("2021-01-01").toString()
+        let doneTours = [];
+        for (const tour of tours) {
+            if (tour 
+                && Date.parse(tour.deadline.toString()) > Date.parse(dateFrom)
+                && Date.parse(tour.endDate.toString()) < Date.now() 
+                && tour.id !== 'ebc90aa6-eb9d-406d-bd13-cbe1f587d80d' //testronde 
+                && !tour.isActive) {
+                await this.setCareer(tour.id).then(result => {
+                    doneTours = [...doneTours, {
+                        tour: tour,
+                        yearDifference: result.yearDifference,
+                        carriereFactor: result.carriereFactor,
+                        carriereStepInit: result.carriereStepInit,
+                    }]
+                });
+            }
+        }
+        return doneTours
+    }
+    async setCareer(tourId: string): Promise<any> {
 
         await this.connection
             .createQueryBuilder()
@@ -223,24 +249,17 @@ export class PredictionScoreService {
             .getOne();
         let yearDifference = new Date(Date.now() - Date.parse(tour.startDate.toString())).getFullYear() - 1970
         let carriereFactor = yearDifference === 0 ? 1 : Math.pow(0.9, yearDifference)
-        let carriereStepInit = Math.round((1000 / table.length))
-        let carriereStepCurrent = yearDifference === 0 ? carriereStepInit : Math.round((900 / table.length))
-        let carriereStartCurrent = yearDifference === 0 ? 1000 : 900
+        let carriereStepInit = 1000 / table.length
         const career = {
             yearDifference: yearDifference,
             carriereFactor: carriereFactor,
             carriereStepInit: carriereStepInit,
-            carriereStepCurrent: carriereStepCurrent,
             participants: table.map(line => {
                 return {
                     participant: { id: line.id, displayName: line.displayName },
-                    // displayName: line.displayName,
-                    // teamName: line.teamName,
-                    // positie: line.positie,
                     careerInitScore: 1000 - ((line.positie - 1) * carriereStepInit),
-                    careerCurrentScore: Math.round((1000 - ((line.positie - 1) * carriereStepInit)) * carriereFactor),
+                    careerCurrentScore: ((1000 - ((line.positie - 1) * carriereStepInit)) * carriereFactor),
                     tour: { id: tourId }
-                    // carriereCurrentStepCurrent: (carriereStartCurrent - ((line.positie - 1) * carriereStepCurrent)),
                 }
             })
         }

@@ -7,10 +7,10 @@ export class Career {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({type: 'int'})
+    @Column('decimal',{precision: 10, scale: 5})
     careerInitScore: number;
     
-    @Column({type: 'int'})
+    @Column('decimal',{precision: 10, scale: 5})
     careerCurrentScore: number;
 
     @Index()

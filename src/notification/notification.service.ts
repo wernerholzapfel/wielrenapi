@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Repository } from "typeorm";
+import { Connection, Repository } from "typeorm";
 import * as admin from "firebase-admin";
 import { Pushtoken } from "../pushtoken/pushtoken.entity";
 import { Participant } from "../participant/participant.entity";
 import { InjectRepository } from '@nestjs/typeorm';
 import { response } from 'express';
 import { parseJsonText } from 'typescript';
+import { Tour } from 'tour/tour.entity';
 
 @Injectable()
 export class NotificationService {
@@ -13,11 +14,26 @@ export class NotificationService {
     constructor(@InjectRepository(Pushtoken)
     private readonly pushTokenRepo: Repository<Pushtoken>,
         @InjectRepository(Participant)
-        private readonly participantRepo: Repository<Participant>) {
+        private readonly participantRepo: Repository<Participant>,
+        private readonly connection: Connection) {
     }
     private readonly logger = new Logger('NotificationService', true);
 
     async sendNotification(): Promise<admin.messaging.MessagingDevicesResponse[]> {
+
+        const tour = await this.connection.getRepository(Tour)
+        .createQueryBuilder('tour')
+        .where('tour.isActive')
+        .getOne();
+
+        if (tour) {
+            const db = admin.database();
+            const ref = db.ref(tour.id);
+    
+            const lastUpdated = ref.child('lastUpdated');
+            lastUpdated.set({ tour: tour.id, lastUpdated: Date.now() });
+        }
+
         const pushtokens: Pushtoken[] = await this.pushTokenRepo
             .createQueryBuilder('pushtoken')
             .leftJoin('pushtoken.participant', 'participant')
@@ -31,7 +47,7 @@ export class NotificationService {
                 notification: {
                     title: 'Het Wielerspel',
                     body: `Hoi ${token.participant.displayName}, de stand is bijgewerkt.`,
-                    badge: '0'
+                    badge: '1'
                 }
             }, {})
                 .then(async (response) => {
