@@ -6,7 +6,7 @@ import { Participant } from "../participant/participant.entity";
 import { InjectRepository } from '@nestjs/typeorm';
 import { response } from 'express';
 import { parseJsonText } from 'typescript';
-import { Tour } from 'tour/tour.entity';
+import { Tour } from '../tour/tour.entity';
 
 @Injectable()
 export class NotificationService {
