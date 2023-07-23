@@ -207,6 +207,7 @@ export class PredictionScoreService {
     }
 
     async updateCareer(): Promise<any> {
+
         const tours = await this.connection
             .getRepository(Tour)
             .createQueryBuilder('tour')
@@ -215,11 +216,13 @@ export class PredictionScoreService {
         const dateFrom = new Date("2021-01-01").toString()
         let doneTours = [];
         for (const tour of tours) {
+            this.logger.log(Date.parse(tour.endDate.toString()));
+            this.logger.log( Date.now());
             if (tour 
                 && Date.parse(tour.deadline.toString()) > Date.parse(dateFrom)
                 && Date.parse(tour.endDate.toString()) < Date.now() 
                 && tour.id !== 'ebc90aa6-eb9d-406d-bd13-cbe1f587d80d' //testronde 
-                && !tour.isActive) {
+                ) {
                 await this.setCareer(tour.id).then(result => {
                     doneTours = [...doneTours, {
                         tour: tour,
