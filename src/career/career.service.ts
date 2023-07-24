@@ -21,6 +21,7 @@ export class CareerService {
         .addSelect('participant.teamName', 'teamName')
         .addSelect('count("participant")', 'participations')
         .addSelect('ROUND(SUM("careerCurrentScore"),0)', 'careerCurrentScore')
+        .addSelect('ROUND(SUM("careerInitScore"),0)', 'careerInitScore')
         .leftJoin('career.participant', 'participant')
         .groupBy('participant.id')
         .orderBy('"careerCurrentScore"', 'DESC')
@@ -35,7 +36,7 @@ export class CareerService {
                     ...item,
                     participations: parseInt(item.participations),
                     careerCurrentScore: parseInt(item.careerCurrentScore),
-                    averageCareerScore: Math.round(item.careerCurrentScore / parseInt(item.participations)),
+                    averageCareerScore: Math.round(item.careerInitScore / parseInt(item.participations)),
                     positie: previousPosition,
                 };
             } else {
@@ -44,7 +45,7 @@ export class CareerService {
                     ...item,
                     participations: parseInt(item.participations),
                     careerCurrentScore: parseInt(item.careerCurrentScore),
-                    averageCareerScore: Math.round(item.careerCurrentScore / parseInt(item.participations)),
+                    averageCareerScore: Math.round(item.careerInitScore / parseInt(item.participations)),
                     positie: index + 1,
                 };
             }
