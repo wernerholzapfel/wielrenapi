@@ -70,4 +70,9 @@ export class ParticipantController {
     async addPushtoken(@Req() req, @Body() addPushTokenDto: AddPushTokenDto) {
         return await this.participantService.addPushToken(addPushTokenDto, req.user.uid);
     }
+
+    @Put('deleteaccount')
+    async deleteAccount(@Req() req) {
+        return await this.participantService.anonymise(req.user.uid, req.user.email.toLowerCase());
+    }
 }

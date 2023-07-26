@@ -384,6 +384,27 @@ export class ParticipantService {
 
         return this.loggedIn(email);
     }
+
+    async anonymise(firebaseIdentifier: string, email: string) {
+        return await this.connection
+            .getRepository(Participant)
+            .createQueryBuilder()
+            .update(Participant)
+            .set({
+                teamName: 'Team gestopt',
+                displayName: 'Deelnemer gestopt',
+                email: email+'.deleted'+Date.now().toString()
+            })
+            .where('firebaseIdentifier =:firebaseIdentifier', { firebaseIdentifier })
+            .execute()
+            .catch((err) => {
+                throw new HttpException({
+                    message: err.message,
+                    statusCode: HttpStatus.BAD_REQUEST,
+                }, HttpStatus.BAD_REQUEST);
+            });
+
+    }
     async addPushToken(body: AddPushTokenDto, firebaseIdentifier: string): Promise<({ pushToken: string; participant: Participant } & Pushtoken) | void> {
         const participant = await this.participantRepository
             .createQueryBuilder('participant')
