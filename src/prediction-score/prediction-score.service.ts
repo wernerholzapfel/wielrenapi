@@ -535,6 +535,12 @@ export class PredictionScoreService {
 
     async updatePredictionScoreEtappe(etappeId: string, tourId: string): Promise<any[]> {
 
+        const etappe = await this.connection
+        .getRepository(Etappe)
+        .createQueryBuilder('etappe')
+        .where('id = :etappeId', { etappeId })
+        .getOne()
+        
         const oldScores = await this.connection
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
@@ -558,6 +564,13 @@ export class PredictionScoreService {
             .createQueryBuilder('tourriders')
             .leftJoin('tourriders.latestEtappe', 'latestEtappe')
             .where('latestEtappe.id = :latestEtappeId', { latestEtappeId: etappeId })
+            .getMany();
+
+        const uitvallersTour = await this.connection
+            .getRepository(Tourriders)
+            .createQueryBuilder('tourriders')
+            .leftJoin('tourriders.latestEtappe', 'latestEtappe')
+            .where('latestEtappe.etappeNumber <= :etappeNumber', { etappeNumber: etappe.etappeNumber })
             .getMany();
 
         const predictions = await this.connection
@@ -588,7 +601,7 @@ export class PredictionScoreService {
         const predictionScore: any[] = filteredPredictions.map(prediction => {
             const sc = stageclassifications.find(sc => sc && sc.tourrider.id === prediction.rider.id);
             return {
-                punten: this.determinePunten(sc, stageclassifications, prediction, etappeFactor, true, uitvallers),
+                punten: this.determinePunten(sc, stageclassifications, prediction, etappeFactor, true, uitvallers, uitvallersTour),
                 participant: { id: prediction.participant.id },
                 tour: { id: tourId },
                 prediction: { id: prediction.id },
@@ -859,8 +872,9 @@ export class PredictionScoreService {
         return [];
     }
 
-    determinePunten(sc: Stageclassification, stageClassifications: Stageclassification[], prediction: Prediction, factor: number, isStageCF, uitvallers?: Tourriders[]) {
+    determinePunten(sc: Stageclassification, stageClassifications: Stageclassification[], prediction: Prediction, factor: number, isStageCF, uitvallers?: Tourriders[], uitvallersTour?: Tourriders[]) {
         const predictionIsOutAtThisStage = uitvallers && uitvallers.find(uitvaller => uitvaller.id === prediction.rider.id);
+        const predictionIsOutThisTour = uitvallersTour && uitvallersTour.find(uitvaller => uitvaller.id === prediction.rider.id);
         if (prediction.isRider) {
             if (predictionIsOutAtThisStage) {
                 return didNotFinishPoints;
@@ -898,12 +912,7 @@ export class PredictionScoreService {
                 }, 0);
             const waterdragerpunten = this.calculatePoints(waterdragerSC, factor);
 
-            if (prediction.participant.id === 'f1dc0b79-28cc-4ede-8212-4742aee882f7') {
-                waterdragerTeamSC.forEach(item => this.logger.log(item.tourrider.id));
-                this.logger.log(waterdragerpunten);
-                this.logger.log(teampunten);
-            }
-            return predictionIsOutAtThisStage ?
+            return predictionIsOutThisTour ?
                 isStageCF ?
                     0 :
                     prediction.rider.waarde * -1
