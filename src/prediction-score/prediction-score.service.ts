@@ -217,12 +217,12 @@ export class PredictionScoreService {
         let doneTours = [];
         for (const tour of tours) {
             this.logger.log(Date.parse(tour.endDate.toString()));
-            this.logger.log( Date.now());
-            if (tour 
+            this.logger.log(Date.now());
+            if (tour
                 && Date.parse(tour.deadline.toString()) > Date.parse(dateFrom)
-                && Date.parse(tour.endDate.toString()) < Date.now() 
+                && Date.parse(tour.endDate.toString()) < Date.now()
                 && tour.id !== 'ebc90aa6-eb9d-406d-bd13-cbe1f587d80d' //testronde 
-                ) {
+            ) {
                 await this.setCareer(tour.id).then(result => {
                     doneTours = [...doneTours, {
                         tour: tour,
@@ -536,11 +536,11 @@ export class PredictionScoreService {
     async updatePredictionScoreEtappe(etappeId: string, tourId: string): Promise<any[]> {
 
         const etappe = await this.connection
-        .getRepository(Etappe)
-        .createQueryBuilder('etappe')
-        .where('id = :etappeId', { etappeId })
-        .getOne()
-        
+            .getRepository(Etappe)
+            .createQueryBuilder('etappe')
+            .where('id = :etappeId', { etappeId })
+            .getOne()
+
         const oldScores = await this.connection
             .getRepository(PredictionScore)
             .createQueryBuilder('predictionscore')
@@ -912,13 +912,11 @@ export class PredictionScoreService {
                 }, 0);
             const waterdragerpunten = this.calculatePoints(waterdragerSC, factor);
 
-            return predictionIsOutThisTour ?
-                isStageCF ?
-                    0 :
-                    prediction.rider.waarde * -1
-                : isStageCF ?
-                    Math.round((teampunten - waterdragerpunten) / 7) - waterdragerpunten :
-                    Math.round((teampunten - waterdragerpunten) / 7) - waterdragerpunten - prediction.rider.waarde;
+            return predictionIsOutThisTour && isStageCF ? 0 
+            : predictionIsOutThisTour && !isStageCF ? prediction.rider.waarde * -1
+                    : isStageCF ?
+                        Math.round((teampunten - waterdragerpunten) / 7) - waterdragerpunten :
+                        Math.round((teampunten - waterdragerpunten) / 7) - waterdragerpunten - prediction.rider.waarde;
             // todo 7 uit een property halen ergens? + correcte formule hanteren teampunten /8 + waterdragerpunten
         }
     }
