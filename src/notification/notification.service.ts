@@ -22,14 +22,14 @@ export class NotificationService {
     async sendNotification(): Promise<admin.messaging.MessagingDevicesResponse[]> {
 
         const tour = await this.connection.getRepository(Tour)
-        .createQueryBuilder('tour')
-        .where('tour.isActive')
-        .getOne();
+            .createQueryBuilder('tour')
+            .where('tour.isActive')
+            .getOne();
 
         if (tour) {
             const db = admin.database();
             const ref = db.ref(tour.id);
-    
+
             const lastUpdated = ref.child('lastUpdated');
             lastUpdated.set({ tour: tour.id, lastUpdated: Date.now() });
         }
@@ -41,19 +41,38 @@ export class NotificationService {
             .where('pushtoken.isDeleted = false')
             .getMany();
 
-
         pushtokens.forEach(async (token) => {
-            await admin.messaging().sendToDevice(token.pushToken, {
+            await admin.messaging().send({
                 notification: {
                     title: 'Het Wielerspel',
                     body: `Hoi ${token.participant.displayName}, de stand is bijgewerkt.`,
-                    badge: '1'
+                },  
+                token: token.pushToken,
+                apns: {
+                    payload: {
+                        aps: {
+                            badge: 1
+                        }
+                    }
                 }
-            }, {})
-                .then(async (response) => {
-                    this.cleanupToken({ ...response, token })
+            })
+                .then((response) => {
+                    console.log('Succesvol verzonden:', response);
                 })
-                .catch(async (error) => console.log(error))
+                .catch((error) => {
+                    console.error('Fout bij verzenden:', error);
+
+                    const invalidTokens = [
+                        'messaging/invalid-argument',
+                        'messaging/registration-token-not-registered',
+                        'messaging/invalid-registration-token'
+                    ];
+
+                    if (invalidTokens.includes(error.code)) {
+                        console.log(`Token ongeldig of verwijderd: ${token.pushToken}`);
+                        this.cleanupToken(token.pushToken)
+                    }
+                })
                 .finally(async () => {
                 });
         })
@@ -61,24 +80,13 @@ export class NotificationService {
     }
 
     // Cleans up the tokens that are no longer valid.
-    async cleanupToken(response) {
-        return await response.results.forEach((result) => {
-            const error = result.error;
-            if (error) {
-                console.error('Failure sending notification to', response.token.participant.displayName);
-                // Cleanup the tokens who are not registered anymore.
-                if (error.code === 'messaging/invalid-registration-token' ||
-                    error.code === 'messaging/registration-token-not-registered') {
-                    console.log('delete this token: ' + response.token.pushToken)
-                    this.pushTokenRepo
-                        .createQueryBuilder()
-                        .update(Pushtoken)
-                        .set({ isDeleted: true })
-                        .where("pushToken = :pushToken", { pushToken: response.token.pushToken })
-                        .execute();
-                }
-            }
-        })
+    async cleanupToken(pushToken: string) {
+        this.pushTokenRepo
+            .createQueryBuilder()
+            .update(Pushtoken)
+            .set({ isDeleted: true })
+            .where("pushToken = :pushToken", { pushToken: pushToken })
+            .execute();
     }
 }
 
